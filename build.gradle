@@ -1,0 +1,34 @@
+allprojects {
+    apply plugin: 'idea'
+}
+
+subprojects {
+	apply plugin: 'java'
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+
+    repositories {
+		mavenCentral()
+	}
+	
+	dependencies {
+		compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.+'
+		compile 'com.google.guava:guava:18.+'
+		testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.+'
+		testCompile 'org.testng:testng:6.8.+'
+		testCompile 'org.mockito:mockito-all:1.10.+'
+    }
+
+	group = 'org.datalorax.populace'
+    version = '0.1'
+
+    test {
+        useTestNG()
+
+        testLogging {
+            events = ["skipped", "passed", "failed"]
+
+            displayGranularity = 3
+        }
+    }
+}

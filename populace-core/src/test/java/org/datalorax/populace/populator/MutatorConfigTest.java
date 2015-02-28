@@ -6,13 +6,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -40,7 +34,7 @@ public class MutatorConfigTest {
         final Type setStringsType = TypeUtils.parameterize(HashSet.class, String.class);
         final Mutator specificMutator = mock(Mutator.class, "HashSet<String>");
         final Map<Type, Mutator> specificMutators = Collections.singletonMap(setStringsType, specificMutator);
-        final MutatorConfig config = new MutatorConfig(NO_BASE_MUTATORS, specificMutators, defaultMutator, defaultArrayMutator);
+        final MutatorConfig config = new MutatorConfig(specificMutators, NO_BASE_MUTATORS, defaultMutator, defaultArrayMutator);
 
         // When:
         final Mutator mutator = config.getMutator(setStringsType);
@@ -55,7 +49,7 @@ public class MutatorConfigTest {
         final Type arrayOfNumbersType = TypeUtils.genericArrayType(Number.class);
         final Mutator specificMutator = mock(Mutator.class, "Number[]");
         final Map<Type, Mutator> specificMutators = Collections.singletonMap(arrayOfNumbersType, specificMutator);
-        final MutatorConfig config = new MutatorConfig(NO_BASE_MUTATORS, specificMutators, defaultMutator, defaultArrayMutator);
+        final MutatorConfig config = new MutatorConfig(specificMutators, NO_BASE_MUTATORS, defaultMutator, defaultArrayMutator);
 
         // When:
         final Mutator mutator = config.getMutator(TypeUtils.genericArrayType(Long.class));
@@ -73,7 +67,7 @@ public class MutatorConfigTest {
         final Map<Class<?>, Mutator> baseMutators = Collections.<Class<?>, Mutator>singletonMap(Set.class, baseMutator);
         final Map<Type, Mutator> specificMutators = Collections.singletonMap(setStringsType, specificMutator);
 
-        final MutatorConfig config = new MutatorConfig(baseMutators, specificMutators, defaultMutator, defaultArrayMutator);
+        final MutatorConfig config = new MutatorConfig(specificMutators, baseMutators, defaultMutator, defaultArrayMutator);
 
         // When:
         final Mutator mutator = config.getMutator(setStringsType);
@@ -91,7 +85,7 @@ public class MutatorConfigTest {
             put(Collection.class, collectionMutator);
             put(Set.class, setMutator);
         }};
-        final MutatorConfig config = new MutatorConfig(baseMutators, NO_SPECIFIC_MUTATORS, defaultMutator, defaultArrayMutator);
+        final MutatorConfig config = new MutatorConfig(NO_SPECIFIC_MUTATORS, baseMutators, defaultMutator, defaultArrayMutator);
         final Type setStringsType = TypeUtils.parameterize(HashSet.class, String.class);
 
         // When:
@@ -110,7 +104,7 @@ public class MutatorConfigTest {
             put(Collection.class, collectionMutator);
             put(Set.class, setMutator);
         }};
-        final MutatorConfig config = new MutatorConfig(baseMutators, NO_SPECIFIC_MUTATORS, defaultMutator, defaultArrayMutator);
+        final MutatorConfig config = new MutatorConfig(NO_SPECIFIC_MUTATORS, baseMutators, defaultMutator, defaultArrayMutator);
         final Type setStringsType = TypeUtils.parameterize(HashSet.class, String.class);
 
         // When:
@@ -123,7 +117,7 @@ public class MutatorConfigTest {
     @Test
     public void shouldGetDefaultMutatorIfNotArrayTypeAndNothingElseMatches() throws Exception {
         // Given:
-        final MutatorConfig config = new MutatorConfig(NO_BASE_MUTATORS, NO_SPECIFIC_MUTATORS, defaultMutator, defaultArrayMutator);
+        final MutatorConfig config = new MutatorConfig(NO_SPECIFIC_MUTATORS, NO_BASE_MUTATORS, defaultMutator, defaultArrayMutator);
 
         // When:
         final Mutator mutator = config.getMutator(CustomType.class);

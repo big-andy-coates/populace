@@ -5,18 +5,10 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.spy;
@@ -25,12 +17,12 @@ import static org.mockito.Mockito.verify;
 /**
  * @author datalorax - 25/02/2015.
  */
-public class EntityPopulatorTest {
-    private EntityPopulator populator;
+public class GraphPopulatorFunctionTest {
+    private GraphPopulator populator;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        populator = new EntityPopulator.Builder().build();
+        populator = GraphPopulator.newBuilder().build();
     }
 
     @Test
@@ -198,23 +190,6 @@ public class EntityPopulatorTest {
     // Todo(ac): Add hook for Object / generic types without parameters
 
     @Test
-    public void shouldHonourFieldExclusionList() throws Exception {
-        // Given:
-        final WithBoxedPrimitives original = new WithBoxedPrimitives();
-        populator = new EntityPopulator.Builder().withFieldExclusions(new HashSet<String>() {{
-            add("_char");
-            add("_int");
-        }}).build();
-
-        // When:
-        final WithPrimitives populated = populator.populate(new WithPrimitives());
-
-        // Then:
-        assertThat(populated._char, is(original._char));
-        assertThat(populated._int, is(original._int));
-    }
-
-    @Test
     public void shouldWorkWithFinalFields() throws Exception {
         // Given:
         final WithFinalField original = new WithFinalField();
@@ -263,9 +238,26 @@ public class EntityPopulatorTest {
         verify(mutator).mutate(eq(int.class), eq(2), isA(PopulatorConfig.class));
     }
 
+    @Test
+    public void shouldHonourFieldExclusionList() throws Exception {
+        // Given:
+        final WithBoxedPrimitives original = new WithBoxedPrimitives();
+        populator = GraphPopulator.newBuilder().withFieldExclusions(new HashSet<String>() {{
+            add("_char");
+            add("_int");
+        }}).build();
+
+        // When:
+        final WithPrimitives populated = populator.populate(new WithPrimitives());
+
+        // Then:
+        assertThat(populated._char, is(original._char));
+        assertThat(populated._int, is(original._int));
+    }
+
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(PassThroughMutator.class);
-        final EntityPopulator.Builder builder = EntityPopulator.newBuilder();
+        final GraphPopulator.Builder builder = GraphPopulator.newBuilder();
         for (Type type : types) {
             builder.withSpecificMutator(type, mutator);
         }

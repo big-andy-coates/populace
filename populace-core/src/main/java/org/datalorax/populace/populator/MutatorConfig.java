@@ -19,7 +19,7 @@ public class MutatorConfig {
     private final Mutator defaultArrayMutator;
     private final Mutator defaultMutator;
 
-    public MutatorConfig(Map<Class<?>, Mutator> baseMutators, Map<Type, Mutator> specificMutators,
+    public MutatorConfig(Map<Type, Mutator> specificMutators, Map<Class<?>, Mutator> baseMutators,
                          Mutator defaultMutator, Mutator defaultArrayMutator) {
         Validate.notNull(baseMutators, "baseMutators null");
         Validate.notNull(specificMutators, "specificMutators null");
@@ -29,6 +29,18 @@ public class MutatorConfig {
         this.specificMutators = Collections.unmodifiableMap(new HashMap<Type, Mutator>(specificMutators));
         this.defaultMutator = defaultMutator;
         this.defaultArrayMutator = defaultArrayMutator;
+    }
+
+    public interface Builder {
+        Builder withSpecificMutator(Type type, Mutator mutator);
+
+        Builder withBaseMutator(Class<?> baseClass, Mutator mutator);
+
+        Builder withDefaultArrayMutator(Mutator mutator);
+
+        Builder withDefaultMutator(Mutator mutator);
+
+        MutatorConfig build();
     }
 
     public Mutator getMutator(Type type) {

@@ -12,7 +12,7 @@
 
 # Gradle
 .gradle/
-/build/
+build/
 
 # Compiled source #
 *.com

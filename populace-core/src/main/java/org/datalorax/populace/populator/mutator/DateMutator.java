@@ -3,7 +3,6 @@ package org.datalorax.populace.populator.mutator;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorConfig;
 
-
 import java.lang.reflect.Type;
 import java.util.Date;
 
@@ -19,5 +18,20 @@ public class DateMutator implements Mutator {
         }
 
         throw new IllegalArgumentException("Unsupported type: " + type);
+    }
+
+    @Override
+    public boolean equals(final Object that) {
+        return this == that || (that != null && getClass() == that.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
     }
 }

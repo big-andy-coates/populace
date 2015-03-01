@@ -1,9 +1,11 @@
 package org.datalorax.populace.populator;
 
+import org.datalorax.populace.populator.field.filter.FieldFilter;
 import org.datalorax.populace.populator.mutator.PassThroughMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -187,8 +189,6 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._nestedType, is(not(nullValue())));
     }
 
-    // Todo(ac): Add hook for Object / generic types without parameters
-
     @Test
     public void shouldWorkWithFinalFields() throws Exception {
         // Given:
@@ -203,7 +203,7 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldIgnoreTransientFields() throws Exception {
+    public void shouldIgnoreTransientFieldsByDefault() throws Exception {
         // Given:
         final WithTransientField original = new WithTransientField();
 
@@ -215,7 +215,7 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldIgnoreStaticFields() throws Exception {
+    public void shouldIgnoreStaticFieldsByDefault() throws Exception {
         // Given:
         final long original = WithStaticField._static;
 
@@ -239,13 +239,16 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldHonourFieldExclusionList() throws Exception {
+    public void shouldHonourFieldFilterList() throws Exception {
         // Given:
         final WithBoxedPrimitives original = new WithBoxedPrimitives();
-        populator = GraphPopulator.newBuilder().withFieldExclusions(new HashSet<String>() {{
-            add("_char");
-            add("_int");
-        }}).build();
+        populator = GraphPopulator.newBuilder().withFieldFilter(new FieldFilter() {
+            @Override
+            public boolean evaluate(final Field field) {
+                final String name = field.getName();
+                return !(name.equals("_char") || name.equals("_int"));
+            }
+        }).build();
 
         // When:
         final WithPrimitives populated = populator.populate(new WithPrimitives());
@@ -255,13 +258,25 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._int, is(original._int));
     }
 
+    @Test
+    public void should() throws Exception {
+        // Given:
+        final WithRawGenericType original = new WithRawGenericType();
+
+        // When:
+        final WithRawGenericType populated = populator.populate(new WithRawGenericType());
+
+        // Then:
+        assertThat(populated._rawList, is(not(original._rawList)));
+    }
+
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(PassThroughMutator.class);
-        final GraphPopulator.Builder builder = GraphPopulator.newBuilder();
+        final MutatorConfig.Builder builder = MutatorConfig.newBuilder();
         for (Type type : types) {
             builder.withSpecificMutator(type, mutator);
         }
-        populator = builder.build();
+        populator = GraphPopulator.newBuilder().withMutatorConfig(builder.build()).build();
         return mutator;
     }
 
@@ -301,6 +316,7 @@ public class GraphPopulatorFunctionTest {
 
     private static class WithPrivateConstructor {
         private int _int = 42;
+
         private WithPrivateConstructor() {
         }
     }
@@ -339,6 +355,13 @@ public class GraphPopulatorFunctionTest {
     private static class WithMapOfCustomType {
         public Map<String, WithString> _map = new HashMap<String, WithString>() {{
             put("this", new WithString());
+        }};
+    }
+
+    private static class WithRawGenericType {
+        public List _rawList = new ArrayList() {{
+            //noinspection unchecked
+            add("something");
         }};
     }
 }

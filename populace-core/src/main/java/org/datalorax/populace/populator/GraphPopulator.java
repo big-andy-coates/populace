@@ -1,9 +1,7 @@
 package org.datalorax.populace.populator;
 
 import org.apache.commons.lang3.Validate;
-
-import java.lang.reflect.Type;
-import java.util.Set;
+import org.datalorax.populace.populator.field.filter.FieldFilter;
 
 /**
  * Given an instance, it will populate all fields, recursively, with values.
@@ -17,6 +15,14 @@ public final class GraphPopulator {
         return new GraphPopulatorBuilder();
     }
 
+    public interface Builder {
+        Builder withFieldFilter(final FieldFilter filter);
+
+        Builder withMutatorConfig(final MutatorConfig config);
+
+        GraphPopulator build();
+    }
+
     public <T> T populate(final T instance) {
         //noinspection unchecked
         final Class<T> type = (Class<T>) instance.getClass();
@@ -27,18 +33,8 @@ public final class GraphPopulator {
         return _populate(type, null);
     }
 
-    public interface Builder {
-        Builder withFieldExclusions(Set<String> exclusions);    // Todo(ac): switch to FieldFilter interface
-
-        Builder withSpecificMutator(Type type, Mutator mutator);
-
-        Builder withBaseMutator(Class<?> baseClass, Mutator mutator);
-
-        Builder withDefaultArrayMutator(Mutator mutator);
-
-        Builder withDefaultMutator(Mutator mutator);
-
-        GraphPopulator build();
+    public PopulatorConfig getConfig() {
+        return config;
     }
 
     GraphPopulator(final PopulatorConfig config) {

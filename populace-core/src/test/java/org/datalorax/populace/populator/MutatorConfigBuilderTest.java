@@ -131,7 +131,7 @@ public class MutatorConfigBuilderTest {
         final Mutator overrideSetMutator = mock(Mutator.class, "set - override");
 
         // When:
-        builder.withBaseMutator(Set.class, overrideSetMutator);
+        builder.withSubTypeMutator(Set.class, overrideSetMutator);
 
         // Then:
         final MutatorConfig mutatorConfig = builder.build();
@@ -144,7 +144,7 @@ public class MutatorConfigBuilderTest {
         final Mutator customMutator = mock(Mutator.class, "custom");
 
         // When:
-        builder.withBaseMutator(MutatorConfig.Builder.class, customMutator);
+        builder.withSubTypeMutator(MutatorConfig.Builder.class, customMutator);
 
         // Then:
         final MutatorConfig mutatorConfig = builder.build();
@@ -181,7 +181,7 @@ public class MutatorConfigBuilderTest {
 
     private void givenOtherMutatorsExist() {
         builder.withSpecificMutator(String.class, mock(Mutator.class, "string"))
-                .withBaseMutator(List.class, mock(Mutator.class, "lists"));
+                .withSubTypeMutator(List.class, mock(Mutator.class, "lists"));
     }
 
 

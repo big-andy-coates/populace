@@ -25,11 +25,11 @@ import java.util.Set;
 public class SetMutator implements Mutator {
     private static final TypeVariable<Class<Set>> SET_TYPE_VARIABLE = Set.class.getTypeParameters()[0];
 
-    private final Constructor<? extends Set> defaultSetConstructor;
+    private final Constructor<? extends Set> defaultConstructor;
 
     public SetMutator(Class<? extends Set> defaultType) {
         try {
-            this.defaultSetConstructor = defaultType.getDeclaredConstructor();
+            this.defaultConstructor = defaultType.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("No default constructor existed for type: " + defaultType);
         }
@@ -46,7 +46,28 @@ public class SetMutator implements Mutator {
         return set;
     }
 
-    public Set<?> _mutate(Type type, Set set, PopulatorConfig config) {
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final SetMutator that = (SetMutator) o;
+        return defaultConstructor.equals(that.defaultConstructor);
+    }
+
+    @Override
+    public int hashCode() {
+        return defaultConstructor.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "SetMutator{" +
+                "defaultType=" + defaultConstructor.getDeclaringClass() +
+                '}';
+    }
+
+    private Set<?> _mutate(Type type, Set set, PopulatorConfig config) {
         final Type componentType = getComponentType(type);
         final Mutator componentMutator = config.getMutatorConfig().getMutator(componentType);
 
@@ -69,7 +90,7 @@ public class SetMutator implements Mutator {
     private Set createNewSet(Type type) {
         // Todo(ac: support type being specific impl of set.
         try {
-            return defaultSetConstructor.newInstance();
+            return defaultConstructor.newInstance();
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to instantiate new empty set", e);
         }

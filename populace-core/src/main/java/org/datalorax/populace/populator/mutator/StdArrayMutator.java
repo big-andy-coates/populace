@@ -21,6 +21,21 @@ public class StdArrayMutator implements Mutator {
         return _mutate(TypeUtils.getArrayComponentType(type), currentValue, config);
     }
 
+    @Override
+    public boolean equals(final Object that) {
+        return this == that || (that != null && getClass() == that.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
+
     private Object _mutate(Type componentType, Object currentValue, PopulatorConfig config) {
         if (!(componentType instanceof Class)) {
             throw new UnsupportedOperationException(); // Todo(ac):

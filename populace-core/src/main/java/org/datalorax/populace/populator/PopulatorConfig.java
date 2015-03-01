@@ -1,26 +1,55 @@
 package org.datalorax.populace.populator;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.populator.field.filter.FieldFilter;
+
+import java.lang.reflect.Field;
 
 /**
- * Holds details of the populator's configuration
+ * Holds details of a populator's configuration
+ *
  * @author datalorax - 26/02/2015.
  */
 public class PopulatorConfig {
-    private final Set<String> fieldExclusions;
+    private final FieldFilter fieldFilter;
     private final MutatorConfig mutatorConfig;
 
-    public PopulatorConfig(Set<String> fieldExclusions, MutatorConfig mutatorConfig) {
-        this.fieldExclusions = Collections.unmodifiableSet(new HashSet<String>(fieldExclusions));
+    public PopulatorConfig(final FieldFilter fieldFilter, final MutatorConfig mutatorConfig) {
+        Validate.notNull(fieldFilter, "fieldFilter null");
+        Validate.notNull(mutatorConfig, "mutatorConfig null");
+        this.fieldFilter = fieldFilter;
         this.mutatorConfig = mutatorConfig;
     }
 
-    public boolean isExcludedField(String fieldName) {
-        return fieldExclusions.contains(fieldName);
+    public boolean isExcludedField(final Field field) {
+        return !fieldFilter.evaluate(field);
     }
+
     public MutatorConfig getMutatorConfig() {
         return mutatorConfig;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final PopulatorConfig that = (PopulatorConfig) o;
+        return fieldFilter.equals(that.fieldFilter) && mutatorConfig.equals(that.mutatorConfig);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = fieldFilter.hashCode();
+        result = 31 * result + mutatorConfig.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "PopulatorConfig{" +
+                "fieldFilter=" + fieldFilter +
+                ", mutatorConfig=" + mutatorConfig +
+                '}';
     }
 }

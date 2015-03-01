@@ -4,7 +4,9 @@ import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorConfig;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 
 /**
  * The default mutator when all else fails. This mutator implementation attempts to create an instance of the type and
@@ -23,6 +25,21 @@ public class StdMutator implements Mutator {
         }
 
         return value;
+    }
+
+    @Override
+    public boolean equals(final Object that) {
+        return this == that || (that != null && getClass() == that.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
     }
 
     private Object createInstance(final Class<?> type) {
@@ -50,14 +67,11 @@ public class StdMutator implements Mutator {
         }
     }
 
-    private boolean isExcluded(Field field, final PopulatorConfig config) {
-        // Todo(ac): consider moving this method impl into config - maybe rename to context?
-        return Modifier.isStatic(field.getModifiers()) ||
-                Modifier.isTransient(field.getModifiers()) ||
-                config.isExcludedField(field.getName());
+    private static boolean isExcluded(final Field field, final PopulatorConfig config) {
+        return config.isExcludedField(field);
     }
 
-    private Object populateInstance(Type type, Object currentValue, final PopulatorConfig config) {
+    private static Object populateInstance(final Type type, final Object currentValue, final PopulatorConfig config) {
         final Mutator mutator = config.getMutatorConfig().getMutator(type);
         return mutator.mutate(type, currentValue, config);
     }

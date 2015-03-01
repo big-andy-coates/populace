@@ -23,13 +23,13 @@ import java.util.Map;
 public class ListMutator implements Mutator {
     private static final TypeVariable<Class<List>> LIST_TYPE_VARIABLE = List.class.getTypeParameters()[0];
 
-    private final Constructor<? extends List> defaultListConstructor;
+    private final Constructor<? extends List> defaultConstructor;
 
     public ListMutator(Class<? extends List> defaultListType) {
         try {
-            this.defaultListConstructor = defaultListType.getDeclaredConstructor();
-            this.defaultListConstructor.setAccessible(true);    // Todo(ac): have setAccessible calls optional...
-            this.defaultListConstructor.newInstance();
+            this.defaultConstructor = defaultListType.getDeclaredConstructor();
+            this.defaultConstructor.setAccessible(true);    // Todo(ac): have setAccessible calls optional...
+            this.defaultConstructor.newInstance();
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("No default constructor existed for default list type: " + defaultListType);
         } catch (ReflectiveOperationException e) {
@@ -48,7 +48,28 @@ public class ListMutator implements Mutator {
         return list;
     }
 
-    public List<?> _mutate(Type type, List list, PopulatorConfig config) {
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final ListMutator that = (ListMutator) o;
+        return defaultConstructor.equals(that.defaultConstructor);
+    }
+
+    @Override
+    public int hashCode() {
+        return defaultConstructor.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "ListMutator{" +
+                "defaultType=" + defaultConstructor.getDeclaringClass() +
+                '}';
+    }
+
+    private List<?> _mutate(Type type, List list, PopulatorConfig config) {
         final Type componentType = getComponentType(type);
         final Mutator componentMutator = config.getMutatorConfig().getMutator(componentType);
 
@@ -79,11 +100,11 @@ public class ListMutator implements Mutator {
         final Class<? extends List> rawType = (Class<? extends List>) TypeUtils.getRawType(type, List.class);
 
         if (rawType.isInterface() || Modifier.isAbstract(rawType.getModifiers())) {
-            if (!rawType.isAssignableFrom(defaultListConstructor.getDeclaringClass())) {
+            if (!rawType.isAssignableFrom(defaultConstructor.getDeclaringClass())) {
                 final String classification = rawType.isInterface() ? "an interface" : "an abstract class";
                 throw new RuntimeException("Could not instantiate " + rawType.getCanonicalName() + " as it is " +
                         classification + " and not compatible with the default list type: " +
-                        defaultListConstructor.getDeclaringClass().getCanonicalName() +
+                        defaultConstructor.getDeclaringClass().getCanonicalName() +
                         ". Consider installing a custom mutator for this type or some of its super types");
             }
             return createDefaultListType();
@@ -107,7 +128,7 @@ public class ListMutator implements Mutator {
 
     private List createDefaultListType() {
         try {
-            return defaultListConstructor.newInstance();
+            return defaultConstructor.newInstance();
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to instantiate default empty list", e);  // Todo(ac): Add specific exception types.
         }

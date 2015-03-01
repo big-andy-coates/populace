@@ -1,47 +1,46 @@
 package org.datalorax.populace.populator;
 
-import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.Set;
+import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.populator.field.filter.ExcludeStaticFieldsFilter;
+import org.datalorax.populace.populator.field.filter.ExcludeTransientFieldsFilter;
+import org.datalorax.populace.populator.field.filter.FieldFilter;
+import org.datalorax.populace.populator.field.filter.FieldFilterUtils;
 
 /**
-*  Builder implementation for the GraphPopulator
+ * Builder implementation for the GraphPopulator
+ *
  * @author datalorax - 28/02/2015.
-*/
+ */
 class GraphPopulatorBuilder implements GraphPopulator.Builder {
-    private final MutatorConfigBuilder mutatorConfig = new MutatorConfigBuilder();
-    private final Set<String> fieldExclusions = new HashSet<String>();
+    private static final FieldFilter DEFAULT_FIELD_FILTER = FieldFilterUtils.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
 
-    public GraphPopulator.Builder withFieldExclusions(Set<String> exclusions) {
-        fieldExclusions.addAll(exclusions);
+    private MutatorConfig mutatorConfig;
+    private FieldFilter fieldFilter = DEFAULT_FIELD_FILTER;
+
+    @Override
+    public GraphPopulatorBuilder withFieldFilter(final FieldFilter filter) {
+        Validate.notNull(filter, "filter null");
+        fieldFilter = filter;
         return this;
     }
 
-    public GraphPopulator.Builder withSpecificMutator(Type type, Mutator mutator) {
-        mutatorConfig.withSpecificMutator(type, mutator);
+    @Override
+    public GraphPopulatorBuilder withMutatorConfig(final MutatorConfig config) {
+        Validate.notNull(config, "config null");
+        mutatorConfig = config;
         return this;
     }
 
-    public GraphPopulator.Builder withBaseMutator(Class<?> baseClass, Mutator mutator) {
-        mutatorConfig.withBaseMutator(baseClass, mutator);
-        return this;
-    }
-
-    public GraphPopulatorBuilder withDefaultArrayMutator(Mutator mutator) {
-        mutatorConfig.withDefaultArrayMutator(mutator);
-        return this;
-    }
-
-    public GraphPopulator.Builder withDefaultMutator(Mutator mutator) {
-        mutatorConfig.withDefaultMutator(mutator);
-        return this;
-    }
-
-    PopulatorConfig buildPopulatorConfig() {
-        return new PopulatorConfig(fieldExclusions, mutatorConfig.build());
-    }
-
+    @Override
     public GraphPopulator build() {
         return new GraphPopulator(buildPopulatorConfig());
+    }
+
+    private MutatorConfig buildMutatorConfig() {
+        return mutatorConfig == null ? new MutatorConfigBuilder().build() : mutatorConfig;
+    }
+
+    private PopulatorConfig buildPopulatorConfig() {
+        return new PopulatorConfig(fieldFilter, buildMutatorConfig());
     }
 }

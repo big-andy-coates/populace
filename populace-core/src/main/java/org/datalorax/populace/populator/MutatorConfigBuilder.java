@@ -42,7 +42,7 @@ class MutatorConfigBuilder implements MutatorConfig.Builder {
     private final Map<Class<?>, Mutator> baseMutators = new HashMap<Class<?>, Mutator>(DEFAULT_BASE_MUTATORS);
 
     @Override
-    public MutatorConfigBuilder withSpecificMutator(Type type, Mutator mutator) {
+    public MutatorConfigBuilder withSpecificMutator(final Type type, final Mutator mutator) {
         Validate.notNull(type, "type null");
         Validate.notNull(mutator, "mutator null");
         specificMutators.put(type, mutator);
@@ -50,7 +50,7 @@ class MutatorConfigBuilder implements MutatorConfig.Builder {
     }
 
     @Override
-    public MutatorConfigBuilder withBaseMutator(Class<?> baseClass, Mutator mutator) {
+    public MutatorConfigBuilder withSubTypeMutator(final Class<?> baseClass, final Mutator mutator) {
         Validate.notNull(baseClass, "baseClass null");
         Validate.notNull(mutator, "mutator null");
         baseMutators.put(baseClass, mutator);
@@ -58,14 +58,14 @@ class MutatorConfigBuilder implements MutatorConfig.Builder {
     }
 
     @Override
-    public MutatorConfigBuilder withDefaultArrayMutator(Mutator mutator) {
+    public MutatorConfigBuilder withDefaultArrayMutator(final Mutator mutator) {
         Validate.notNull(mutator, "mutator null");
         defaultArrayMutator = mutator;
         return this;
     }
 
     @Override
-    public MutatorConfigBuilder withDefaultMutator(Mutator mutator) {
+    public MutatorConfigBuilder withDefaultMutator(final Mutator mutator) {
         Validate.notNull(mutator, "mutator null");
         defaultMutator = mutator;
         return this;

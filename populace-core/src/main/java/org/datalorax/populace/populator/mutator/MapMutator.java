@@ -18,11 +18,11 @@ import java.util.Set;
 public class MapMutator implements Mutator {
     private static final TypeVariable<Class<Map>>[] MAP_TYPE_VARIABLES = Map.class.getTypeParameters();
 
-    private final Constructor<? extends Map> defaultMapConstructor;
+    private final Constructor<? extends Map> defaultConstructor;
 
     public MapMutator(Class<? extends Map> defaultMapType) {
         try {
-            this.defaultMapConstructor = defaultMapType.getDeclaredConstructor();
+            this.defaultConstructor = defaultMapType.getDeclaredConstructor();
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("No default constructor existed for type: " + defaultMapType);
         }
@@ -39,7 +39,28 @@ public class MapMutator implements Mutator {
         return map;
     }
 
-    public Map<?, ?> _mutate(Type type, Map map, PopulatorConfig config) {
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final MapMutator that = (MapMutator) o;
+        return defaultConstructor.equals(that.defaultConstructor);
+    }
+
+    @Override
+    public int hashCode() {
+        return defaultConstructor.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "MapMutator{" +
+                "defaultType=" + defaultConstructor.getDeclaringClass() +
+                '}';
+    }
+
+    private Map<?, ?> _mutate(Type type, Map map, PopulatorConfig config) {
         final Type valueType = getValueType(type);
         final Mutator valueMutator = config.getMutatorConfig().getMutator(valueType);
 
@@ -77,7 +98,7 @@ public class MapMutator implements Mutator {
     private Map createNewMap(Type type) {
         // Todo(ac: support type being specific impl - list has example - extract and reuse.
         try {
-            return defaultMapConstructor.newInstance();
+            return defaultConstructor.newInstance();
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to instantiate new empty map", e);
         }

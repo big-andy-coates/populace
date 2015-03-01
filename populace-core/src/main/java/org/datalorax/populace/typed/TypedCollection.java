@@ -14,23 +14,23 @@ import java.util.Map;
  * <ul>
  * <li>
  * Specific - meaning they match the exact registered {@link java.lang.reflect.Type type}. This includes specific array types and
- * parameterised types. Use {@link TypedCollection.Builder#withSpecificType(java.lang.reflect.Type, V)} to register.
+ * parameterised types. Use {@link TypedCollection.Builder#withSpecificType} to register.
  * </li>
  * <li>
  * Super - meaning they match any sub-type of the registered raw {@link java.lang.Class class}
- * Use {@link TypedCollection.Builder#withSuperType(Class, V)} to register.
+ * Use {@link TypedCollection.Builder#withSuperType} to register.
  * </li>
  * <li>
  * Default - meaning they will be returned if no other key matches the requested {@link java.lang.reflect.Type type}
- * and the requested {@link java.lang.reflect.Type type} is not an array type. Use {@link TypedCollection.Builder#withDefault(V)}
+ * and the requested {@link java.lang.reflect.Type type} is not an array type. Use {@link TypedCollection.Builder#withDefault}
  * to register.
  * </li>
  * <li>
  * Default Array - meaning they will be used if no other key matches the requested {@link java.lang.reflect.Type type}
- * and the requested type is an array type.  * Use {@link TypedCollection.Builder#withDefaultArray(V)} to register.
+ * and the requested type is an array type.  * Use {@link TypedCollection.Builder#withDefaultArray} to register.
  * </li>
  * </ul>
- * <p/>
+ * <p>
  * Values can be retrieved via {@link org.datalorax.populace.typed.TypedCollection#get(java.lang.reflect.Type)}}
  *
  * @author datalorax - 28/02/2015.

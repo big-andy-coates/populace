@@ -31,4 +31,6 @@ subprojects {
             displayGranularity = 3
         }
     }
+
+    // Todo(aC): Add release task to build jar, javadoc and upload to GitHub. Util then, look to add javadoc to GitHub Pages
 }

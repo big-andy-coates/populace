@@ -12,10 +12,10 @@ import java.util.Set;
 
 /**
  * Mutator for {@link java.util.Set Sets}.
- * <p/>
+ * <p>
  * Null {@link java.util.Set} fields are populated using an instance of the <code>defaultType</code> parameter passed to
  * the {@link SetMutator#SetMutator(Class) constructor}
- * <p/>
+ * <p>
  * None null {@link java.util.Set} fields are modified by adding an additional instance to the set of the required type.
  * This is done as mutating entries of a Set can invalidate the set and lead to
  * undefined behaviour.

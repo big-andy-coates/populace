@@ -13,9 +13,9 @@ import java.util.Map;
 
 /**
  * Mutator for {@link java.util.List Lists}.
- * <p/>
+ * <p>
  * Null {@link java.util.List} fields are populated using an instance of the <code>defaultType</code> parameter passed to the {@link ListMutator#ListMutator(Class) constructor}
- * <p/>
+ * <p>
  * None null {@link java.util.List} fields are modified by mutating each entry in the list. If the list is empty then a single instance of the correct type is added.
  *
  * @author datalorax - 27/02/2015.

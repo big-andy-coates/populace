@@ -1,7 +1,15 @@
 package org.datalorax.populace.populator;
 
 import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.populator.field.filter.FieldFilter;
+import org.datalorax.populace.field.filter.FieldFilter;
+import org.datalorax.populace.field.visitor.FieldVisitor;
+import org.datalorax.populace.field.visitor.FieldVisitorUtils;
+import org.datalorax.populace.field.visitor.SetAccessibleFieldVisitor;
+import org.datalorax.populace.graph.GraphWalker;
+import org.datalorax.populace.typed.TypedCollection;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 
 /**
  * Given an instance, it will populate all fields, recursively, with values.
@@ -9,7 +17,8 @@ import org.datalorax.populace.populator.field.filter.FieldFilter;
  * @author datalorax - 25/02/2015.
  */
 public final class GraphPopulator {
-    private final PopulatorConfig config;
+    private final GraphWalker walker;
+    private final PopulatorContext config;
 
     public static Builder newBuilder() {
         return new GraphPopulatorBuilder();
@@ -18,33 +27,49 @@ public final class GraphPopulator {
     public interface Builder {
         Builder withFieldFilter(final FieldFilter filter);
 
-        Builder withMutatorConfig(final MutatorConfig config);
+        Builder withMutators(final TypedCollection<Mutator> mutators);
 
         GraphPopulator build();
     }
 
+    // Todo(ac): needs a TypeReference<T> parameter...
     public <T> T populate(final T instance) {
-        //noinspection unchecked
-        final Class<T> type = (Class<T>) instance.getClass();
-        return _populate(type, instance);
+        walker.walk(instance, FieldVisitorUtils.chain(SetAccessibleFieldVisitor.INSTANCE, new Visitor()));
+        return instance;
     }
 
     public <T> T populate(final Class<T> type) {
-        return _populate(type, null);
+        final Mutator mutator = config.getMutator(type); //  Todo(ac): this should not be mutator, but a factory of some sort.
+        //noinspection unchecked
+        final T instance = (T) mutator.mutate(type, null, config);
+        return populate(instance);
     }
 
-    public PopulatorConfig getConfig() {
+    public PopulatorContext getConfig() {
         return config;
     }
 
-    GraphPopulator(final PopulatorConfig config) {
+    GraphPopulator(final GraphWalker walker, final PopulatorContext config) {
+        Validate.notNull(walker, "walker null");
         Validate.notNull(config, "config null");
         this.config = config;
+        this.walker = walker;
     }
 
-    private <T> T _populate(final Class<T> type, final T instance) {
-        final Mutator mutator = config.getMutatorConfig().getMutator(type);
-        //noinspection unchecked
-        return (T) mutator.mutate(type, instance, config);
+    private class Visitor implements FieldVisitor {
+        @Override
+        public void visit(final Field field, final Object instance) {
+            try {
+                final Type type = field.getGenericType();
+                final Object currentValue = field.get(instance);
+                final Mutator mutator = config.getMutator(type);
+                final Object mutated = mutator.mutate(type, currentValue, config);
+                if (mutated != currentValue) {
+                    field.set(instance, mutated);
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);  // todo(ac): throw specific
+            }
+        }
     }
 }

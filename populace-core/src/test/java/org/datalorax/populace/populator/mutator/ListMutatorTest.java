@@ -2,13 +2,15 @@ package org.datalorax.populace.populator.mutator;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.MutatorConfig;
-import org.datalorax.populace.populator.PopulatorConfig;
+import org.datalorax.populace.populator.PopulatorContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Stack;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -20,15 +22,11 @@ import static org.mockito.Mockito.when;
  */
 public class ListMutatorTest {
     private Mutator mutator;
-    private PopulatorConfig config;
-    private MutatorConfig mutators;
+    private PopulatorContext config;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        config = mock(PopulatorConfig.class);
-        mutators = mock(MutatorConfig.class);
-
-        when(config.getMutatorConfig()).thenReturn(mutators);
+        config = mock(PopulatorContext.class);
 
         mutator = new ListMutator(ArrayList.class);
     }
@@ -135,7 +133,7 @@ public class ListMutatorTest {
     }
 
     private void givenStringMutatorRegistered() {
-        when(mutators.getMutator(String.class)).thenReturn(new StringMutator());
+        when(config.getMutator(String.class)).thenReturn(new StringMutator());
     }
 
     private abstract static class ListTypeWithNoDefaultConstructor implements List {

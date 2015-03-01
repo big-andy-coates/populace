@@ -1,7 +1,7 @@
 package org.datalorax.populace.populator.mutator;
 
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.PopulatorConfig;
+import org.datalorax.populace.populator.PopulatorContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -16,11 +16,11 @@ import static org.mockito.Mockito.mock;
  */
 public class DateMutatorTest {
     private Mutator mutator;
-    private PopulatorConfig config;
+    private PopulatorContext config;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        config = mock(PopulatorConfig.class);
+        config = mock(PopulatorContext.class);
         mutator = new DateMutator();
     }
 

@@ -1,7 +1,7 @@
 package org.datalorax.populace.populator.mutator;
 
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.PopulatorConfig;
+import org.datalorax.populace.populator.PopulatorContext;
 
 import java.lang.reflect.Type;
 
@@ -10,8 +10,10 @@ import java.lang.reflect.Type;
  * @author datalorax - 27/02/2015.
  */
 public class PrimitiveMutator implements Mutator {
+    public static final Mutator INSTANCE = new PrimitiveMutator();
+
     @Override
-    public Object mutate(Type type, Object currentValue, PopulatorConfig config) {
+    public Object mutate(Type type, Object currentValue, PopulatorContext config) {
         if (type.equals(boolean.class) || type.equals(Boolean.class)) {
             return currentValue == null || !((Boolean) currentValue);
         }

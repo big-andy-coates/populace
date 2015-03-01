@@ -1,7 +1,7 @@
 package org.datalorax.populace.populator.mutator;
 
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.PopulatorConfig;
+import org.datalorax.populace.populator.PopulatorContext;
 
 import java.lang.reflect.Type;
 
@@ -11,8 +11,10 @@ import java.lang.reflect.Type;
  * @author datalorax - 27/02/2015.
  */
 public class PassThroughMutator implements Mutator {
+    public static final Mutator INSTANCE = new PassThroughMutator();
+
     @Override
-    public Object mutate(Type type, Object currentValue, PopulatorConfig config) {
+    public Object mutate(Type type, Object currentValue, PopulatorContext config) {
         return currentValue;
     }
 

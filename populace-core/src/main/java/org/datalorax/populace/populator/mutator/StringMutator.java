@@ -1,7 +1,7 @@
 package org.datalorax.populace.populator.mutator;
 
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.PopulatorConfig;
+import org.datalorax.populace.populator.PopulatorContext;
 
 import java.lang.reflect.Type;
 
@@ -10,13 +10,15 @@ import java.lang.reflect.Type;
  * @author datalorax - 27/02/2015.
  */
 public class StringMutator implements Mutator {
+    public static final Mutator INSTANCE = new StringMutator();
+
     @Override
-    public Object mutate(Type type, Object currentValue, PopulatorConfig config) {
-        if (type.equals(String.class)) {
-            return currentValue == null ? "dead parrot" : currentValue + " - dead parrot";
+    public Object mutate(Type type, Object currentValue, PopulatorContext config) {
+        if (!type.equals(String.class)) {
+            throw new IllegalArgumentException("Unsupported type: " + type);
         }
 
-        throw new IllegalArgumentException("Unsupported type: " + type);
+        return currentValue == null ? "dead parrot" : currentValue + " - dead parrot";
     }
 
     @Override

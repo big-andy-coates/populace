@@ -1,7 +1,7 @@
 package org.datalorax.populace.populator.mutator;
 
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.PopulatorConfig;
+import org.datalorax.populace.populator.PopulatorContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -12,10 +12,7 @@ import java.util.List;
 
 import static org.datalorax.populace.populator.mutator.PrimitiveMutatorTest.TypeTrait.typeTrait;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -23,11 +20,11 @@ import static org.mockito.Mockito.mock;
  */
 public class PrimitiveMutatorTest {
     private Mutator mutator;
-    private PopulatorConfig config;
+    private PopulatorContext config;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        config = mock(PopulatorConfig.class);
+        config = mock(PopulatorContext.class);
         mutator = new PrimitiveMutator();
     }
 

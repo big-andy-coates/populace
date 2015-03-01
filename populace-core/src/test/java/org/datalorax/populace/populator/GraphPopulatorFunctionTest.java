@@ -1,7 +1,9 @@
 package org.datalorax.populace.populator;
 
-import org.datalorax.populace.populator.field.filter.FieldFilter;
+import org.datalorax.populace.field.filter.FieldFilter;
+import org.datalorax.populace.populator.mutator.MutatorUtils;
 import org.datalorax.populace.populator.mutator.PassThroughMutator;
+import org.datalorax.populace.typed.TypedCollection;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -172,15 +174,6 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldHandleNonCustomTypesAsMainArgument() throws Exception {
-        // When:
-        final String populated = populator.populate("bob");
-
-        // Then:
-        assertThat(populated, is(not("bob")));
-    }
-
-    @Test
     public void shouldHandlePopulateCallWithJustTheType() throws Exception {
         // When:
         final WithNestedObject populated = populator.populate(WithNestedObject.class);
@@ -235,7 +228,7 @@ public class GraphPopulatorFunctionTest {
         populator.populate(new WithPrimitives());
 
         // Then:
-        verify(mutator).mutate(eq(int.class), eq(2), isA(PopulatorConfig.class));
+        verify(mutator).mutate(eq(int.class), eq(2), isA(PopulatorContext.class));
     }
 
     @Test
@@ -259,7 +252,7 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void should() throws Exception {
+    public void shouldWorkWithRawGenericTypes() throws Exception {
         // Given:
         final WithRawGenericType original = new WithRawGenericType();
 
@@ -270,13 +263,15 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._rawList, is(not(original._rawList)));
     }
 
+    // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
+
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(PassThroughMutator.class);
-        final MutatorConfig.Builder builder = MutatorConfig.newBuilder();
+        final TypedCollection.Builder<Mutator> builder = MutatorUtils.defaultMutators();
         for (Type type : types) {
-            builder.withSpecificMutator(type, mutator);
+            builder.withSpecificType(type, mutator);
         }
-        populator = GraphPopulator.newBuilder().withMutatorConfig(builder.build()).build();
+        populator = GraphPopulator.newBuilder().withMutators(builder.build()).build();
         return mutator;
     }
 

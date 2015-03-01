@@ -2,7 +2,7 @@ package org.datalorax.populace.populator.mutator;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.PopulatorConfig;
+import org.datalorax.populace.populator.PopulatorContext;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -29,7 +29,7 @@ public class MapMutator implements Mutator {
     }
 
     @Override
-    public Map<?, ?> mutate(Type type, Object currentValue, PopulatorConfig config) {
+    public Map<?, ?> mutate(Type type, Object currentValue, PopulatorContext config) {
         if (!TypeUtils.isAssignable(type, Map.class)) {
             throw new IllegalArgumentException("Unsupported type: " + type);
         }
@@ -60,9 +60,9 @@ public class MapMutator implements Mutator {
                 '}';
     }
 
-    private Map<?, ?> _mutate(Type type, Map map, PopulatorConfig config) {
+    private Map<?, ?> _mutate(Type type, Map map, PopulatorContext config) {
         final Type valueType = getValueType(type);
-        final Mutator valueMutator = config.getMutatorConfig().getMutator(valueType);
+        final Mutator valueMutator = config.getMutator(valueType);
 
         if (map.isEmpty()) {
             //noinspection unchecked
@@ -89,9 +89,9 @@ public class MapMutator implements Mutator {
         return typeArguments.get(MAP_TYPE_VARIABLES[1]);
     }
 
-    private Object createNewKey(Type type, PopulatorConfig config) {
+    private Object createNewKey(Type type, PopulatorContext config) {
         final Type keyType = getKeyType(type);
-        final Mutator keyMutator = config.getMutatorConfig().getMutator(keyType);
+        final Mutator keyMutator = config.getMutator(keyType);
         return keyMutator.mutate(keyType, null, config);
     }
 

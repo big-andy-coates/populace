@@ -2,7 +2,7 @@ package org.datalorax.populace.populator.mutator;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.PopulatorConfig;
+import org.datalorax.populace.populator.PopulatorContext;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -38,7 +38,7 @@ public class ListMutator implements Mutator {
     }
 
     @Override
-    public List<?> mutate(Type type, Object currentValue, PopulatorConfig config) {
+    public List<?> mutate(Type type, Object currentValue, PopulatorContext config) {
         if (!TypeUtils.isAssignable(type, List.class)) {
             throw new IllegalArgumentException("Unsupported type: " + type);
         }
@@ -69,9 +69,9 @@ public class ListMutator implements Mutator {
                 '}';
     }
 
-    private List<?> _mutate(Type type, List list, PopulatorConfig config) {
-        final Type componentType = getComponentType(type);
-        final Mutator componentMutator = config.getMutatorConfig().getMutator(componentType);
+    private List<?> _mutate(Type type, List list, PopulatorContext config) {
+        final Type componentType = getComponentType(type);  // Todo(ac) componentType is null for raw types.
+        final Mutator componentMutator = config.getMutator(componentType);
 
         if (list.isEmpty()) {
             //noinspection unchecked
@@ -81,6 +81,7 @@ public class ListMutator implements Mutator {
         final int size = list.size();
         for (int i = 0; i != size; ++i) {
             final Object original = list.get(i);
+            // Todo(ac): this is mutating down the object graph. It needs to only mutate leaf fields and leave complex fields alone.
             final Object mutated = componentMutator.mutate(componentType, original, config);
             //noinspection unchecked
             list.set(i, mutated);

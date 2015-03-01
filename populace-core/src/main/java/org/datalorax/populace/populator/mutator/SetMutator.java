@@ -2,7 +2,7 @@ package org.datalorax.populace.populator.mutator;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.PopulatorConfig;
+import org.datalorax.populace.populator.PopulatorContext;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -36,7 +36,7 @@ public class SetMutator implements Mutator {
     }
 
     @Override
-    public Set<?> mutate(Type type, Object currentValue, PopulatorConfig config) {
+    public Set<?> mutate(Type type, Object currentValue, PopulatorContext config) {
         if (!TypeUtils.isAssignable(type, Set.class)) {
             throw new IllegalArgumentException("Unsupported type: " + type);
         }
@@ -67,9 +67,9 @@ public class SetMutator implements Mutator {
                 '}';
     }
 
-    private Set<?> _mutate(Type type, Set set, PopulatorConfig config) {
+    private Set<?> _mutate(Type type, Set set, PopulatorContext config) {
         final Type componentType = getComponentType(type);
-        final Mutator componentMutator = config.getMutatorConfig().getMutator(componentType);
+        final Mutator componentMutator = config.getMutator(componentType);
 
         Object newItem = null;
         boolean added;

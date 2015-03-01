@@ -1,9 +1,11 @@
 package org.datalorax.populace.populator;
 
-import org.datalorax.populace.populator.field.filter.ExcludeStaticFieldsFilter;
-import org.datalorax.populace.populator.field.filter.ExcludeTransientFieldsFilter;
-import org.datalorax.populace.populator.field.filter.FieldFilter;
-import org.datalorax.populace.populator.field.filter.FieldFilterUtils;
+import org.datalorax.populace.field.filter.ExcludeStaticFieldsFilter;
+import org.datalorax.populace.field.filter.ExcludeTransientFieldsFilter;
+import org.datalorax.populace.field.filter.FieldFilter;
+import org.datalorax.populace.field.filter.FieldFilterUtils;
+import org.datalorax.populace.populator.mutator.MutatorUtils;
+import org.datalorax.populace.typed.TypedCollection;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -26,7 +28,7 @@ public class GraphPopulatorBuilderTest {
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowIfMutatorConfigIsNull() throws Exception {
-        builder.withMutatorConfig(null);
+        builder.withMutators(null);
     }
 
     @Test
@@ -35,7 +37,7 @@ public class GraphPopulatorBuilderTest {
         final GraphPopulator populator = builder.build();
 
         // Then:
-        assertThat(populator.getConfig(), is(new PopulatorConfig(defaultFieldFilter(), defaultMutatorConfig())));
+        assertThat(populator.getConfig(), is(new PopulatorContext(defaultFieldFilter(), defaultMutatorConfig())));
     }
 
     @Test
@@ -48,27 +50,28 @@ public class GraphPopulatorBuilderTest {
         final GraphPopulator populator = builder.build();
 
         // Then:
-        assertThat(populator.getConfig(), is(new PopulatorConfig(customFilter, defaultMutatorConfig())));
+        assertThat(populator.getConfig(), is(new PopulatorContext(customFilter, defaultMutatorConfig())));
     }
 
     @Test
     public void shouldCreatePopulatorWithSpecificMutatorConfig() throws Exception {
         // Given:
-        final MutatorConfig customConfig = mock(MutatorConfig.class);
-        builder.withMutatorConfig(customConfig);
+        //noinspection unchecked
+        final TypedCollection<Mutator> customConfig = mock(TypedCollection.class);
+        builder.withMutators(customConfig);
 
         // When:
         final GraphPopulator populator = builder.build();
 
         // Then:
-        assertThat(populator.getConfig(), is(new PopulatorConfig(defaultFieldFilter(), customConfig)));
+        assertThat(populator.getConfig(), is(new PopulatorContext(defaultFieldFilter(), customConfig)));
     }
 
     private static FieldFilter defaultFieldFilter() {
         return FieldFilterUtils.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
     }
 
-    private static MutatorConfig defaultMutatorConfig() {
-        return new MutatorConfigBuilder().build();
+    private TypedCollection<Mutator> defaultMutatorConfig() {
+        return MutatorUtils.defaultMutators().build();
     }
 }

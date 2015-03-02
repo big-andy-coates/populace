@@ -14,7 +14,7 @@ public class DateMutator implements Mutator {
     public static final Mutator INSTANCE = new DateMutator();
 
     @Override
-    public Object mutate(Type type, Object currentValue, PopulatorContext config) {
+    public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         if (!type.equals(Date.class)) {
             throw new IllegalArgumentException("Unsupported type: " + type);
         }

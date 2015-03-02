@@ -94,6 +94,16 @@ public class GraphWalkerFunctionalTest {
     }
 
     @Test
+    public void shouldVisitEnumsButNotInternals() throws Exception {
+        // When:
+        walker.walk(new TypeWithEnumField(), visitor);
+
+        // Then:
+        verify(visitor).visit(eq(TypeWithEnumField.class.getDeclaredField("_enum")), anyObject());
+        verifyNoMoreInteractions(visitor);
+    }
+
+    @Test
     public void shouldWalkElementsOfArray() throws Exception {
         // When:
         walker.walk(new TypeWithArrayField(), visitor);
@@ -133,7 +143,7 @@ public class GraphWalkerFunctionalTest {
     public void shouldHonourCustomInspectors() throws Exception {
         // Given:
         walker = GraphWalker.newBuilder()
-                .withCustomInspectors(InspectorUtils.defaultInspectors()
+                .withInspectors(InspectorUtils.defaultInspectors()
                         .withSpecificType(NestedType.class, TerminalInspector.INSTANCE)
                         .build())
                 .build();
@@ -201,6 +211,14 @@ public class GraphWalkerFunctionalTest {
     @SuppressWarnings("UnusedDeclaration")
     public static class TypeWithStringField {
         public String _string = "value";
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public static class TypeWithEnumField {
+        public enum SomeEnum {
+            first, second, third;
+        }
+        public SomeEnum _enum = SomeEnum.first;
     }
 
     @SuppressWarnings("UnusedDeclaration")

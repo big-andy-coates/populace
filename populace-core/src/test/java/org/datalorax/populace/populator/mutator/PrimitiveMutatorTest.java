@@ -30,7 +30,7 @@ public class PrimitiveMutatorTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldThrowOnUnsupportedType() throws Exception {
-        mutator.mutate(Date.class, null, config);
+        mutator.mutate(Date.class, null, null, config);
     }
 
     @Test(dataProvider = "primitives")
@@ -39,7 +39,7 @@ public class PrimitiveMutatorTest {
         final Object currentValue = trait.exampleValue;
 
         // When:
-        final Object mutated = mutator.mutate(trait.type, currentValue, config);
+        final Object mutated = mutator.mutate(trait.type, currentValue, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(trait.type)));
@@ -52,7 +52,7 @@ public class PrimitiveMutatorTest {
         final Object currentValue = trait.minValue;
 
         // When:
-        final Object mutated = mutator.mutate(trait.type, currentValue, config);
+        final Object mutated = mutator.mutate(trait.type, currentValue, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(trait.type)));
@@ -65,7 +65,7 @@ public class PrimitiveMutatorTest {
         final Object currentValue = trait.maxValue;
 
         // When:
-        final Object mutated = mutator.mutate(trait.type, currentValue, config);
+        final Object mutated = mutator.mutate(trait.type, currentValue, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(trait.type)));
@@ -78,7 +78,7 @@ public class PrimitiveMutatorTest {
         final Object currentValue = trait.exampleValue;
 
         // When:
-        final Object mutated = mutator.mutate(trait.type, currentValue, config);
+        final Object mutated = mutator.mutate(trait.type, currentValue, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(trait.type)));
@@ -91,7 +91,7 @@ public class PrimitiveMutatorTest {
         final Object currentValue = null;
 
         // When:
-        final Object mutated = mutator.mutate(trait.type, currentValue, config);
+        final Object mutated = mutator.mutate(trait.type, currentValue, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(trait.type)));
@@ -104,7 +104,7 @@ public class PrimitiveMutatorTest {
         final Object currentValue = trait.minValue;
 
         // When:
-        final Object mutated = mutator.mutate(trait.type, currentValue, config);
+        final Object mutated = mutator.mutate(trait.type, currentValue, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(trait.type)));
@@ -117,7 +117,7 @@ public class PrimitiveMutatorTest {
         final Object currentValue = trait.maxValue;
 
         // When:
-        final Object mutated = mutator.mutate(trait.type, currentValue, config);
+        final Object mutated = mutator.mutate(trait.type, currentValue, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(trait.type)));

@@ -33,7 +33,7 @@ public class ArrayMutatorTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldThrowOnUnsupportedType() throws Exception {
-        mutator.mutate(Date.class, null, config);
+        mutator.mutate(Date.class, null, null, config);
     }
 
     @Test
@@ -44,7 +44,7 @@ public class ArrayMutatorTest {
         final String[] original = new String[]{"dead", "parrot"};
 
         // When:
-        final Object mutated = mutator.mutate(arrayType, Arrays.copyOf(original, original.length), config);
+        final Object mutated = mutator.mutate(arrayType, Arrays.copyOf(original, original.length), null, config);
 
         // Then:
         assertThatArraySameSizeButDifferent(original, mutated);
@@ -57,7 +57,7 @@ public class ArrayMutatorTest {
         final GenericArrayType arrayType = TypeUtils.genericArrayType(String.class);
 
         // When:
-        final Object mutated = mutator.mutate(arrayType, null, config);
+        final Object mutated = mutator.mutate(arrayType, null, null, config);
 
         // Then:
         assertThat("should be array", mutated.getClass().isArray(), is(true));
@@ -73,7 +73,7 @@ public class ArrayMutatorTest {
         final String[][] original = new String[][]{new String[]{"dead", "parrot"}, new String[]{"a", "want", "a", "shrubbery"}};
 
         // When:
-        final Object mutated = mutator.mutate(original.getClass(), deepCopy(original), config);
+        final Object mutated = mutator.mutate(original.getClass(), deepCopy(original), null, config);
 
         // Then:
         assertThatArraySameSizeButDifferent(original, mutated);

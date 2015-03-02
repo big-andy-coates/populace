@@ -36,7 +36,7 @@ public class SetMutator implements Mutator {
     }
 
     @Override
-    public Set<?> mutate(Type type, Object currentValue, PopulatorContext config) {
+    public Set<?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         if (!TypeUtils.isAssignable(type, Set.class)) {
             throw new IllegalArgumentException("Unsupported type: " + type);
         }
@@ -74,7 +74,7 @@ public class SetMutator implements Mutator {
         Object newItem = null;
         boolean added;
         do {
-            newItem = componentMutator.mutate(componentType, newItem, config);
+            newItem = componentMutator.mutate(componentType, newItem, null, config);
             //noinspection unchecked
             added = set.add(newItem);
         } while (!added);

@@ -2,7 +2,7 @@ package org.datalorax.populace.graph;
 
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.graph.inspector.Inspector;
-import org.datalorax.populace.typed.TypedCollection;
+import org.datalorax.populace.typed.TypeMap;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -20,7 +20,7 @@ public class InspectorConfigTest {
     @Mock
     private FieldFilter fieldFilter;
     @Mock
-    private TypedCollection<Inspector> walkers;
+    private TypeMap<Inspector> inspectors;
     private Field field;
     private WalkerContext config;
 
@@ -30,7 +30,11 @@ public class InspectorConfigTest {
 
         field = getClass().getDeclaredField("field");
 
-        config = new WalkerContext(fieldFilter, walkers);
+        // Provide defaults:
+        when(inspectors.getDefault()).thenReturn(mock(Inspector.class, "default"));
+        when(inspectors.getArrayDefault()).thenReturn(mock(Inspector.class, "array default"));
+
+        config = new WalkerContext(fieldFilter, inspectors);
     }
 
     @Test
@@ -56,7 +60,7 @@ public class InspectorConfigTest {
         // Given:
         final Type type = getClass();
         final Inspector expected = mock(Inspector.class);
-        when(walkers.get(type)).thenReturn(expected);
+        when(inspectors.get(type)).thenReturn(expected);
 
         // Then:
         final Inspector inspector = config.getInspector(type);

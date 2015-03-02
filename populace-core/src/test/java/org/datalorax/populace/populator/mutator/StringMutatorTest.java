@@ -24,7 +24,7 @@ public class StringMutatorTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldThrowOnUnsupportedType() throws Exception {
-        mutator.mutate(Integer.class, null, config);
+        mutator.mutate(Integer.class, null, null, config);
     }
 
     @Test
@@ -33,7 +33,7 @@ public class StringMutatorTest {
         final String original = "hello";
 
         // When:
-        final String populated = (String) mutator.mutate(String.class, original, config);
+        final String populated = (String) mutator.mutate(String.class, original, null, config);
 
         // Then:
         assertThat(populated, is(not(original)));
@@ -42,7 +42,7 @@ public class StringMutatorTest {
     @Test
     public void shouldCreateNewStringIfCurrentIsNull() throws Exception {
         // When:
-        final String populated = (String) mutator.mutate(String.class, null, config);
+        final String populated = (String) mutator.mutate(String.class, null, null, config);
 
         // Then:
         assertThat(populated, is(not(nullValue())));

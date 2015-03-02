@@ -3,7 +3,7 @@ package org.datalorax.populace.populator;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.populator.mutator.MutatorUtils;
 import org.datalorax.populace.populator.mutator.PassThroughMutator;
-import org.datalorax.populace.typed.TypedCollection;
+import org.datalorax.populace.typed.TypeMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -13,7 +13,7 @@ import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -125,14 +125,27 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleMapsByDefault() throws Exception {
         // Given:
-        final WithMap original = new WithMap();
+        final TypeWithMapField original = new TypeWithMapField();
 
         // When:
-        final WithMap populated = populator.populate(new WithMap());
+        final TypeWithMapField populated = populator.populate(new TypeWithMapField());
 
         // Then:
         assertThat(populated._map, is(not(nullValue())));
         assertThat(populated._map, is(not(original._map)));
+    }
+
+    @Test
+    public void shouldHandleEnumsByDefault() throws Exception {
+        // Given:
+        final TypeWithEnumField original = new TypeWithEnumField();
+
+        // When:
+        final TypeWithEnumField populated = populator.populate(new TypeWithEnumField());
+
+        // Then:
+        assertThat(populated._enum, is(not(nullValue())));
+        assertThat(populated._enum, is(not(original._enum)));
     }
 
     @Test
@@ -228,7 +241,7 @@ public class GraphPopulatorFunctionTest {
         populator.populate(new WithPrimitives());
 
         // Then:
-        verify(mutator).mutate(eq(int.class), eq(2), isA(PopulatorContext.class));
+        verify(mutator).mutate(eq(int.class), eq(2), anyObject(), isA(PopulatorContext.class));
     }
 
     @Test
@@ -267,7 +280,7 @@ public class GraphPopulatorFunctionTest {
 
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(PassThroughMutator.class);
-        final TypedCollection.Builder<Mutator> builder = MutatorUtils.defaultMutators();
+        final TypeMap.Builder<Mutator> builder = MutatorUtils.defaultMutators();
         for (Type type : types) {
             builder.withSpecificType(type, mutator);
         }
@@ -341,10 +354,17 @@ public class GraphPopulatorFunctionTest {
         }};
     }
 
-    private static class WithMap {
+    private static class TypeWithMapField {
         public Map<String, Integer> _map = new HashMap<String, Integer>() {{
             put("this", 42);
         }};
+    }
+
+    private static class TypeWithEnumField {
+        public enum SomeEnum {
+            forkHandles, fourCandles
+        }
+        public SomeEnum _enum;
     }
 
     private static class WithMapOfCustomType {

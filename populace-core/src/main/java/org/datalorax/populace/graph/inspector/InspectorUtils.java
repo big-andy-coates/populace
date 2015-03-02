@@ -1,6 +1,6 @@
 package org.datalorax.populace.graph.inspector;
 
-import org.datalorax.populace.typed.TypedCollection;
+import org.datalorax.populace.typed.TypeMap;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -14,11 +14,11 @@ public final class InspectorUtils {
     private static final Map<Type, Inspector> DEFAULT_SPECIFIC_WALKERS;
     private static final Map<Class<?>, Inspector> DEFAULT_SUPER_WALKERS;
 
-    public static TypedCollection.Builder<Inspector> defaultInspectors() {
-        return setDefaultInspectors(TypedCollection.<Inspector>newBuilder());
+    public static TypeMap.Builder<Inspector> defaultInspectors() {
+        return setDefaultInspectors(TypeMap.<Inspector>newBuilder());
     }
 
-    public static TypedCollection.Builder<Inspector> setDefaultInspectors(TypedCollection.Builder<Inspector> builder) {
+    public static TypeMap.Builder<Inspector> setDefaultInspectors(TypeMap.Builder<Inspector> builder) {
         builder.withSpecificTypes(DEFAULT_SPECIFIC_WALKERS)
                 .withSuperTypes(DEFAULT_SUPER_WALKERS)
                 .withDefault(ObjectInspector.INSTANCE)

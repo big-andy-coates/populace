@@ -33,7 +33,7 @@ public class ListMutatorTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldThrowOnUnsupportedType() throws Exception {
-        mutator.mutate(Date.class, null, config);
+        mutator.mutate(Date.class, null, null, config);
     }
 
     @Test(expectedExceptions = NullPointerException.class)
@@ -58,7 +58,7 @@ public class ListMutatorTest {
         final Type listOfStringsType = TypeUtils.parameterize(List.class, String.class);
 
         // When:
-        final Object mutated = mutator.mutate(listOfStringsType, null, config);
+        final Object mutated = mutator.mutate(listOfStringsType, null, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(ArrayList.class)));
@@ -75,7 +75,7 @@ public class ListMutatorTest {
         final Type stackOfStringsType = TypeUtils.parameterize(Stack.class, String.class);
 
         // When:
-        final Object mutated = mutator.mutate(stackOfStringsType, null, config);
+        final Object mutated = mutator.mutate(stackOfStringsType, null, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(Stack.class)));
@@ -84,13 +84,13 @@ public class ListMutatorTest {
     @Test(expectedExceptions = RuntimeException.class)
     public void shouldThrowOnNullListWithInterfaceTypeNotCompatibleWithDefaultType() throws Exception {
         // When:
-        mutator.mutate(ListSubType.class, null, config);
+        mutator.mutate(ListSubType.class, null, null, config);
     }
 
     @Test(expectedExceptions = RuntimeException.class)
     public void shouldThrowOnNullListWithAbstractTypeNotSuperOfDefaultType() throws Exception {
         // When:
-        mutator.mutate(ListTypeThatCantBeInstantiated.class, null, config);
+        mutator.mutate(ListTypeThatCantBeInstantiated.class, null, null, config);
     }
 
     @Test
@@ -100,7 +100,7 @@ public class ListMutatorTest {
         final Type listOfStringsType = TypeUtils.parameterize(List.class, String.class);
 
         // When:
-        final Object mutated = mutator.mutate(listOfStringsType, new ArrayList<String>(), config);
+        final Object mutated = mutator.mutate(listOfStringsType, new ArrayList<String>(), null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(ArrayList.class)));
@@ -120,7 +120,7 @@ public class ListMutatorTest {
         }};
 
         // When:
-        final Object mutated = mutator.mutate(listOfStringsType, currentValue, config);
+        final Object mutated = mutator.mutate(listOfStringsType, currentValue, null, config);
 
         // Then:
         assertThat(mutated, is(instanceOf(ArrayList.class)));

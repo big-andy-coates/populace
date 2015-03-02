@@ -17,7 +17,7 @@ public class ArrayMutator implements Mutator {
     public static final Mutator INSTANCE = new ArrayMutator();
 
     @Override
-    public Object mutate(Type type, Object currentValue, PopulatorContext config) {
+    public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         Validate.isTrue(TypeUtils.isArrayType(type), "Not array type: " + type);
 
         return _mutate(TypeUtils.getArrayComponentType(type), currentValue, config);
@@ -57,7 +57,7 @@ public class ArrayMutator implements Mutator {
             // Todo(ac): or maybe, walker could pass through flag indicating if the field type 'isCollection'...
             final Object mutated = isArray ?
                     _mutate(arrayComponentType, object, config) :
-                    componentMutator.mutate(componentType, object, config);
+                    componentMutator.mutate(componentType, object, null, config);
             Array.set(array, i, mutated);
         }
         return array;

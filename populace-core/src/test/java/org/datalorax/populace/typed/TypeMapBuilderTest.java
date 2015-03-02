@@ -14,12 +14,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-public class TypedCollectionBuilderTest {
-    private TypedCollectionBuilder<String> builder;
+public class TypeMapBuilderTest {
+    private TypedMapBuilder<String> builder;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        builder = new TypedCollectionBuilder<String>();
+        builder = new TypedMapBuilder<String>();
     }
 
     @Test
@@ -31,7 +31,7 @@ public class TypedCollectionBuilderTest {
         builder.withSpecificType(int.class, specific);
 
         // Then:
-        final TypedCollection<String> collection = builder.build();
+        final TypeMap<String> collection = builder.build();
         assertThat(collection.get(int.class), is(specific));
     }
 
@@ -46,7 +46,7 @@ public class TypedCollectionBuilderTest {
         builder.withSpecificType(int.class, override);
 
         // Then:
-        final TypedCollection<String> collection = builder.build();
+        final TypeMap<String> collection = builder.build();
         assertThat(collection.get(int.class), is(override));
     }
 
@@ -59,7 +59,7 @@ public class TypedCollectionBuilderTest {
         builder.withSuperType(Map.class, superType);
 
         // Then:
-        final TypedCollection<String> collection = builder.build();
+        final TypeMap<String> collection = builder.build();
         assertThat(collection.get(HashMap.class), is(superType));
     }
 
@@ -74,31 +74,31 @@ public class TypedCollectionBuilderTest {
         builder.withSuperType(Set.class, override);
 
         // Then:
-        final TypedCollection<String> collection = builder.build();
+        final TypeMap<String> collection = builder.build();
         assertThat(collection.get(HashSet.class), is(override));
     }
 
     @Test
     public void shouldInstallDefault() throws Exception {
         // Given:
-        final Type unregisteredType = TypedCollectionBuilder.class;
+        final Type unregisteredType = TypedMapBuilder.class;
         final String defaultV = "default";
 
         // When:
         builder.withDefault(defaultV);
 
         // Then:
-        final TypedCollection<String> collection = builder.build();
+        final TypeMap<String> collection = builder.build();
         assertThat(collection.get(unregisteredType), is(defaultV));
     }
 
     @Test
     public void shouldReturnNullIfNoMatchFoundAndNoDefault() throws Exception {
         // Given:
-        final Type unregisteredType = TypedCollectionBuilder.class;
+        final Type unregisteredType = TypedMapBuilder.class;
 
         // Then:
-        final TypedCollection<String> collection = builder.build();
+        final TypeMap<String> collection = builder.build();
         assertThat(collection.get(unregisteredType), is(nullValue()));
     }
 
@@ -112,7 +112,7 @@ public class TypedCollectionBuilderTest {
         builder.withDefaultArray(defaultA);
 
         // Then:
-        final TypedCollection<String> collection = builder.build();
+        final TypeMap<String> collection = builder.build();
         assertThat(collection.get(arrayType), is(defaultA));
     }
 
@@ -122,7 +122,7 @@ public class TypedCollectionBuilderTest {
         final Type arrayType = TypeUtils.genericArrayType(int.class);
 
         // Then:
-        final TypedCollection<String> collection = builder.build();
+        final TypeMap<String> collection = builder.build();
         assertThat(collection.get(arrayType), is(nullValue()));
     }
 }

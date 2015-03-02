@@ -14,7 +14,7 @@ public class PassThroughMutator implements Mutator {
     public static final Mutator INSTANCE = new PassThroughMutator();
 
     @Override
-    public Object mutate(Type type, Object currentValue, PopulatorContext config) {
+    public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         return currentValue;
     }
 

@@ -29,7 +29,7 @@ public class MapMutator implements Mutator {
     }
 
     @Override
-    public Map<?, ?> mutate(Type type, Object currentValue, PopulatorContext config) {
+    public Map<?, ?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         if (!TypeUtils.isAssignable(type, Map.class)) {
             throw new IllegalArgumentException("Unsupported type: " + type);
         }
@@ -72,7 +72,7 @@ public class MapMutator implements Mutator {
         //noinspection unchecked
         for (Map.Entry entry : (Set<Map.Entry>) map.entrySet()) {
             final Object original = entry.getValue();
-            final Object mutated = valueMutator.mutate(valueType, original, config);
+            final Object mutated = valueMutator.mutate(valueType, original, null, config);
             //noinspection unchecked
             entry.setValue(mutated);
         }
@@ -92,7 +92,7 @@ public class MapMutator implements Mutator {
     private Object createNewKey(Type type, PopulatorContext config) {
         final Type keyType = getKeyType(type);
         final Mutator keyMutator = config.getMutator(keyType);
-        return keyMutator.mutate(keyType, null, config);
+        return keyMutator.mutate(keyType, null, null, config);
     }
 
     private Map createNewMap(Type type) {

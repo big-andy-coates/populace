@@ -3,7 +3,7 @@ package org.datalorax.populace.graph;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.field.visitor.FieldVisitor;
 import org.datalorax.populace.graph.inspector.Inspector;
-import org.datalorax.populace.typed.TypedCollection;
+import org.datalorax.populace.typed.TypeMap;
 
 import java.lang.reflect.Field;
 
@@ -22,7 +22,7 @@ public class GraphWalker {
     public interface Builder {
         Builder withFieldFilter(final FieldFilter filter);
 
-        Builder withCustomInspectors(final TypedCollection<Inspector> walkers);
+        Builder withInspectors(final TypeMap<Inspector> walkers);
 
         GraphWalker build();
     }
@@ -46,6 +46,27 @@ public class GraphWalker {
         for (Object child : inspector.getChildren(instance)) {
             walk(child, visitor);
         }
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final GraphWalker that = (GraphWalker) o;
+        return config.equals(that.config);
+    }
+
+    @Override
+    public int hashCode() {
+        return config.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "GraphWalker{" +
+                "config=" + config +
+                '}';
     }
 
     GraphWalker(final WalkerContext config) {

@@ -33,4 +33,6 @@ subprojects {
     }
 
     // Todo(aC): Add release task to build jar, javadoc and upload to GitHub. Util then, look to add javadoc to GitHub Pages
+    // Todo(ac): use http://teamcity.codebetter.com/registerUser.html as build server.
+    // Todo(ac): Integrate with Github using: http://blog.jetbrains.com/teamcity/2013/02/automatically-building-pull-requests-from-github-with-teamcity/
 }

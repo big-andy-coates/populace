@@ -13,7 +13,7 @@ public class StringMutator implements Mutator {
     public static final Mutator INSTANCE = new StringMutator();
 
     @Override
-    public Object mutate(Type type, Object currentValue, PopulatorContext config) {
+    public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         if (!type.equals(String.class)) {
             throw new IllegalArgumentException("Unsupported type: " + type);
         }

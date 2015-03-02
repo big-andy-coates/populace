@@ -13,7 +13,7 @@ public class PrimitiveMutator implements Mutator {
     public static final Mutator INSTANCE = new PrimitiveMutator();
 
     @Override
-    public Object mutate(Type type, Object currentValue, PopulatorContext config) {
+    public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         if (type.equals(boolean.class) || type.equals(Boolean.class)) {
             return currentValue == null || !((Boolean) currentValue);
         }

@@ -20,6 +20,7 @@ import java.util.Map;
  *
  * @author datalorax - 27/02/2015.
  */
+// Todo(ac): split into 'emsure' and 'change' mutators
 public class ListMutator implements Mutator {
     private static final TypeVariable<Class<List>> LIST_TYPE_VARIABLE = List.class.getTypeParameters()[0];
 
@@ -38,7 +39,7 @@ public class ListMutator implements Mutator {
     }
 
     @Override
-    public List<?> mutate(Type type, Object currentValue, PopulatorContext config) {
+    public List<?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         if (!TypeUtils.isAssignable(type, List.class)) {
             throw new IllegalArgumentException("Unsupported type: " + type);
         }
@@ -82,7 +83,7 @@ public class ListMutator implements Mutator {
         for (int i = 0; i != size; ++i) {
             final Object original = list.get(i);
             // Todo(ac): this is mutating down the object graph. It needs to only mutate leaf fields and leave complex fields alone.
-            final Object mutated = componentMutator.mutate(componentType, original, config);
+            final Object mutated = componentMutator.mutate(componentType, original, null, config);
             //noinspection unchecked
             list.set(i, mutated);
         }

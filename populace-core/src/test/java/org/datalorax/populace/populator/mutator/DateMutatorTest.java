@@ -26,7 +26,7 @@ public class DateMutatorTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldThrowOnUnsupportedType() throws Exception {
-        mutator.mutate(String.class, null, config);
+        mutator.mutate(String.class, null, null, config);
     }
 
     @Test
@@ -35,7 +35,7 @@ public class DateMutatorTest {
         final Date original = new Date();
 
         // When:
-        final Date populated = (Date) mutator.mutate(Date.class, new Date(original.getTime()), config);
+        final Date populated = (Date) mutator.mutate(Date.class, new Date(original.getTime()), null, config);
 
         // Then:
         assertThat(populated, is(not(original)));
@@ -44,7 +44,7 @@ public class DateMutatorTest {
     @Test
     public void shouldCreateNewDateIfCurrentIsNull() throws Exception {
         // When:
-        final Date populated = (Date) mutator.mutate(Date.class, null, config);
+        final Date populated = (Date) mutator.mutate(Date.class, null, null, config);
 
         // Then:
         assertThat(populated, is(not(nullValue())));

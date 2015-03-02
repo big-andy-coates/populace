@@ -1,8 +1,10 @@
 package org.datalorax.populace.populator.mutator;
 
 import org.datalorax.populace.populator.Mutator;
+import org.datalorax.populace.populator.mutator.change.ChangeEnumMutator;
+import org.datalorax.populace.populator.mutator.commbination.ChainMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureMutator;
-import org.datalorax.populace.typed.TypedCollection;
+import org.datalorax.populace.typed.TypeMap;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -16,11 +18,11 @@ public class MutatorUtils {
     private static final Map<Type, Mutator> DEFAULT_SPECIFIC_MUTATORS;
     private static final Map<Class<?>, Mutator> DEFAULT_SUPER_MUTATORS;
 
-    public static TypedCollection.Builder<Mutator> defaultMutators() {
-        return setDefaultMutators(TypedCollection.<Mutator>newBuilder());
+    public static TypeMap.Builder<Mutator> defaultMutators() {
+        return setDefaultMutators(TypeMap.<Mutator>newBuilder());
     }
 
-    public static TypedCollection.Builder<Mutator> setDefaultMutators(TypedCollection.Builder<Mutator> builder) {
+    public static TypeMap.Builder<Mutator> setDefaultMutators(final TypeMap.Builder<Mutator> builder) {
         builder.withSpecificTypes(DEFAULT_SPECIFIC_MUTATORS)
                 .withSuperTypes(DEFAULT_SUPER_MUTATORS)
                 .withDefaultArray(ArrayMutator.INSTANCE)
@@ -28,6 +30,9 @@ public class MutatorUtils {
         return builder;
     }
 
+    public static Mutator chainMutators(final Mutator first, final Mutator second) {
+        return ChainMutator.chain(first, second);
+    }
 
     static {
         final Map<Type, Mutator> specificMutators = new HashMap<Type, Mutator>();
@@ -47,6 +52,7 @@ public class MutatorUtils {
         superMutators.put(List.class, new ListMutator(ArrayList.class));
         superMutators.put(Set.class, new SetMutator(HashSet.class));
         superMutators.put(Map.class, new MapMutator(HashMap.class));
+        superMutators.put(Enum.class, chainMutators(EnsureMutator.INSTANCE, ChangeEnumMutator.INSTANCE));
 
         DEFAULT_SUPER_MUTATORS = Collections.unmodifiableMap(superMutators);
     }

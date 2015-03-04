@@ -20,7 +20,7 @@ subprojects {
     }
 
     group = 'org.datalorax.populace'
-    version = '0.1.2.1-alpa'
+    version = '0.1.2.2-alpa'
 
     test {
         useTestNG()

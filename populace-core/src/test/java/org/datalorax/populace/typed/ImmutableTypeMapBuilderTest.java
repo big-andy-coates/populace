@@ -14,12 +14,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-public class TypeMapBuilderTest {
-    private TypedMapBuilder<String> builder;
+public class ImmutableTypeMapBuilderTest {
+    private ImmutableTypeMapBuilder<String> builder;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        builder = new TypedMapBuilder<String>();
+        builder = new ImmutableTypeMapBuilder<String>();
     }
 
     @Test
@@ -31,7 +31,7 @@ public class TypeMapBuilderTest {
         builder.withSpecificType(int.class, specific);
 
         // Then:
-        final TypeMap<String> collection = builder.build();
+        final ImmutableTypeMap<String> collection = builder.build();
         assertThat(collection.get(int.class), is(specific));
     }
 
@@ -46,7 +46,7 @@ public class TypeMapBuilderTest {
         builder.withSpecificType(int.class, override);
 
         // Then:
-        final TypeMap<String> collection = builder.build();
+        final ImmutableTypeMap<String> collection = builder.build();
         assertThat(collection.get(int.class), is(override));
     }
 
@@ -59,7 +59,7 @@ public class TypeMapBuilderTest {
         builder.withSuperType(Map.class, superType);
 
         // Then:
-        final TypeMap<String> collection = builder.build();
+        final ImmutableTypeMap<String> collection = builder.build();
         assertThat(collection.get(HashMap.class), is(superType));
     }
 
@@ -74,31 +74,31 @@ public class TypeMapBuilderTest {
         builder.withSuperType(Set.class, override);
 
         // Then:
-        final TypeMap<String> collection = builder.build();
+        final ImmutableTypeMap<String> collection = builder.build();
         assertThat(collection.get(HashSet.class), is(override));
     }
 
     @Test
     public void shouldInstallDefault() throws Exception {
         // Given:
-        final Type unregisteredType = TypedMapBuilder.class;
+        final Type unregisteredType = ImmutableTypeMapBuilder.class;
         final String defaultV = "default";
 
         // When:
         builder.withDefault(defaultV);
 
         // Then:
-        final TypeMap<String> collection = builder.build();
+        final ImmutableTypeMap<String> collection = builder.build();
         assertThat(collection.get(unregisteredType), is(defaultV));
     }
 
     @Test
     public void shouldReturnNullIfNoMatchFoundAndNoDefault() throws Exception {
         // Given:
-        final Type unregisteredType = TypedMapBuilder.class;
+        final Type unregisteredType = ImmutableTypeMapBuilder.class;
 
         // Then:
-        final TypeMap<String> collection = builder.build();
+        final ImmutableTypeMap<String> collection = builder.build();
         assertThat(collection.get(unregisteredType), is(nullValue()));
     }
 
@@ -112,7 +112,7 @@ public class TypeMapBuilderTest {
         builder.withDefaultArray(defaultA);
 
         // Then:
-        final TypeMap<String> collection = builder.build();
+        final ImmutableTypeMap<String> collection = builder.build();
         assertThat(collection.get(arrayType), is(defaultA));
     }
 
@@ -122,7 +122,7 @@ public class TypeMapBuilderTest {
         final Type arrayType = TypeUtils.genericArrayType(int.class);
 
         // Then:
-        final TypeMap<String> collection = builder.build();
+        final ImmutableTypeMap<String> collection = builder.build();
         assertThat(collection.get(arrayType), is(nullValue()));
     }
 }

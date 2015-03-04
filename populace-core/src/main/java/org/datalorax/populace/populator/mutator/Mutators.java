@@ -9,10 +9,13 @@ import org.datalorax.populace.populator.mutator.commbination.ChainMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureCollectionNotEmptyMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureMapNotEmptyMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureMutator;
-import org.datalorax.populace.typed.TypeMap;
+import org.datalorax.populace.type.TypeUtils;
+import org.datalorax.populace.typed.ImmutableTypeMap;
 
-import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Helper functions for working with {@link org.datalorax.populace.populator.Mutator mutators}
@@ -20,47 +23,36 @@ import java.util.*;
  * @author datalorax - 01/03/2015.
  */
 public final class Mutators {
-    private static final Map<Type, Mutator> DEFAULT_SPECIFIC_MUTATORS;
-    private static final Map<Class<?>, Mutator> DEFAULT_SUPER_MUTATORS;
+    private static final ImmutableTypeMap<Mutator> DEFAULT;
 
-    public static TypeMap.Builder<Mutator> defaultMutators() {
-        return setDefaultMutators(TypeMap.<Mutator>newBuilder());
+    public static ImmutableTypeMap.Builder<Mutator> defaultMutators() {
+        return ImmutableTypeMap.asBuilder(DEFAULT);
     }
 
-    public static TypeMap.Builder<Mutator> setDefaultMutators(final TypeMap.Builder<Mutator> builder) {
-        builder.withSpecificTypes(DEFAULT_SPECIFIC_MUTATORS)
-            .withSuperTypes(DEFAULT_SUPER_MUTATORS)
-            //.withDefaultArray(Mutators.chainMutators(EnsureArrayMutator.INSTANCE, ArrayMutator.INSTANCE))
-            .withDefaultArray(ArrayMutator.INSTANCE)
-            .withDefault(EnsureMutator.INSTANCE);
-        return builder;
-    }
-
-    public static Mutator chainMutators(final Mutator first, final Mutator second, final Mutator... additional) {
+    public static Mutator chain(final Mutator first, final Mutator second, final Mutator... additional) {
         return ChainMutator.chain(first, second, additional);
     }
 
     static {
-        final Map<Type, Mutator> specificMutators = new HashMap<Type, Mutator>();
-        final Type[] primitiveTypes = {boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class,
-            Boolean.class, Byte.class, Character.class, Short.class, Integer.class, Long.class, Float.class, Double.class};
-        for (Type primitiveType : primitiveTypes) {
-            specificMutators.put(primitiveType, PrimitiveMutator.INSTANCE);
-        }
+        final ImmutableTypeMap.Builder<Mutator> builder = ImmutableTypeMap.newBuilder();
+
+        TypeUtils.getPrimitiveTypes().forEach(type -> builder.withSpecificType(type, PrimitiveMutator.INSTANCE));
+        TypeUtils.getBoxedPrimitiveTypes().forEach(type -> builder.withSpecificType(type, PrimitiveMutator.INSTANCE));
 
         // Todo(ac): what about other java lang types..
-        specificMutators.put(String.class, StringMutator.INSTANCE);
-        specificMutators.put(Date.class, DateMutator.INSTANCE);
+        builder.withSpecificType(String.class, StringMutator.INSTANCE);
+        builder.withSpecificType(Date.class, DateMutator.INSTANCE);
 
-        DEFAULT_SPECIFIC_MUTATORS = Collections.unmodifiableMap(specificMutators);
+        // Todo(ac): what about base Collection.class? what instantiates that and populates...
+        builder.withSuperType(Set.class, chain(EnsureMutator.INSTANCE, ChangeSetElementsMutator.INSTANCE));
+        builder.withSuperType(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE, ChangeListElementsMutator.INSTANCE));
+        builder.withSuperType(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE, ChangeMapValuesMutator.INSTANCE));
+        builder.withSuperType(Enum.class, chain(EnsureMutator.INSTANCE, ChangeEnumMutator.INSTANCE));
 
-        Map<Class<?>, Mutator> superMutators = new HashMap<Class<?>, Mutator>();
-        superMutators.put(Set.class, chainMutators(EnsureMutator.INSTANCE, ChangeSetElementsMutator.INSTANCE));
-        superMutators.put(List.class, chainMutators(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE, ChangeListElementsMutator.INSTANCE));
-        superMutators.put(Map.class, chainMutators(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE, ChangeMapValuesMutator.INSTANCE));
-        superMutators.put(Enum.class, chainMutators(EnsureMutator.INSTANCE, ChangeEnumMutator.INSTANCE));
-
-        DEFAULT_SUPER_MUTATORS = Collections.unmodifiableMap(superMutators);
+        DEFAULT = builder
+            .withDefaultArray(ArrayMutator.INSTANCE)
+            .withDefault(EnsureMutator.INSTANCE)
+            .build();
     }
 
     private Mutators() {

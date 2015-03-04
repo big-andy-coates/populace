@@ -67,7 +67,8 @@ public class DefaultInstanceFactory implements InstanceFactory {
             defaultConstructor.setAccessible(true);
             return defaultConstructor;
         } catch (NoSuchMethodException e) {
-            throw new PopulatorException("No default constructor could be found for type: " + rawType, e);
+            throw new PopulatorException("No default constructor could be found for type: " + rawType +
+                ", consider adding a custom InstanceFactory to handle this type", e);
         }
     }
 }

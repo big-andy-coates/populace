@@ -1,20 +1,18 @@
 package org.datalorax.populace.graph;
 
 import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.field.filter.ExcludeStaticFieldsFilter;
 import org.datalorax.populace.field.filter.FieldFilter;
+import org.datalorax.populace.field.filter.FieldFilters;
 import org.datalorax.populace.graph.inspector.Inspector;
 import org.datalorax.populace.graph.inspector.Inspectors;
-import org.datalorax.populace.typed.TypeMap;
+import org.datalorax.populace.typed.ImmutableTypeMap;
 
 /**
  * @author datalorax - 01/03/2015.
  */
 public class GraphWalkerBuilder implements GraphWalker.Builder {
-    private static final FieldFilter DEFAULT_FIELD_FILTER = ExcludeStaticFieldsFilter.INSTANCE;
-
-    private FieldFilter fieldFilter = DEFAULT_FIELD_FILTER;
-    private TypeMap inspectors;
+    private FieldFilter fieldFilter = FieldFilters.defaults();
+    private ImmutableTypeMap<Inspector> inspectors = Inspectors.defaults().build();
 
     @Override
     public GraphWalkerBuilder withFieldFilter(final FieldFilter filter) {
@@ -24,7 +22,12 @@ public class GraphWalkerBuilder implements GraphWalker.Builder {
     }
 
     @Override
-    public GraphWalkerBuilder withInspectors(final TypeMap<Inspector> inspectors) {
+    public FieldFilter getFieldFilter() {
+        return fieldFilter;
+    }
+
+    @Override
+    public GraphWalkerBuilder withInspectors(final ImmutableTypeMap<Inspector> inspectors) {
         Validate.notNull(inspectors, "inspectors null");
         Validate.notNull(inspectors.getDefault(), "No default inspector provided");
         Validate.notNull(inspectors.getArrayDefault(), "No default inspector provided for array types");
@@ -33,15 +36,16 @@ public class GraphWalkerBuilder implements GraphWalker.Builder {
     }
 
     @Override
+    public ImmutableTypeMap.Builder<Inspector> inspectorsBuilder() {
+        return ImmutableTypeMap.asBuilder(inspectors);
+    }
+
+    @Override
     public GraphWalker build() {
         return new GraphWalker(buildConfig());
     }
 
     private WalkerContext buildConfig() {
-        return new WalkerContext(fieldFilter, getWalkers());
-    }
-
-    private TypeMap getWalkers() {
-        return inspectors == null ? Inspectors.defaultInspectors().build() : inspectors;
+        return new WalkerContext(fieldFilter, inspectors);
     }
 }

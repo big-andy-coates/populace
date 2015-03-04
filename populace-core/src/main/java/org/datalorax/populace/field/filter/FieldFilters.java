@@ -6,6 +6,10 @@ package org.datalorax.populace.field.filter;
  * @author datalorax - 28/02/2015.
  */
 public final class FieldFilters {
+    public static FieldFilter defaults() {
+        return and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
+    }
+
     public static FieldFilter and(final FieldFilter first, final FieldFilter second) {
         return new AndFieldFilter(first, second);
     }
@@ -30,5 +34,3 @@ public final class FieldFilters {
 
     private FieldFilters() {}
 }
-
-// Todo(ac): Add filter to exclude final fields

@@ -4,15 +4,15 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 /**
- * A field filter to excludes any static fields
+ * A field filter to excludes any transient fields
  * @author datalorax - 28/02/2015.
  */
-public class ExcludeStaticFieldsFilter implements FieldFilter {
-    public static final ExcludeStaticFieldsFilter INSTANCE = new ExcludeStaticFieldsFilter();
+public class ExcludeFinalFieldsFilter implements FieldFilter {
+    public static final ExcludeFinalFieldsFilter INSTANCE = new ExcludeFinalFieldsFilter();
 
     @Override
     public boolean evaluate(final Field field) {
-        return !Modifier.isStatic(field.getModifiers());
+        return !Modifier.isTransient(field.getModifiers());
     }
 
     @Override

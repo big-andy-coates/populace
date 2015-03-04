@@ -8,7 +8,7 @@ import java.lang.reflect.Modifier;
  * @author datalorax - 28/02/2015.
  */
 public class ExcludeTransientFieldsFilter implements FieldFilter {
-    public static final FieldFilter INSTANCE = new ExcludeTransientFieldsFilter();
+    public static final ExcludeTransientFieldsFilter INSTANCE = new ExcludeTransientFieldsFilter();
 
     @Override
     public boolean evaluate(final Field field) {

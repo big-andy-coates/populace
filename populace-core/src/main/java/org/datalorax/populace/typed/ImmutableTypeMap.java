@@ -14,35 +14,39 @@ import java.util.Map;
  * <ul>
  * <li>
  * Specific - meaning they match the exact registered {@link java.lang.reflect.Type type}. This includes specific array types and
- * parameterised types. Use {@link TypeMap.Builder#withSpecificType} to register.
+ * parameterised types. Use {@link ImmutableTypeMap.Builder#withSpecificType} to register.
  * </li>
  * <li>
  * Super - meaning they match any sub-type of the registered raw {@link java.lang.Class class}
- * Use {@link TypeMap.Builder#withSuperType} to register.
+ * Use {@link ImmutableTypeMap.Builder#withSuperType} to register.
  * </li>
  * <li>
  * Default - meaning they will be returned if no other key matches the requested {@link java.lang.reflect.Type type}
- * and the requested {@link java.lang.reflect.Type type} is not an array type. Use {@link TypeMap.Builder#withDefault}
+ * and the requested {@link java.lang.reflect.Type type} is not an array type. Use {@link ImmutableTypeMap.Builder#withDefault}
  * to register.
  * </li>
  * <li>
  * Default Array - meaning they will be used if no other key matches the requested {@link java.lang.reflect.Type type}
- * and the requested type is an array type.  * Use {@link TypeMap.Builder#withDefaultArray} to register.
+ * and the requested type is an array type.  * Use {@link ImmutableTypeMap.Builder#withDefaultArray} to register.
  * </li>
  * </ul>
  * <p>
- * Values can be retrieved via {@link TypeMap#get(java.lang.reflect.Type)}}
+ * Values can be retrieved via {@link ImmutableTypeMap#get(java.lang.reflect.Type)}}
  *
  * @author datalorax - 28/02/2015.
  */
-public class TypeMap<V> {
+public class ImmutableTypeMap<V> {
     private final Map<Type, V> specificValues;
     private final Map<Class<?>, V> superValues;
     private final V defaultArrayValue;
     private final V defaultValue;
 
     public static <T> Builder<T> newBuilder() {
-        return new TypedMapBuilder<T>();
+        return new ImmutableTypeMapBuilder<T>();
+    }
+
+    public static <T> Builder<T> asBuilder(final ImmutableTypeMap<T> source) {
+        return new ImmutableTypeMapBuilder<T>(source.specificValues, source.superValues, source.defaultArrayValue, source.defaultValue);
     }
 
     public interface Builder<T> {
@@ -58,7 +62,7 @@ public class TypeMap<V> {
 
         Builder<T> withDefault(final T handler);
 
-        TypeMap<T> build();
+        ImmutableTypeMap<T> build();
     }
 
     /**
@@ -77,7 +81,8 @@ public class TypeMap<V> {
             return getArrayDefault();
         }
 
-        value = getSuper(TypeUtils.getRawType(key, null));
+        final Class<?> rawType = TypeUtils.getRawType(key, null);
+        value = rawType == null ? null : getSuper(rawType);  // Todo(ac): Should probably reject anything other than paramiteraised type and class???? Or maybe Type is too generic for the API
         if (value != null) {
             return value;
         }
@@ -137,7 +142,7 @@ public class TypeMap<V> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final TypeMap config = (TypeMap) o;
+        final ImmutableTypeMap config = (ImmutableTypeMap) o;
         return defaultArrayValue.equals(config.defaultArrayValue) &&
                 defaultValue.equals(config.defaultValue) &&
                 specificValues.equals(config.specificValues) &&
@@ -155,7 +160,7 @@ public class TypeMap<V> {
 
     @Override
     public String toString() {
-        return "TypedMap{" +
+        return "ImmutableTypeMap{" +
                 "specificValues=" + specificValues +
                 ", superValues=" + superValues +
                 ", defaultArrayValue=" + defaultArrayValue +
@@ -163,8 +168,8 @@ public class TypeMap<V> {
                 '}';
     }
 
-    TypeMap(final Map<Type, V> specificValues, final Map<Class<?>, V> superValues,
-            final V defaultValue, final V defaultArrayValue) {
+    ImmutableTypeMap(final Map<Type, V> specificValues, final Map<Class<?>, V> superValues,
+                     final V defaultValue, final V defaultArrayValue) {
         Validate.notNull(superValues, "superValues null");
         Validate.notNull(specificValues, "specificValues null");
         this.superValues = Collections.unmodifiableMap(new HashMap<Class<?>, V>(superValues));

@@ -13,4 +13,7 @@ public interface InstanceFactory {
      * @throws org.datalorax.populace.populator.PopulatorException on failure to instantiate new instance
      */
     <T> T createInstance(Class<? extends T> rawType, final Object parent);
+
+    // Todo(ac): do the generics work / add anything to this class?
+    // Todo(ac): consider passing Instance Factories (or context of some kind) to this methord
 }

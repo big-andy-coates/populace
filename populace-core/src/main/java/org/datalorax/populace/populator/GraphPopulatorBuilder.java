@@ -8,9 +8,9 @@ import org.datalorax.populace.field.filter.FieldFilters;
 import org.datalorax.populace.graph.GraphWalker;
 import org.datalorax.populace.graph.inspector.Inspector;
 import org.datalorax.populace.populator.instance.InstanceFactories;
-import org.datalorax.populace.populator.instance.InstanceFactory;
+import org.datalorax.populace.populator.instance.InstanceFactoriesBuilder;
 import org.datalorax.populace.populator.mutator.Mutators;
-import org.datalorax.populace.typed.TypeMap;
+import org.datalorax.populace.typed.ImmutableTypeMap;
 
 /**
  * Builder implementation for the GraphPopulator
@@ -20,8 +20,8 @@ import org.datalorax.populace.typed.TypeMap;
 class GraphPopulatorBuilder implements GraphPopulator.Builder {
     private static final FieldFilter DEFAULT_FIELD_FILTER = FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
 
-    private TypeMap<Mutator> mutators;
-    private TypeMap<InstanceFactory> instanceFactories;
+    private ImmutableTypeMap<Mutator> mutators = Mutators.defaultMutators().build();
+    private InstanceFactories instanceFactories = InstanceFactoriesBuilder.defaults().build();
     private GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder().withFieldFilter(DEFAULT_FIELD_FILTER);
 
     @Override
@@ -32,13 +32,23 @@ class GraphPopulatorBuilder implements GraphPopulator.Builder {
     }
 
     @Override
-    public GraphPopulator.Builder withInspectors(final TypeMap<Inspector> inspectors) {
+    public FieldFilter getFieldFilter() {
+        return walkerBuilder.getFieldFilter();
+    }
+
+    @Override
+    public GraphPopulator.Builder withInspectors(final ImmutableTypeMap<Inspector> inspectors) {
         walkerBuilder.withInspectors(inspectors);
         return this;
     }
 
     @Override
-    public GraphPopulatorBuilder withMutators(final TypeMap<Mutator> mutators) {
+    public ImmutableTypeMap.Builder<Inspector> inspectorsBuilder() {
+        return walkerBuilder.inspectorsBuilder();
+    }
+
+    @Override
+    public GraphPopulatorBuilder withMutators(final ImmutableTypeMap<Mutator> mutators) {
         Validate.notNull(mutators, "config null");
         Validate.notNull(mutators.getDefault(), "No default mutator provided");
         Validate.notNull(mutators.getArrayDefault(), "No default mutator provided for array types");
@@ -47,12 +57,20 @@ class GraphPopulatorBuilder implements GraphPopulator.Builder {
     }
 
     @Override
-    public GraphPopulatorBuilder withInstanceFactories(final TypeMap<InstanceFactory> instanceFactories) {
+    public ImmutableTypeMap.Builder<Mutator> mutatorsBuilder() {
+        return ImmutableTypeMap.asBuilder(mutators);
+    }
+
+    @Override
+    public GraphPopulatorBuilder withInstanceFactories(final InstanceFactories instanceFactories) {
         Validate.notNull(instanceFactories, "instanceFactories null");
-        Validate.notNull(instanceFactories.getDefault(), "No default instance factory provided");
-        Validate.notNull(instanceFactories.getArrayDefault(), "No default instance factory provided for array types");
         this.instanceFactories = instanceFactories;
         return this;
+    }
+
+    @Override
+    public InstanceFactories.Builder instanceFactoriesBuilder() {
+        return InstanceFactories.asBuilder(instanceFactories);
     }
 
     @Override
@@ -61,15 +79,7 @@ class GraphPopulatorBuilder implements GraphPopulator.Builder {
         return new GraphPopulator(walker, buildPopulatorContext());
     }
 
-    private TypeMap<Mutator> buildMutators() {
-        return mutators == null ? Mutators.defaultMutators().build() : mutators;
-    }
-
-    private TypeMap<InstanceFactory> buildInstanceFactories() {
-        return instanceFactories == null ? InstanceFactories.defaultFactories().build() : instanceFactories;
-    }
-
     private PopulatorContext buildPopulatorContext() {
-        return new PopulatorContext(buildMutators(), buildInstanceFactories());
+        return new PopulatorContext(mutators, instanceFactories);
     }
 }

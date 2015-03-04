@@ -3,7 +3,7 @@ package org.datalorax.populace.graph;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.field.visitor.FieldVisitor;
 import org.datalorax.populace.graph.inspector.Inspector;
-import org.datalorax.populace.typed.TypeMap;
+import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Field;
 
@@ -22,7 +22,11 @@ public class GraphWalker {
     public interface Builder {
         Builder withFieldFilter(final FieldFilter filter);
 
-        Builder withInspectors(final TypeMap<Inspector> walkers);
+        FieldFilter getFieldFilter();
+
+        Builder withInspectors(final ImmutableTypeMap<Inspector> walkers);
+
+        ImmutableTypeMap.Builder<Inspector> inspectorsBuilder();
 
         GraphWalker build();
     }
@@ -81,20 +85,6 @@ public class GraphWalker {
         } catch (IllegalAccessException e) {
             throw new WalkerException("Failed to get field value - consider using SetAccessibleFieldVisitor or similar", e);
         }
-    }
-
-    /**
-     * Collection, as in has child elements, not collection as in {@link java.util.Collection}
-     *
-     * @param field    the field to test
-     * @param instance the instance of the fields declaring class
-     * @return true if the type of the field or the current value of the field have child elements, false otherwise.
-     */
-    private boolean isCollection(final Field field, final Object instance) {
-        final Object value = getValue(field, instance);
-        final Class<?> type = value == null ? field.getType() : value.getClass();
-        final Inspector inspector = config.getInspector(type);
-        return inspector.typeIsCollection();
     }
 }
 

@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
  * @author datalorax - 27/02/2015.
  */
 public class TerminalInspector implements Inspector {
-    public static final Inspector INSTANCE = new TerminalInspector();
+    public static final TerminalInspector INSTANCE = new TerminalInspector();
 
     @Override
     public Iterable<Field> getFields(final Object instance) {

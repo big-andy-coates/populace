@@ -2,7 +2,7 @@ package org.datalorax.populace.graph;
 
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.graph.inspector.Inspector;
-import org.datalorax.populace.typed.TypeMap;
+import org.datalorax.populace.typed.ImmutableTypeMap;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -19,7 +19,7 @@ public class WalkerContextTest {
     @Mock
     private FieldFilter fieldFilter;
     @Mock
-    private TypeMap<Inspector> inspectors;
+    private ImmutableTypeMap<Inspector> inspectors;
     private Field field;
     private WalkerContext context;
 

@@ -1,9 +1,10 @@
 package org.datalorax.populace.populator;
 
 import org.datalorax.populace.field.filter.FieldFilter;
+import org.datalorax.populace.populator.instance.InstanceFactory;
 import org.datalorax.populace.populator.mutator.Mutators;
 import org.datalorax.populace.populator.mutator.PassThroughMutator;
-import org.datalorax.populace.typed.TypeMap;
+import org.datalorax.populace.typed.ImmutableTypeMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -13,10 +14,10 @@ import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /**
  * @author datalorax - 25/02/2015.
@@ -189,7 +190,19 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._nestedType, is(not(nullValue())));
     }
 
-    @Test(enabled = false)  // Todo(ac): to support this we'll need to capture TypeVariables as we go...
+    @Test
+    public void shouldAtLeastNotBlowUpOnTypeVariablesUntilWeSupportThem() throws Exception {
+        // Given:
+        final TypeWrappingTypeWithTypeVariables currentValue = new TypeWrappingTypeWithTypeVariables();
+
+        // When:
+        populator.populate(currentValue);
+
+        // Todo(ac): remove once type variables supported
+    }
+
+    @Test(enabled = false)
+    // Todo(ac): to support this we'll need to capture TypeVariables as we go... see test above too
     public void shouldHandleTypeVariables() throws Exception {
         // Given:
         final TypeWrappingTypeWithTypeVariables currentValue = new TypeWrappingTypeWithTypeVariables();
@@ -199,6 +212,36 @@ public class GraphPopulatorFunctionTest {
 
         // Then:
         assertThat(populated._type._map.values(), not(hasItem(nullValue())));
+    }
+
+    @Test
+    public void shouldHandleNullObjectFieldsByDefault() throws Exception {
+        // Given:
+        final TypeWithObjectField currentValue = new TypeWithObjectField();
+
+        // When:
+        final TypeWithObjectField populated = populator.populate(currentValue);
+
+        // Then:
+        assertThat("default strategy for null Object fields should be to leave them null", populated._null, is(nullValue()));
+    }
+
+    @Test
+    public void shouldAllowCustomNullObjectHandling() throws Exception {
+        // Given:
+        final InstanceFactory nullHandler = mock(InstanceFactory.class);
+        final TypeWithObjectField currentValue = new TypeWithObjectField();
+        final GraphPopulator.Builder builder = GraphPopulator.newBuilder();
+        populator = builder.withInstanceFactories(builder
+            .instanceFactoriesBuilder()
+            .withNullObjectFactory(nullHandler).build())
+            .build();
+
+        // When:
+        populator.populate(currentValue);
+
+        // Then:
+        verify(nullHandler).createInstance(Object.class, currentValue);
     }
 
     @Test
@@ -297,7 +340,7 @@ public class GraphPopulatorFunctionTest {
 
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(PassThroughMutator.class);
-        final TypeMap.Builder<Mutator> builder = Mutators.defaultMutators();
+        final ImmutableTypeMap.Builder<Mutator> builder = Mutators.defaultMutators();
         for (Type type : types) {
             builder.withSpecificType(type, mutator);
         }
@@ -410,7 +453,11 @@ public class GraphPopulatorFunctionTest {
         }
     }
 
-    public static class TypeWithTypeVariables<K,V> {
+    public static class TypeWithTypeVariables<K, V> {
         public Map<K, V> _map = new HashMap<K, V>();
+    }
+
+    public static class TypeWithObjectField {
+        public Object _null;
     }
 }

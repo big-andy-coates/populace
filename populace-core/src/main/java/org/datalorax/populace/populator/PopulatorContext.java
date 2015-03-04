@@ -2,10 +2,12 @@ package org.datalorax.populace.populator;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.TypeUtils;
+import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.populator.instance.InstanceFactory;
-import org.datalorax.populace.typed.TypeMap;
+import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 
 /**
  * Holds details of a populator's configuration
@@ -13,17 +15,15 @@ import java.lang.reflect.Type;
  * @author datalorax - 26/02/2015.
  */
 public class PopulatorContext {
-    private final TypeMap<Mutator> mutators;
-    private final TypeMap<InstanceFactory> instanceFactories;
+    private final ImmutableTypeMap<Mutator> mutators;
+    private final InstanceFactories instanceFactories;
 
-    public PopulatorContext(final TypeMap<Mutator> mutators,
-                            final TypeMap<InstanceFactory> instanceFactories) {
+    public PopulatorContext(final ImmutableTypeMap<Mutator> mutators,
+                            final InstanceFactories instanceFactories) {
         Validate.notNull(mutators, "mutators null");
         Validate.notNull(mutators.getDefault(), "No default mutator provided");
         Validate.notNull(mutators.getArrayDefault(), "No default mutator provided for array types");
         Validate.notNull(instanceFactories, "instanceFactories null");
-        Validate.notNull(instanceFactories.getDefault(), "No default instance factory provided");
-        Validate.notNull(instanceFactories.getArrayDefault(), "No default instance factory provided for array types");
         this.mutators = mutators;
         this.instanceFactories = instanceFactories;
     }
@@ -33,8 +33,10 @@ public class PopulatorContext {
     }
 
     public Object createInstance(final Type type, final Object parent) {
-        final InstanceFactory factory = instanceFactories.get(type);
-        final Class<?> rawType = TypeUtils.getRawType(type, null);
+        // Todo(ac): Temporary hack until we support TypeVariables properly
+        final Type typeToLookUp = type instanceof TypeVariable ? Object.class : type;
+        final InstanceFactory factory = instanceFactories.get(typeToLookUp);
+        final Class<?> rawType = TypeUtils.getRawType(typeToLookUp, null);
         return factory.createInstance(rawType, parent);
     }
 

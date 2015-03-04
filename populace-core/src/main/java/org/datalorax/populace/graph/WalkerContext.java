@@ -3,7 +3,7 @@ package org.datalorax.populace.graph;
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.graph.inspector.Inspector;
-import org.datalorax.populace.typed.TypeMap;
+import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -13,9 +13,9 @@ import java.lang.reflect.Type;
  */
 public class WalkerContext {
     private final FieldFilter fieldFilter;
-    private final TypeMap<Inspector> inspectors;
+    private final ImmutableTypeMap<Inspector> inspectors;
 
-    public WalkerContext(final FieldFilter fieldFilter, final TypeMap<Inspector> inspectors) {
+    public WalkerContext(final FieldFilter fieldFilter, final ImmutableTypeMap<Inspector> inspectors) {
         Validate.notNull(fieldFilter, "fieldFilter null");
         Validate.notNull(inspectors, "inspector null");
         Validate.notNull(inspectors.getDefault(), "No default inspector provided");

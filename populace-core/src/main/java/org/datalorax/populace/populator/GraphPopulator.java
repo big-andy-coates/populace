@@ -7,8 +7,8 @@ import org.datalorax.populace.field.visitor.FieldVisitors;
 import org.datalorax.populace.field.visitor.SetAccessibleFieldVisitor;
 import org.datalorax.populace.graph.GraphWalker;
 import org.datalorax.populace.graph.inspector.Inspector;
-import org.datalorax.populace.populator.instance.InstanceFactory;
-import org.datalorax.populace.typed.TypeMap;
+import org.datalorax.populace.populator.instance.InstanceFactories;
+import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -30,11 +30,19 @@ public final class GraphPopulator {
         // Todo(ac): not nice - client automatically looses default filters, mutators, etc. Either add docs about using *Utils.defaults() or have better pattern. (Also rename *Utils to *s)
         Builder withFieldFilter(final FieldFilter filter);
 
-        Builder withInspectors(final TypeMap<Inspector> inspectors);
+        FieldFilter getFieldFilter();
 
-        Builder withMutators(final TypeMap<Mutator> mutators);
+        Builder withInspectors(final ImmutableTypeMap<Inspector> inspectors);
 
-        Builder withInstanceFactories(final TypeMap<InstanceFactory> instanceFactories);
+        ImmutableTypeMap.Builder<Inspector> inspectorsBuilder();
+
+        Builder withMutators(final ImmutableTypeMap<Mutator> mutators);
+
+        ImmutableTypeMap.Builder<Mutator> mutatorsBuilder();
+
+        Builder withInstanceFactories(final InstanceFactories instanceFactories);
+
+        InstanceFactories.Builder instanceFactoriesBuilder();
 
         GraphPopulator build();
     }
@@ -92,6 +100,7 @@ public final class GraphPopulator {
             try {
                 final Type type = field.getGenericType();
                 final Object currentValue = field.get(instance);
+                // Todo(ac): Add debug log line here...
                 final Mutator mutator = config.getMutator(type);
                 final Object mutated = mutator.mutate(type, currentValue, instance, config);
                 if (mutated != currentValue) {
@@ -103,3 +112,5 @@ public final class GraphPopulator {
         }
     }
 }
+
+// Todo(ac): Instance factory for BigDecimal

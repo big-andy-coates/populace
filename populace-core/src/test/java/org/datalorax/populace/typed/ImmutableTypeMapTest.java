@@ -14,7 +14,7 @@ import static org.hamcrest.Matchers.is;
 /**
  * @author datalorax - 27/02/2015.
  */
-public class TypeMapTest {
+public class ImmutableTypeMapTest {
     private static final Map<Type, String> NO_SPECIFIC_VALUES = Collections.emptyMap();
     private static final Map<Class<?>, String> NO_BASE_VALUES = Collections.emptyMap();
     private static final String defaultValue = "default";
@@ -23,7 +23,7 @@ public class TypeMapTest {
     @Test
     public void shouldGetDefaultValueForNonArrayKeyIfNothingElseMatches() throws Exception {
         // Given:
-        final TypeMap<String> collection = TypeMap.<String>newBuilder()
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder()
                 .withSpecificType(String.class, "String")
                 .withSuperType(List.class, "List")
                 .withDefault(defaultValue)
@@ -40,7 +40,7 @@ public class TypeMapTest {
     @Test
     public void shouldGetDefaultArrayValueForArrayKeyIfNothingElseMatches() throws Exception {
         // Given:
-        final TypeMap<String> collection = TypeMap.<String>newBuilder()
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder()
                 .withSpecificType(String.class, "String")
                 .withSuperType(List.class, "List")
                 .withDefault(defaultValue)
@@ -59,7 +59,7 @@ public class TypeMapTest {
         // Given:
         final ParameterizedType specificType = TypeUtils.parameterize(HashSet.class, String.class);
         final String specificValue = "HashSet<String>";
-        final TypeMap<String> collection = TypeMap.<String>newBuilder()
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder()
                 .withSpecificType(specificType, specificValue)
                 .withDefault(defaultValue)
                 .withDefaultArray(defaultArrayValue)
@@ -77,7 +77,7 @@ public class TypeMapTest {
         // Given:
         final ParameterizedType specificType = TypeUtils.parameterize(HashSet.class, String.class);
         final String specificValue = "HashSet<String>";
-        final TypeMap<String> collection = TypeMap.<String>newBuilder()
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder()
                 .withSpecificType(specificType, specificValue)
                 .withSuperType(Set.class, "Set")
                 .withDefault(defaultValue)
@@ -95,7 +95,7 @@ public class TypeMapTest {
     public void shouldGetSuperOverDefaultValue() throws Exception {
         // Given:
         final String superValue = "Set";
-        final TypeMap<String> collection = TypeMap.<String>newBuilder()
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder()
                 .withSuperType(Set.class, "Set")
                 .withDefault(defaultValue)
                 .withDefaultArray(defaultArrayValue)
@@ -112,7 +112,7 @@ public class TypeMapTest {
     public void shouldPickMostSpecificSuperValue() throws Exception {
         // Given:
         final String mostSpecificValue = "Set";
-        final TypeMap<String> collection = TypeMap.<String>newBuilder()
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder()
                 .withSuperType(Collection.class, "collection")
                 .withSuperType(Set.class, mostSpecificValue)
                 .withDefault(defaultValue)
@@ -138,8 +138,8 @@ public class TypeMapTest {
             put(Collection.class, "Collection");
             put(Set.class, mostSpecificValue);
         }};
-        final TypeMap<String> natural = new TypeMap<String>(NO_SPECIFIC_VALUES, naturalSuperValues, defaultValue, defaultArrayValue);
-        final TypeMap<String> reversed = new TypeMap<String>(NO_SPECIFIC_VALUES, reversedSuperValues, defaultValue, defaultArrayValue);
+        final ImmutableTypeMap<String> natural = new ImmutableTypeMap<String>(NO_SPECIFIC_VALUES, naturalSuperValues, defaultValue, defaultArrayValue);
+        final ImmutableTypeMap<String> reversed = new ImmutableTypeMap<String>(NO_SPECIFIC_VALUES, reversedSuperValues, defaultValue, defaultArrayValue);
 
         // When:
         final String nValue = natural.get(TypeUtils.parameterize(HashSet.class, String.class));

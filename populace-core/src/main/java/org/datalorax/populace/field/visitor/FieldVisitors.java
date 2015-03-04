@@ -5,10 +5,10 @@ package org.datalorax.populace.field.visitor;
  * {@link org.datalorax.populace.field.visitor.FieldVisitor field visitors}
  * @author datalorax - 28/02/2015.
  */
-public final class FieldVisitorUtils {
+public final class FieldVisitors {
     public static FieldVisitor chain(final FieldVisitor first, final FieldVisitor second) {
         return new FieldVisitorPair(first, second);
     }
 
-    private FieldVisitorUtils() {}
+    private FieldVisitors() {}
 }

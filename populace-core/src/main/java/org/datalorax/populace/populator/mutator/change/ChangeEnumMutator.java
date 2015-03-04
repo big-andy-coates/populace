@@ -22,6 +22,21 @@ public class ChangeEnumMutator implements Mutator {
         return currentValue == null ? currentValue : changeEnum((Enum)currentValue);
     }
 
+    @Override
+    public boolean equals(final Object that) {
+        return this == that || (that != null && getClass() == that.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
+
     private Object changeEnum(final Enum currentValue) {
         final Object[] allValues = currentValue.getDeclaringClass().getEnumConstants();
         if (allValues.length <= 1) {

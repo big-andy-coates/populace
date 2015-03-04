@@ -5,7 +5,7 @@ package org.datalorax.populace.field.filter;
  * {@link FieldFilter fieldFilters}
  * @author datalorax - 28/02/2015.
  */
-public final class FieldFilterUtils {
+public final class FieldFilters {
     public static FieldFilter and(final FieldFilter first, final FieldFilter second) {
         return new AndFieldFilter(first, second);
     }
@@ -28,7 +28,7 @@ public final class FieldFilterUtils {
         return new AnyFieldFilter(first, theRest);
     }
 
-    private FieldFilterUtils() {}
+    private FieldFilters() {}
 }
 
 // Todo(ac): Add filter to exclude final fields

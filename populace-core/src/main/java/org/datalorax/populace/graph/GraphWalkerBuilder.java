@@ -4,7 +4,7 @@ import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.field.filter.ExcludeStaticFieldsFilter;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.graph.inspector.Inspector;
-import org.datalorax.populace.graph.inspector.InspectorUtils;
+import org.datalorax.populace.graph.inspector.Inspectors;
 import org.datalorax.populace.typed.TypeMap;
 
 /**
@@ -42,6 +42,6 @@ public class GraphWalkerBuilder implements GraphWalker.Builder {
     }
 
     private TypeMap getWalkers() {
-        return inspectors == null ? InspectorUtils.defaultInspectors().build() : inspectors;
+        return inspectors == null ? Inspectors.defaultInspectors().build() : inspectors;
     }
 }

@@ -10,7 +10,7 @@ import java.util.*;
  *
  * @author datalorax - 01/03/2015.
  */
-public final class InspectorUtils {
+public final class Inspectors {
     private static final Map<Type, Inspector> DEFAULT_SPECIFIC_WALKERS;
     private static final Map<Class<?>, Inspector> DEFAULT_SUPER_WALKERS;
 
@@ -49,6 +49,6 @@ public final class InspectorUtils {
         DEFAULT_SUPER_WALKERS = Collections.unmodifiableMap(superWalkers);
     }
 
-    private InspectorUtils() {
+    private Inspectors() {
     }
 }

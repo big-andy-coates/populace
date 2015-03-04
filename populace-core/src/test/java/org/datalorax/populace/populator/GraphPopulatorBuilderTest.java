@@ -3,12 +3,12 @@ package org.datalorax.populace.populator;
 import org.datalorax.populace.field.filter.ExcludeStaticFieldsFilter;
 import org.datalorax.populace.field.filter.ExcludeTransientFieldsFilter;
 import org.datalorax.populace.field.filter.FieldFilter;
-import org.datalorax.populace.field.filter.FieldFilterUtils;
+import org.datalorax.populace.field.filter.FieldFilters;
 import org.datalorax.populace.graph.GraphWalker;
 import org.datalorax.populace.graph.inspector.Inspector;
+import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.populator.instance.InstanceFactory;
-import org.datalorax.populace.populator.instance.InstanceFactoryUtils;
-import org.datalorax.populace.populator.mutator.MutatorUtils;
+import org.datalorax.populace.populator.mutator.Mutators;
 import org.datalorax.populace.typed.TypeMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -46,19 +46,6 @@ public class GraphPopulatorBuilderTest {
     }
 
     @Test
-    public void shouldCreatePopulatorWithSpecificFieldFilter() throws Exception {
-        // Given:
-        final FieldFilter customFilter = mock(FieldFilter.class);
-        builder.withFieldFilter(customFilter);
-
-        // When:
-        final GraphPopulator populator = builder.build();
-
-        // Then:
-        assertThat(populator.getConfig(), is(new PopulatorContext(customFilter, defaultMutatorConfig(), defaultInstanceFactories())));
-    }
-
-    @Test
     public void shouldCreatePopulatorWithSpecificMutators() throws Exception {
         // Given:
         //noinspection unchecked
@@ -70,7 +57,7 @@ public class GraphPopulatorBuilderTest {
         final GraphPopulator populator = builder.build();
 
         // Then:
-        assertThat(populator.getConfig(), is(new PopulatorContext(defaultFieldFilter(), mutators, defaultInstanceFactories())));
+        assertThat(populator.getConfig(), is(new PopulatorContext(mutators, defaultInstanceFactories())));
     }
 
     @Test(expectedExceptions = NullPointerException.class)
@@ -107,7 +94,7 @@ public class GraphPopulatorBuilderTest {
         final GraphPopulator populator = builder.build();
 
         // Then:
-        assertThat(populator.getConfig(), is(new PopulatorContext(defaultFieldFilter(), defaultMutatorConfig(), factories)));
+        assertThat(populator.getConfig(), is(new PopulatorContext(defaultMutatorConfig(), factories)));
     }
 
     @Test(expectedExceptions = NullPointerException.class)
@@ -176,18 +163,18 @@ public class GraphPopulatorBuilderTest {
     }
 
     private static FieldFilter defaultFieldFilter() {
-        return FieldFilterUtils.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
+        return FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
     }
 
     private static TypeMap<Mutator> defaultMutatorConfig() {
-        return MutatorUtils.defaultMutators().build();
+        return Mutators.defaultMutators().build();
     }
 
     private TypeMap<InstanceFactory> defaultInstanceFactories() {
-        return InstanceFactoryUtils.defaultFactories().build();
+        return InstanceFactories.defaultFactories().build();
     }
 
     private PopulatorContext defaultPopulatorContext() {
-        return new PopulatorContext(defaultFieldFilter(), defaultMutatorConfig(), defaultInstanceFactories());
+        return new PopulatorContext(defaultMutatorConfig(), defaultInstanceFactories());
     }
 }

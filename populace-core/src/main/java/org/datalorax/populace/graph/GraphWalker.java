@@ -44,7 +44,9 @@ public class GraphWalker {
         }
 
         for (Object child : inspector.getChildren(instance)) {
-            walk(child, visitor);
+            if (child != null) {
+                walk(child, visitor);
+            }
         }
     }
 
@@ -65,8 +67,8 @@ public class GraphWalker {
     @Override
     public String toString() {
         return "GraphWalker{" +
-                "config=" + config +
-                '}';
+            "config=" + config +
+            '}';
     }
 
     GraphWalker(final WalkerContext config) {
@@ -83,7 +85,8 @@ public class GraphWalker {
 
     /**
      * Collection, as in has child elements, not collection as in {@link java.util.Collection}
-     * @param field the field to test
+     *
+     * @param field    the field to test
      * @param instance the instance of the fields declaring class
      * @return true if the type of the field or the current value of the field have child elements, false otherwise.
      */

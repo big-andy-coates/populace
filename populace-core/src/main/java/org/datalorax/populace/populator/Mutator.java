@@ -7,9 +7,7 @@ import java.lang.reflect.Type;
  *
  * @author datalorax - 26/02/2015.
  */
-public interface Mutator {  // Todo(ac): rename to FieldPopulator (and the main one to GraphPopulator)
-
-    // Todo(ac): consider: split into more than one function. One for 'populating', or for 'mutating' - second part can be turned off. Need to think about default values...
+public interface Mutator {
 
     /**
      * Called to mutate the instance passed in <code>currentValue</code>, or create a new instance if the current value is null.

@@ -2,11 +2,11 @@ package org.datalorax.populace.graph;
 
 import org.datalorax.populace.field.filter.ExcludeStaticFieldsFilter;
 import org.datalorax.populace.field.filter.FieldFilter;
-import org.datalorax.populace.field.filter.FieldFilterUtils;
+import org.datalorax.populace.field.filter.FieldFilters;
 import org.datalorax.populace.field.visitor.FieldVisitor;
-import org.datalorax.populace.field.visitor.FieldVisitorUtils;
+import org.datalorax.populace.field.visitor.FieldVisitors;
 import org.datalorax.populace.field.visitor.SetAccessibleFieldVisitor;
-import org.datalorax.populace.graph.inspector.InspectorUtils;
+import org.datalorax.populace.graph.inspector.Inspectors;
 import org.datalorax.populace.graph.inspector.TerminalInspector;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -53,7 +53,7 @@ public class GraphWalkerFunctionalTest {
     public void shouldObeyFieldFilter() throws Exception {
         // Given:
         walker = GraphWalker.newBuilder()
-                .withFieldFilter(FieldFilterUtils.and(ExcludeStaticFieldsFilter.INSTANCE, filter))  // Skip statics
+                .withFieldFilter(FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, filter))  // Skip statics
                 .build();
 
         // When:
@@ -143,7 +143,7 @@ public class GraphWalkerFunctionalTest {
     public void shouldHonourCustomInspectors() throws Exception {
         // Given:
         walker = GraphWalker.newBuilder()
-                .withInspectors(InspectorUtils.defaultInspectors()
+                .withInspectors(Inspectors.defaultInspectors()
                         .withSpecificType(NestedType.class, TerminalInspector.INSTANCE)
                         .build())
                 .build();
@@ -158,7 +158,7 @@ public class GraphWalkerFunctionalTest {
     @Test
     public void shouldVisitPrivateFieldsIfSomethingSetsAccessible() throws Exception {
         // Given:
-        final FieldVisitor visitors = FieldVisitorUtils.chain(SetAccessibleFieldVisitor.INSTANCE, visitor);
+        final FieldVisitor visitors = FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, visitor);
 
         // When:
         walker.walk(new TypeWithPrivateField(), visitors);

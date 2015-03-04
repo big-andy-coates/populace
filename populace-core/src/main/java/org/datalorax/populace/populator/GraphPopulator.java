@@ -3,7 +3,7 @@ package org.datalorax.populace.populator;
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.field.visitor.FieldVisitor;
-import org.datalorax.populace.field.visitor.FieldVisitorUtils;
+import org.datalorax.populace.field.visitor.FieldVisitors;
 import org.datalorax.populace.field.visitor.SetAccessibleFieldVisitor;
 import org.datalorax.populace.graph.GraphWalker;
 import org.datalorax.populace.graph.inspector.Inspector;
@@ -27,6 +27,7 @@ public final class GraphPopulator {
     }
 
     public interface Builder {
+        // Todo(ac): not nice - client automatically looses default filters, mutators, etc. Either add docs about using *Utils.defaults() or have better pattern. (Also rename *Utils to *s)
         Builder withFieldFilter(final FieldFilter filter);
 
         Builder withInspectors(final TypeMap<Inspector> inspectors);
@@ -40,14 +41,13 @@ public final class GraphPopulator {
 
     // Todo(ac): needs a TypeReference<T> parameter...
     public <T> T populate(final T instance) {
-        walker.walk(instance, FieldVisitorUtils.chain(SetAccessibleFieldVisitor.INSTANCE, new Visitor()));
+        walker.walk(instance, FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, new Visitor()));
         return instance;
     }
 
     public <T> T populate(final Class<T> type) {
-        final Mutator mutator = config.getMutator(type); //  Todo(ac): this should not be mutator, but a factory of some sort.
         //noinspection unchecked
-        final T instance = (T) mutator.mutate(type, null, null, config);
+        final T instance = (T)config.createInstance(type, null);
         return populate(instance);
     }
 

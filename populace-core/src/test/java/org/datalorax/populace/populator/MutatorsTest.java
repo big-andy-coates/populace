@@ -1,7 +1,7 @@
 package org.datalorax.populace.populator;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
-import org.datalorax.populace.populator.mutator.MutatorUtils;
+import org.datalorax.populace.populator.mutator.Mutators;
 import org.datalorax.populace.typed.TypeMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -16,12 +16,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
-public class MutatorUtilsTest {
+public class MutatorsTest {
     private TypeMap.Builder<Mutator> builder;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        builder = MutatorUtils.defaultMutators();
+        builder = Mutators.defaultMutators();
     }
 
     @Test

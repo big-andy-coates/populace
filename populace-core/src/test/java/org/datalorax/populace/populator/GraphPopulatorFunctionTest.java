@@ -1,7 +1,7 @@
 package org.datalorax.populace.populator;
 
 import org.datalorax.populace.field.filter.FieldFilter;
-import org.datalorax.populace.populator.mutator.MutatorUtils;
+import org.datalorax.populace.populator.mutator.Mutators;
 import org.datalorax.populace.populator.mutator.PassThroughMutator;
 import org.datalorax.populace.typed.TypeMap;
 import org.testng.annotations.BeforeMethod;
@@ -120,6 +120,8 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._set, is(not(nullValue())));
         assertThat(populated._list, is(not(original._list)));
         assertThat(populated._set, is(not(original._set)));
+        assertThat(populated._nullList, is(not(nullValue())));
+        assertThat(populated._nullSet, is(not(nullValue())));
     }
 
     @Test
@@ -133,6 +135,7 @@ public class GraphPopulatorFunctionTest {
         // Then:
         assertThat(populated._map, is(not(nullValue())));
         assertThat(populated._map, is(not(original._map)));
+        assertThat(populated._nullMap, is(not(nullValue())));
     }
 
     @Test
@@ -164,10 +167,10 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleNestedObjects() throws Exception {
         // Given:
-        final WithNestedObject original = new WithNestedObject();
+        final TypeWithNestedObject original = new TypeWithNestedObject();
 
         // When:
-        final WithNestedObject populated = populator.populate(new WithNestedObject());
+        final TypeWithNestedObject populated = populator.populate(new TypeWithNestedObject());
 
         // Then:
         assertThat(populated._nestedType._int, is(not(original._nestedType._int)));
@@ -176,20 +179,32 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleNullNestedObjects() throws Exception {
         // Given:
-        final WithNestedObject currentValue = new WithNestedObject();
+        final TypeWithNestedObject currentValue = new TypeWithNestedObject();
         currentValue._nestedType = null;
 
         // When:
-        final WithNestedObject populated = populator.populate(currentValue);
+        final TypeWithNestedObject populated = populator.populate(currentValue);
 
         // Then:
         assertThat(populated._nestedType, is(not(nullValue())));
     }
 
+    @Test(enabled = false)  // Todo(ac): to support this we'll need to capture TypeVariables as we go...
+    public void shouldHandleTypeVariables() throws Exception {
+        // Given:
+        final TypeWrappingTypeWithTypeVariables currentValue = new TypeWrappingTypeWithTypeVariables();
+
+        // When:
+        final TypeWrappingTypeWithTypeVariables populated = populator.populate(currentValue);
+
+        // Then:
+        assertThat(populated._type._map.values(), not(hasItem(nullValue())));
+    }
+
     @Test
     public void shouldHandlePopulateCallWithJustTheType() throws Exception {
         // When:
-        final WithNestedObject populated = populator.populate(WithNestedObject.class);
+        final TypeWithNestedObject populated = populator.populate(TypeWithNestedObject.class);
 
         // Then:
         assertThat(populated._nestedType, is(not(nullValue())));
@@ -198,23 +213,23 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldWorkWithFinalFields() throws Exception {
         // Given:
-        final WithFinalField original = new WithFinalField();
+        final TypeWithFinalField original = new TypeWithFinalField();
 
         // When:
-        final WithFinalField populated = populator.populate(new WithFinalField());
+        final TypeWithFinalField populated = populator.populate(new TypeWithFinalField());
 
         // Then:
-        final long _finalValue = (Long) WithFinalField.class.getField("_final").get(populated); // Must use reflection to get around compiler optimisation of final fields
+        final long _finalValue = (Long) TypeWithFinalField.class.getField("_final").get(populated); // Must use reflection to get around compiler optimisation of final fields
         assertThat(_finalValue, is(not(original._final)));
     }
 
     @Test
     public void shouldIgnoreTransientFieldsByDefault() throws Exception {
         // Given:
-        final WithTransientField original = new WithTransientField();
+        final TypeWithTransientField original = new TypeWithTransientField();
 
         // When:
-        final WithTransientField populated = populator.populate(new WithTransientField());
+        final TypeWithTransientField populated = populator.populate(new TypeWithTransientField());
 
         // Then:
         assertThat(populated._transient, is(original._transient));
@@ -223,13 +238,13 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldIgnoreStaticFieldsByDefault() throws Exception {
         // Given:
-        final long original = WithStaticField._static;
+        final long original = TypeWithStaticField._static;
 
         // When:
-        populator.populate(new WithStaticField());
+        populator.populate(new TypeWithStaticField());
 
         // Then:
-        assertThat(WithStaticField._static, is(original));
+        assertThat(TypeWithStaticField._static, is(original));
     }
 
     @Test
@@ -273,14 +288,16 @@ public class GraphPopulatorFunctionTest {
         final WithRawGenericType populated = populator.populate(new WithRawGenericType());
 
         // Then:
+        assertThat(populated._rawList, is(notNullValue()));
         assertThat(populated._rawList, is(not(original._rawList)));
     }
 
     // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
+    // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
 
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(PassThroughMutator.class);
-        final TypeMap.Builder<Mutator> builder = MutatorUtils.defaultMutators();
+        final TypeMap.Builder<Mutator> builder = Mutators.defaultMutators();
         for (Type type : types) {
             builder.withSpecificType(type, mutator);
         }
@@ -329,41 +346,46 @@ public class GraphPopulatorFunctionTest {
         }
     }
 
-    private static class WithNestedObject {
-        private WithPrivateConstructor _nestedType = new WithPrivateConstructor();
+    private static class TypeWithNestedObject {
+        public WithPrivateConstructor _nestedType = new WithPrivateConstructor();
     }
 
-    private static class WithFinalField {
+    private static class TypeWithFinalField {
         public final long _final = 9L;
     }
 
-    private static class WithTransientField {
+    private static class TypeWithTransientField {
         public transient long _transient = 9L;
     }
 
-    private static class WithStaticField {
+    private static class TypeWithStaticField {
         public static long _static = 9L;
     }
 
     private static class WithCollections {
+        public List<String> _nullList = null;
         public List<String> _list = new ArrayList<String>() {{
             add("this");
         }};
+        public Set<Long> _nullSet = null;
         public Set<Long> _set = new HashSet<Long>() {{
             add(42L);
         }};
     }
 
     private static class TypeWithMapField {
+        public Map<String, Integer> _nullMap = null;
         public Map<String, Integer> _map = new HashMap<String, Integer>() {{
             put("this", 42);
         }};
     }
 
     private static class TypeWithEnumField {
+        @SuppressWarnings("UnusedDeclaration")
         public enum SomeEnum {
             forkHandles, fourCandles
         }
+
         public SomeEnum _enum;
     }
 
@@ -378,5 +400,17 @@ public class GraphPopulatorFunctionTest {
             //noinspection unchecked
             add("something");
         }};
+    }
+
+    public static class TypeWrappingTypeWithTypeVariables {
+        public TypeWithTypeVariables<String, Integer> _type = new TypeWithTypeVariables<String, Integer>();
+
+        public TypeWrappingTypeWithTypeVariables() {
+            _type._map.put("key", null);
+        }
+    }
+
+    public static class TypeWithTypeVariables<K,V> {
+        public Map<K, V> _map = new HashMap<K, V>();
     }
 }

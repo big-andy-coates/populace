@@ -6,52 +6,43 @@ import org.hamcrest.TypeSafeMatcher;
 
 import java.lang.reflect.Field;
 
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.equalTo;
-
 public class FieldInfoMatcher extends TypeSafeMatcher<FieldInfo> {
-    private final Field expectedField;
-    private final Object expectedInstance;
+    private final Matcher<Field> fieldMatcher;
+    private final Matcher<Object> instanceMatcher;
 
-    public static Matcher<? extends FieldInfo> hasField(final Field field) {
+    public static Matcher<? extends FieldInfo> hasField(final Matcher<Field> field) {
         return new FieldInfoMatcher(field, null);
     }
 
-    public static Matcher<? extends FieldInfo> hasField(final Field field, final Object instance) {
+    public static Matcher<? extends FieldInfo> hasField(final Matcher<Field> field, final Matcher<Object> instance) {
         return new FieldInfoMatcher(field, instance);
     }
 
-    private FieldInfoMatcher(final Field field, final Object expectedInstance) {
-        this.expectedField = field;
-        this.expectedInstance = expectedInstance;
+    private FieldInfoMatcher(final Matcher<Field> field, final Matcher<Object> expectedInstance) {
+        this.fieldMatcher = field;
+        this.instanceMatcher = expectedInstance;
     }
 
     @Override
     protected boolean matchesSafely(final FieldInfo info) {
-        return fieldMatcher().matches(info.getField()) && objectMatcher().matches(info.getOwningInstance());
+        return fieldMatcher.matches(info.getField()) && (instanceMatcher == null || instanceMatcher.matches(info.getOwningInstance()));
     }
 
     @Override
     public void describeTo(final Description description) {
-        fieldMatcher().describeTo(description);
-        description.appendText(" and ");
-        objectMatcher().describeTo(description);
+        fieldMatcher.describeTo(description);
+        if (instanceMatcher != null) {
+            description.appendText(" and ");
+            instanceMatcher.describeTo(description);
+        }
     }
 
     @Override
     protected void describeMismatchSafely(final FieldInfo item, final Description mismatchDescription) {
-        if (fieldMatcher().matches(item)) {
-            objectMatcher().describeMismatch(item, mismatchDescription);
+        if (fieldMatcher.matches(item)) {
+            instanceMatcher.describeMismatch(item, mismatchDescription);
         } else {
-            fieldMatcher().describeMismatch(item, mismatchDescription);
+            fieldMatcher.describeMismatch(item, mismatchDescription);
         }
-    }
-
-    private Matcher<Object> objectMatcher() {
-        return expectedInstance != null ? equalTo(expectedInstance) : any(Object.class);
-    }
-
-    private Matcher<Field> fieldMatcher() {
-        return equalTo(expectedField);
     }
 }

@@ -1,10 +1,9 @@
 package org.datalorax.populace.graph.inspector;
 
-import org.datalorax.populace.type.TypeUtils;
+import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
-import java.util.Collection;
-import java.util.Date;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
@@ -12,32 +11,65 @@ import java.util.Map;
  *
  * @author datalorax - 01/03/2015.
  */
-public final class Inspectors {
-    private static final ImmutableTypeMap<Inspector> DEFAULT;
+public class Inspectors {
+    private final ImmutableTypeMap<Inspector> inspectors;
 
-    public static ImmutableTypeMap.Builder<Inspector> defaults() {
-        return ImmutableTypeMap.asBuilder(DEFAULT);
+    public static Builder newBuilder() {
+        return InspectorsBuilder.defaults();
     }
 
-    static {
-        final ImmutableTypeMap.Builder<Inspector> builder = ImmutableTypeMap.newBuilder();
-
-        TypeUtils.getPrimitiveTypes().forEach(type -> builder.withSpecificType(type, TerminalInspector.INSTANCE));       // Todo(ac): replace with 'don't go into package java.*' type behaviour
-        TypeUtils.getBoxedPrimitiveTypes().forEach(type -> builder.withSpecificType(type, TerminalInspector.INSTANCE));
-
-        // Todo(ac): is it not just the case we want to not walk fields of anything under java.lang? Maybe need a 'package' walker concept?
-        builder.withSpecificType(String.class, TerminalInspector.INSTANCE);
-        builder.withSpecificType(Date.class, TerminalInspector.INSTANCE);
-
-        builder.withSuperType(Collection.class, CollectionInspector.INSTANCE);
-        builder.withSuperType(Map.class, MapValueInspector.INSTANCE);
-
-        DEFAULT = builder
-            .withDefaultArray(ArrayInspector.INSTANCE)
-            .withDefault(ObjectInspector.INSTANCE)
-            .build();
+    public static Builder asBuilder(final Inspectors source) {
+        return new InspectorsBuilder(source.inspectors);
     }
 
-    private Inspectors() {
+    public interface Builder {
+
+        Builder withSpecificInspectors(final Map<Type, Inspector> inspector);
+
+        Builder withSpecificInspector(final Type type, final Inspector inspector);
+
+        Builder withSuperInspectors(final Map<Class<?>, Inspector> inspector);
+
+        Builder withSuperInspector(final Class<?> baseClass, final Inspector inspector);
+
+        Builder withArrayDefaultInspector(final Inspector inspector);
+
+        Builder withDefaultInspector(final Inspector inspector);
+
+        Inspectors build();
+
+    }
+
+    public Inspector get(final Type type) {
+        return inspectors.get(type);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final Inspectors that = (Inspectors) o;
+        return inspectors.equals(that.inspectors);
+    }
+
+    @Override
+    public int hashCode() {
+        return inspectors.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Inspectors{" +
+            "inspectors=" + inspectors +
+            '}';
+    }
+
+    /**
+     * Construct via {@link Inspectors#newBuilder()} and copy via {@link Inspectors#asBuilder(Inspectors)}
+     */
+    Inspectors(ImmutableTypeMap<Inspector> inspectors) {
+        Validate.notNull(inspectors);
+        this.inspectors = inspectors;
     }
 }

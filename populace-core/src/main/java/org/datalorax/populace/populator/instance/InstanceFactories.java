@@ -32,7 +32,7 @@ public class InstanceFactories {
 
         Builder withSuperFactory(final Class<?> baseClass, final InstanceFactory factory);
 
-        Builder withDefaultArrayFactory(final InstanceFactory factory);
+        Builder withArrayDefaultFactory(final InstanceFactory factory);
 
         Builder withDefaultFactory(final InstanceFactory factory);
 
@@ -48,16 +48,6 @@ public class InstanceFactories {
             return nullObjectFactory;
         }
         return factories.get(key);
-    }
-
-    // Todo(ac): nullObjectFactory... different interface? ObjectStrategy? Pass it more info... like field, parent class?
-    InstanceFactories(final InstanceFactory nullObjectFactory, final ImmutableTypeMap<InstanceFactory> factories) {
-        Validate.notNull(nullObjectFactory, "no instance factory provided for Object.class");
-        Validate.notNull(factories, "factories null");
-        Validate.notNull(factories.getDefault(), "No default instance factory provided");
-        Validate.notNull(factories.getArrayDefault(), "No default instance factory provided for array types");
-        this.nullObjectFactory = nullObjectFactory;
-        this.factories = factories;
     }
 
     @Override
@@ -82,6 +72,15 @@ public class InstanceFactories {
             "nullObjectFactory=" + nullObjectFactory +
             ", factories=" + factories +
             '}';
+    }
+
+    // Todo(ac): nullObjectFactory... different interface? ObjectStrategy? Pass it more info... like field, parent class?
+    // Todo(aC): yes! Just a marker interface NullObjectStrategy
+    InstanceFactories(final InstanceFactory nullObjectFactory, final ImmutableTypeMap<InstanceFactory> factories) {
+        Validate.notNull(nullObjectFactory, "no instance factory provided for Object.class");
+        Validate.notNull(factories, "factories null");
+        this.nullObjectFactory = nullObjectFactory;
+        this.factories = factories;
     }
 }
 

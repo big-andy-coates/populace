@@ -51,7 +51,7 @@ public class ImmutableTypeMapBuilder<T> implements ImmutableTypeMap.Builder<T> {
     }
 
     @Override
-    public ImmutableTypeMapBuilder<T> withDefaultArray(final T handler) {
+    public ImmutableTypeMapBuilder<T> withArrayDefault(final T handler) {
         Validate.notNull(handler, "handler null");
         defaultArrayValue = handler;
         return this;

@@ -11,7 +11,7 @@ import java.util.*;
  *
  * @author datalorax - 02/03/2015.
  */
-public final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
+final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
     private static final InstanceFactories DEFAULT;
 
     private InstanceFactory nullObjectFactory = NullInstanceFactory.INSTANCE;
@@ -54,8 +54,8 @@ public final class InstanceFactoriesBuilder implements InstanceFactories.Builder
     }
 
     @Override
-    public InstanceFactories.Builder withDefaultArrayFactory(final InstanceFactory factory) {
-        factoriesBuilder.withDefaultArray(factory);
+    public InstanceFactories.Builder withArrayDefaultFactory(final InstanceFactory factory) {
+        factoriesBuilder.withArrayDefault(factory);
         return this;
     }
 
@@ -98,7 +98,7 @@ public final class InstanceFactoriesBuilder implements InstanceFactories.Builder
         builder.withSuperFactory(Collection.class, new NonConcreteInstanceFactory(Collection.class, ArrayList.class, DefaultInstanceFactory.INSTANCE));    // Todo(ac): Questionable..
 
         DEFAULT = builder
-            .withDefaultArrayFactory(DefaultInstanceFactory.INSTANCE)   // Todo(ac): we'll need specific array factory
+            .withArrayDefaultFactory(DefaultInstanceFactory.INSTANCE)   // Todo(ac): we'll need specific array factory
             .withDefaultFactory(DefaultInstanceFactory.INSTANCE)
             .build();
     }

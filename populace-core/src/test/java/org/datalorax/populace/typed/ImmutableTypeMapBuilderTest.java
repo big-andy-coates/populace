@@ -109,7 +109,7 @@ public class ImmutableTypeMapBuilderTest {
         final String defaultA = "default array";
 
         // When:
-        builder.withDefaultArray(defaultA);
+        builder.withArrayDefault(defaultA);
 
         // Then:
         final ImmutableTypeMap<String> collection = builder.build();

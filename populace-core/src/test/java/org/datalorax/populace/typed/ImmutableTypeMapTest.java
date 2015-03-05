@@ -27,7 +27,7 @@ public class ImmutableTypeMapTest {
                 .withSpecificType(String.class, "String")
                 .withSuperType(List.class, "List")
                 .withDefault(defaultValue)
-                .withDefaultArray(defaultArrayValue)
+                .withArrayDefault(defaultArrayValue)
                 .build();
 
         // When:
@@ -44,7 +44,7 @@ public class ImmutableTypeMapTest {
                 .withSpecificType(String.class, "String")
                 .withSuperType(List.class, "List")
                 .withDefault(defaultValue)
-                .withDefaultArray(defaultArrayValue)
+                .withArrayDefault(defaultArrayValue)
                 .build();
 
         // When:
@@ -62,7 +62,7 @@ public class ImmutableTypeMapTest {
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder()
                 .withSpecificType(specificType, specificValue)
                 .withDefault(defaultValue)
-                .withDefaultArray(defaultArrayValue)
+                .withArrayDefault(defaultArrayValue)
                 .build();
 
         // When:
@@ -81,7 +81,7 @@ public class ImmutableTypeMapTest {
                 .withSpecificType(specificType, specificValue)
                 .withSuperType(Set.class, "Set")
                 .withDefault(defaultValue)
-                .withDefaultArray(defaultArrayValue)
+                .withArrayDefault(defaultArrayValue)
                 .build();
 
         // When:
@@ -98,7 +98,7 @@ public class ImmutableTypeMapTest {
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder()
                 .withSuperType(Set.class, "Set")
                 .withDefault(defaultValue)
-                .withDefaultArray(defaultArrayValue)
+                .withArrayDefault(defaultArrayValue)
                 .build();
 
         // When:
@@ -116,7 +116,7 @@ public class ImmutableTypeMapTest {
                 .withSuperType(Collection.class, "collection")
                 .withSuperType(Set.class, mostSpecificValue)
                 .withDefault(defaultValue)
-                .withDefaultArray(defaultArrayValue)
+                .withArrayDefault(defaultArrayValue)
                 .build();
 
         // When:

@@ -6,7 +6,7 @@ import org.datalorax.populace.field.FieldInfo;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.field.visitor.FieldVisitor;
 import org.datalorax.populace.graph.inspector.Inspector;
-import org.datalorax.populace.typed.ImmutableTypeMap;
+import org.datalorax.populace.graph.inspector.Inspectors;
 
 import java.lang.reflect.Field;
 
@@ -29,9 +29,9 @@ public class GraphWalker {
 
         FieldFilter getFieldFilter();
 
-        Builder withInspectors(final ImmutableTypeMap<Inspector> walkers);
+        Builder withInspectors(final Inspectors inspectors);
 
-        ImmutableTypeMap.Builder<Inspector> inspectorsBuilder();
+        Inspectors.Builder inspectorsBuilder();
 
         GraphWalker build();
     }

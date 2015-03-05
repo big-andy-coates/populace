@@ -27,7 +27,7 @@ import java.util.Map;
  * </li>
  * <li>
  * Default Array - meaning they will be used if no other key matches the requested {@link java.lang.reflect.Type type}
- * and the requested type is an array type.  * Use {@link ImmutableTypeMap.Builder#withDefaultArray} to register.
+ * and the requested type is an array type.  * Use {@link ImmutableTypeMap.Builder#withArrayDefault} to register.
  * </li>
  * </ul>
  * <p>
@@ -58,7 +58,7 @@ public class ImmutableTypeMap<V> {
 
         Builder<T> withSuperType(final Class<?> baseClass, final T handler);
 
-        Builder<T> withDefaultArray(final T handler);
+        Builder<T> withArrayDefault(final T handler);
 
         Builder<T> withDefault(final T handler);
 

@@ -50,7 +50,7 @@ public final class Mutators {
         builder.withSuperType(Enum.class, chain(EnsureMutator.INSTANCE, ChangeEnumMutator.INSTANCE));
 
         DEFAULT = builder
-            .withDefaultArray(ArrayMutator.INSTANCE)
+            .withArrayDefault(ArrayMutator.INSTANCE)
             .withDefault(EnsureMutator.INSTANCE)
             .build();
     }

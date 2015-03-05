@@ -145,8 +145,8 @@ public class GraphWalkerFunctionalTest {
     public void shouldHonourCustomInspectors() throws Exception {
         // Given:
         walker = GraphWalker.newBuilder()
-            .withInspectors(Inspectors.defaults()
-                .withSpecificType(NestedType.class, TerminalInspector.INSTANCE)
+            .withInspectors(Inspectors.newBuilder()
+                .withSpecificInspector(NestedType.class, TerminalInspector.INSTANCE)
                 .build())
             .build();
 

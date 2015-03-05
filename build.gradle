@@ -22,11 +22,11 @@ subprojects {
     }
 
     group = 'org.datalorax.populace'
-    version = '0.1.2.2-alpa'
+    version = '0.1.2.3-alpa'
 
     idea {
         project {
-            languageLevel = '1.8'
+            // Todo(ac): languageLevel = '1.8'
         }
     }
 

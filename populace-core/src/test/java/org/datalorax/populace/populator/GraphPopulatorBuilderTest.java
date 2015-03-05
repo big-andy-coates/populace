@@ -5,9 +5,8 @@ import org.datalorax.populace.field.filter.ExcludeTransientFieldsFilter;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.field.filter.FieldFilters;
 import org.datalorax.populace.graph.GraphWalker;
-import org.datalorax.populace.graph.inspector.Inspector;
+import org.datalorax.populace.graph.inspector.Inspectors;
 import org.datalorax.populace.populator.instance.InstanceFactories;
-import org.datalorax.populace.populator.instance.InstanceFactoriesBuilder;
 import org.datalorax.populace.populator.mutator.Mutators;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 import org.testng.annotations.BeforeMethod;
@@ -100,8 +99,7 @@ public class GraphPopulatorBuilderTest {
     public void shouldCreatePopulatorWithSpecificInspectors() throws Exception {
         // Given:
         //noinspection unchecked
-        final ImmutableTypeMap<Inspector> inspectors = mock(ImmutableTypeMap.class);
-        givenTypeMapHasDefaults(inspectors, mock(Inspector.class));
+        final Inspectors inspectors = mock(Inspectors.class);
         builder.withInspectors(inspectors);
 
         // When:
@@ -110,28 +108,6 @@ public class GraphPopulatorBuilderTest {
         // Then:
         final GraphWalker walker = GraphWalker.newBuilder().withInspectors(inspectors).withFieldFilter(defaultFieldFilter()).build();
         assertThat(populator, is(new GraphPopulator(walker, defaultPopulatorContext())));
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfSpecificInspectorsHaveNoDefault() throws Exception {
-        // Given:
-        //noinspection unchecked
-        final ImmutableTypeMap<Inspector> inspectors = mock(ImmutableTypeMap.class);
-        when(inspectors.getArrayDefault()).thenReturn(mock(Inspector.class));
-
-        // When:
-        builder.withInspectors(inspectors);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfSpecificInspectorsHaveNoArrayDefault() throws Exception {
-        // Given:
-        //noinspection unchecked
-        final ImmutableTypeMap<Inspector> inspectors = mock(ImmutableTypeMap.class);
-        when(inspectors.getArrayDefault()).thenReturn(mock(Inspector.class));
-
-        // When:
-        builder.withInspectors(inspectors);
     }
 
     private <T> void givenTypeMapHasDefaults(final ImmutableTypeMap<T> typeMap, T defaultValue) {
@@ -148,7 +124,7 @@ public class GraphPopulatorBuilderTest {
     }
 
     private InstanceFactories defaultInstanceFactories() {
-        return InstanceFactoriesBuilder.defaults().build();
+        return InstanceFactories.newBuilder().build();
     }
 
     private PopulatorContext defaultPopulatorContext() {

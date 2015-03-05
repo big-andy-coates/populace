@@ -1,19 +1,16 @@
 package org.datalorax.populace.populator;
 
 import org.datalorax.populace.populator.instance.InstanceFactories;
-import org.datalorax.populace.typed.ImmutableTypeMap;
+import org.datalorax.populace.populator.mutator.Mutators;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 
 import java.lang.reflect.Field;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 public class PopulatorContextTest {
     @Mock
-    private ImmutableTypeMap<Mutator> mutators;
+    private Mutators mutators;
     @Mock
     private InstanceFactories instanceFactories;
     private Field field;
@@ -22,10 +19,6 @@ public class PopulatorContextTest {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-
-        // Need to setup default for mutators and instanceFactories else constructor throws.
-        when(mutators.getDefault()).thenReturn(mock(Mutator.class, "default"));
-        when(mutators.getArrayDefault()).thenReturn(mock(Mutator.class, "array default"));
 
         field = getClass().getDeclaredField("field");
 

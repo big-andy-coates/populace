@@ -8,14 +8,12 @@ import org.datalorax.populace.graph.GraphWalker;
 import org.datalorax.populace.graph.inspector.Inspectors;
 import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.populator.mutator.Mutators;
-import org.datalorax.populace.typed.ImmutableTypeMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class GraphPopulatorBuilderTest {
     private GraphPopulatorBuilder builder;
@@ -48,8 +46,7 @@ public class GraphPopulatorBuilderTest {
     public void shouldCreatePopulatorWithSpecificMutators() throws Exception {
         // Given:
         //noinspection unchecked
-        final ImmutableTypeMap<Mutator> mutators = mock(ImmutableTypeMap.class);
-        givenTypeMapHasDefaults(mutators, mock(Mutator.class));
+        final Mutators mutators = mock(Mutators.class);
         builder.withMutators(mutators);
 
         // When:
@@ -57,28 +54,6 @@ public class GraphPopulatorBuilderTest {
 
         // Then:
         assertThat(populator.getConfig(), is(new PopulatorContext(mutators, defaultInstanceFactories())));
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfSpecificMutatorsHaveNoDefault() throws Exception {
-        // Given:
-        //noinspection unchecked
-        final ImmutableTypeMap<Mutator> mutators = mock(ImmutableTypeMap.class);
-        when(mutators.getArrayDefault()).thenReturn(mock(Mutator.class));
-
-        // When:
-        builder.withMutators(mutators);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfSpecificMutatorsHaveNoArrayDefault() throws Exception {
-        // Given:
-        //noinspection unchecked
-        final ImmutableTypeMap<Mutator> mutators = mock(ImmutableTypeMap.class);
-        when(mutators.getArrayDefault()).thenReturn(mock(Mutator.class));
-
-        // When:
-        builder.withMutators(mutators);
     }
 
     @Test
@@ -110,17 +85,12 @@ public class GraphPopulatorBuilderTest {
         assertThat(populator, is(new GraphPopulator(walker, defaultPopulatorContext())));
     }
 
-    private <T> void givenTypeMapHasDefaults(final ImmutableTypeMap<T> typeMap, T defaultValue) {
-        when(typeMap.getDefault()).thenReturn(defaultValue);
-        when(typeMap.getArrayDefault()).thenReturn(defaultValue);
-    }
-
     private static FieldFilter defaultFieldFilter() {
         return FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
     }
 
-    private static ImmutableTypeMap<Mutator> defaultMutatorConfig() {
-        return Mutators.defaultMutators().build();
+    private static Mutators defaultMutatorConfig() {
+        return Mutators.newBuilder().build();
     }
 
     private InstanceFactories defaultInstanceFactories() {

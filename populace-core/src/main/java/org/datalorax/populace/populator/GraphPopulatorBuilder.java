@@ -9,7 +9,6 @@ import org.datalorax.populace.graph.GraphWalker;
 import org.datalorax.populace.graph.inspector.Inspectors;
 import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.populator.mutator.Mutators;
-import org.datalorax.populace.typed.ImmutableTypeMap;
 
 /**
  * Builder implementation for the GraphPopulator
@@ -19,7 +18,7 @@ import org.datalorax.populace.typed.ImmutableTypeMap;
 class GraphPopulatorBuilder implements GraphPopulator.Builder {
     private static final FieldFilter DEFAULT_FIELD_FILTER = FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
 
-    private ImmutableTypeMap<Mutator> mutators = Mutators.defaultMutators().build();
+    private Mutators mutators = Mutators.newBuilder().build();
     private InstanceFactories instanceFactories = InstanceFactories.newBuilder().build();
     private GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder().withFieldFilter(DEFAULT_FIELD_FILTER);
 
@@ -47,17 +46,15 @@ class GraphPopulatorBuilder implements GraphPopulator.Builder {
     }
 
     @Override
-    public GraphPopulatorBuilder withMutators(final ImmutableTypeMap<Mutator> mutators) {
+    public GraphPopulatorBuilder withMutators(final Mutators mutators) {
         Validate.notNull(mutators, "config null");
-        Validate.notNull(mutators.getDefault(), "No default mutator provided");
-        Validate.notNull(mutators.getArrayDefault(), "No default mutator provided for array types");
         this.mutators = mutators;
         return this;
     }
 
     @Override
-    public ImmutableTypeMap.Builder<Mutator> mutatorsBuilder() {
-        return ImmutableTypeMap.asBuilder(mutators);
+    public Mutators.Builder mutatorsBuilder() {
+        return Mutators.asBuilder(mutators);
     }
 
     @Override

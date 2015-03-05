@@ -4,7 +4,6 @@ import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.populator.instance.InstanceFactory;
 import org.datalorax.populace.populator.mutator.Mutators;
 import org.datalorax.populace.populator.mutator.PassThroughMutator;
-import org.datalorax.populace.typed.ImmutableTypeMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -328,9 +327,9 @@ public class GraphPopulatorFunctionTest {
 
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(PassThroughMutator.class);
-        final ImmutableTypeMap.Builder<Mutator> builder = Mutators.defaultMutators();
+        final Mutators.Builder builder = Mutators.newBuilder();
         for (Type type : types) {
-            builder.withSpecificType(type, mutator);
+            builder.withSpecificMutator(type, mutator);
         }
         populator = GraphPopulator.newBuilder().withMutators(builder.build()).build();
         return mutator;

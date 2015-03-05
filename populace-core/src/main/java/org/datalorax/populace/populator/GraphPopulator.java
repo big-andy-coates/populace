@@ -9,7 +9,7 @@ import org.datalorax.populace.field.visitor.SetAccessibleFieldVisitor;
 import org.datalorax.populace.graph.GraphWalker;
 import org.datalorax.populace.graph.inspector.Inspectors;
 import org.datalorax.populace.populator.instance.InstanceFactories;
-import org.datalorax.populace.typed.ImmutableTypeMap;
+import org.datalorax.populace.populator.mutator.Mutators;
 
 import java.lang.reflect.Type;
 
@@ -36,9 +36,9 @@ public final class GraphPopulator {
 
         Inspectors.Builder inspectorsBuilder();
 
-        Builder withMutators(final ImmutableTypeMap<Mutator> mutators);
+        Builder withMutators(final Mutators mutators);
 
-        ImmutableTypeMap.Builder<Mutator> mutatorsBuilder();
+        Mutators.Builder mutatorsBuilder();
 
         Builder withInstanceFactories(final InstanceFactories instanceFactories);
 

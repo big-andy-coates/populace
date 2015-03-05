@@ -1,60 +1,71 @@
 package org.datalorax.populace.populator.mutator;
 
+import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.mutator.change.ChangeEnumMutator;
-import org.datalorax.populace.populator.mutator.change.ChangeListElementsMutator;
-import org.datalorax.populace.populator.mutator.change.ChangeMapValuesMutator;
-import org.datalorax.populace.populator.mutator.change.ChangeSetElementsMutator;
-import org.datalorax.populace.populator.mutator.commbination.ChainMutator;
-import org.datalorax.populace.populator.mutator.ensure.EnsureCollectionNotEmptyMutator;
-import org.datalorax.populace.populator.mutator.ensure.EnsureMapNotEmptyMutator;
-import org.datalorax.populace.populator.mutator.ensure.EnsureMutator;
-import org.datalorax.populace.type.TypeUtils;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
-import java.util.Date;
-import java.util.List;
+import java.lang.reflect.Type;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Helper functions for working with {@link org.datalorax.populace.populator.Mutator mutators}
  *
  * @author datalorax - 01/03/2015.
  */
-public final class Mutators {
-    private static final ImmutableTypeMap<Mutator> DEFAULT;
+public class Mutators {
+    private final ImmutableTypeMap<Mutator> mutators;
 
-    public static ImmutableTypeMap.Builder<Mutator> defaultMutators() {
-        return ImmutableTypeMap.asBuilder(DEFAULT);
+    public static Builder newBuilder() {
+        return MutatorsBuilder.defaults();
     }
 
-    public static Mutator chain(final Mutator first, final Mutator second, final Mutator... additional) {
-        return ChainMutator.chain(first, second, additional);
+    public static Builder asBuilder(final Mutators source) {
+        return new MutatorsBuilder(source.mutators);
     }
 
-    static {
-        final ImmutableTypeMap.Builder<Mutator> builder = ImmutableTypeMap.newBuilder();
+    public interface Builder {
+        Builder withSpecificMutators(final Map<Type, ? extends Mutator> mutators);
 
-        TypeUtils.getPrimitiveTypes().forEach(type -> builder.withSpecificType(type, PrimitiveMutator.INSTANCE));
-        TypeUtils.getBoxedPrimitiveTypes().forEach(type -> builder.withSpecificType(type, PrimitiveMutator.INSTANCE));
+        Builder withSpecificMutator(final Type type, final Mutator mutator);
 
-        // Todo(ac): what about other java lang types..
-        builder.withSpecificType(String.class, StringMutator.INSTANCE);
-        builder.withSpecificType(Date.class, DateMutator.INSTANCE);
+        Builder withSuperMutators(final Map<Class<?>, ? extends Mutator> mutators);
 
-        // Todo(ac): what about base Collection.class? what instantiates that and populates...
-        builder.withSuperType(Set.class, chain(EnsureMutator.INSTANCE, ChangeSetElementsMutator.INSTANCE));
-        builder.withSuperType(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE, ChangeListElementsMutator.INSTANCE));
-        builder.withSuperType(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE, ChangeMapValuesMutator.INSTANCE));
-        builder.withSuperType(Enum.class, chain(EnsureMutator.INSTANCE, ChangeEnumMutator.INSTANCE));
+        Builder withSuperMutator(final Class<?> baseClass, final Mutator mutator);
 
-        DEFAULT = builder
-            .withArrayDefault(ArrayMutator.INSTANCE)
-            .withDefault(EnsureMutator.INSTANCE)
-            .build();
+        Builder withArrayDefaultMutator(final Mutator mutator);
+
+        Builder withDefaultMutator(final Mutator mutator);
+
+        Mutators build();
     }
 
-    private Mutators() {
+    public Mutator get(final Type key) {
+        return mutators.get(key);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final Mutators that = (Mutators) o;
+        return mutators.equals(that.mutators);
+    }
+
+    @Override
+    public int hashCode() {
+        return mutators.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Mutators{" +
+            " mutators=" + mutators +
+            '}';
+    }
+
+    Mutators(final ImmutableTypeMap<Mutator> mutators) {
+        Validate.notNull(mutators, "mutators null");
+        this.mutators = mutators;
     }
 }

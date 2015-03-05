@@ -4,7 +4,7 @@ import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.populator.instance.InstanceFactory;
-import org.datalorax.populace.typed.ImmutableTypeMap;
+import org.datalorax.populace.populator.mutator.Mutators;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -15,14 +15,12 @@ import java.lang.reflect.TypeVariable;
  * @author datalorax - 26/02/2015.
  */
 public class PopulatorContext {
-    private final ImmutableTypeMap<Mutator> mutators;
+    private final Mutators mutators;
     private final InstanceFactories instanceFactories;
 
-    public PopulatorContext(final ImmutableTypeMap<Mutator> mutators,
+    public PopulatorContext(final Mutators mutators,
                             final InstanceFactories instanceFactories) {
         Validate.notNull(mutators, "mutators null");
-        Validate.notNull(mutators.getDefault(), "No default mutator provided");
-        Validate.notNull(mutators.getArrayDefault(), "No default mutator provided for array types");
         Validate.notNull(instanceFactories, "instanceFactories null");
         this.mutators = mutators;
         this.instanceFactories = instanceFactories;

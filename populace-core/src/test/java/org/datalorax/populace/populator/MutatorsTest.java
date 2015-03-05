@@ -2,7 +2,6 @@ package org.datalorax.populace.populator;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.mutator.Mutators;
-import org.datalorax.populace.typed.ImmutableTypeMap;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -17,11 +16,11 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
 public class MutatorsTest {
-    private ImmutableTypeMap.Builder<Mutator> builder;
+    private Mutators.Builder builder;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        builder = Mutators.defaultMutators();
+        builder = Mutators.newBuilder();
     }
 
     @Test
@@ -30,7 +29,7 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final ImmutableTypeMap<Mutator> mutators = builder.build();
+        final Mutators mutators = builder.build();
 
         // Then:
         assertThat(mutators.get(boolean.class), is(not(defaultMutator)));
@@ -49,7 +48,7 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final ImmutableTypeMap<Mutator> mutators = builder.build();
+        final Mutators mutators = builder.build();
 
         // Then:
         assertThat(mutators.get(Boolean.class), is(not(defaultMutator)));
@@ -68,7 +67,7 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final ImmutableTypeMap<Mutator> mutators = builder.build();
+        final Mutators mutators = builder.build();
 
         // Then:
         assertThat(mutators.get(String.class), is(not(defaultMutator)));
@@ -80,7 +79,7 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final ImmutableTypeMap<Mutator> mutators = builder.build();
+        final Mutators mutators = builder.build();
 
         // Then:
         assertThat(mutators.get(Date.class), is(not(defaultMutator)));
@@ -92,7 +91,7 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final ImmutableTypeMap<Mutator> mutators = builder.build();
+        final Mutators mutators = builder.build();
 
         // Then:
         assertThat(mutators.get(List.class), is(not(defaultMutator)));
@@ -106,7 +105,7 @@ public class MutatorsTest {
         final Type unregisteredType = getClass();
 
         // When:
-        final ImmutableTypeMap<Mutator> mutators = builder.build();
+        final Mutators mutators = builder.build();
 
         // Then:
         assertThat(mutators.get(unregisteredType), is(notNullValue()));
@@ -118,7 +117,7 @@ public class MutatorsTest {
         final Type arrayType = TypeUtils.genericArrayType(int.class);
 
         // When:
-        final ImmutableTypeMap<Mutator> mutators = builder.build();
+        final Mutators mutators = builder.build();
 
         // Then:
         assertThat(mutators.get(arrayType), is(notNullValue()));

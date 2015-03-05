@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * @author datalorax - 02/03/2015.
  */
-public final class InstanceFactories {
+public class InstanceFactories {
     private final InstanceFactory nullObjectFactory;
     private final ImmutableTypeMap<InstanceFactory> factories;
 
@@ -58,6 +58,30 @@ public final class InstanceFactories {
         Validate.notNull(factories.getArrayDefault(), "No default instance factory provided for array types");
         this.nullObjectFactory = nullObjectFactory;
         this.factories = factories;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final InstanceFactories that = (InstanceFactories) o;
+        return factories.equals(that.factories) && nullObjectFactory.equals(that.nullObjectFactory);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = nullObjectFactory.hashCode();
+        result = 31 * result + factories.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "InstanceFactories{" +
+            "nullObjectFactory=" + nullObjectFactory +
+            ", factories=" + factories +
+            '}';
     }
 }
 

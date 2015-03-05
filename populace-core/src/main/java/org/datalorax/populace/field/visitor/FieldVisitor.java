@@ -1,6 +1,6 @@
 package org.datalorax.populace.field.visitor;
 
-import java.lang.reflect.Field;
+import org.datalorax.populace.field.FieldInfo;
 
 /**
  * Visitor pattern interface for fields
@@ -10,8 +10,7 @@ import java.lang.reflect.Field;
 public interface FieldVisitor {
     /**
      * Called on visiting a simple field
-     * @param field the field being visited
-     * @param instance the instance of the declaring class of the field. Call {@link java.lang.reflect.Field#get(Object) field.get(instance)}
+     * @param field the field being visited     *
      */
-    void visit(final Field field, final Object instance);
+    void visit(final FieldInfo field);
 }

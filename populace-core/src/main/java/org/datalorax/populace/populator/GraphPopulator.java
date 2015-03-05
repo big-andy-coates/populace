@@ -1,6 +1,7 @@
 package org.datalorax.populace.populator;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.field.FieldInfo;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.field.visitor.FieldVisitor;
 import org.datalorax.populace.field.visitor.FieldVisitors;
@@ -10,7 +11,6 @@ import org.datalorax.populace.graph.inspector.Inspector;
 import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 /**
@@ -49,13 +49,13 @@ public final class GraphPopulator {
 
     // Todo(ac): needs a TypeReference<T> parameter...
     public <T> T populate(final T instance) {
-        walker.walk(instance, FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, new Visitor()));
+        walker.walk(instance, FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, new Visitor()));  // Todo(ac): this overrides any configured field filter... need to get current
         return instance;
     }
 
     public <T> T populate(final Class<T> type) {
         //noinspection unchecked
-        final T instance = (T)config.createInstance(type, null);
+        final T instance = (T) config.createInstance(type, null);
         return populate(instance);
     }
 
@@ -82,9 +82,9 @@ public final class GraphPopulator {
     @Override
     public String toString() {
         return "GraphPopulator{" +
-                "walker=" + walker +
-                ", config=" + config +
-                '}';
+            "walker=" + walker +
+            ", config=" + config +
+            '}';
     }
 
     GraphPopulator(final GraphWalker walker, final PopulatorContext config) {
@@ -96,18 +96,14 @@ public final class GraphPopulator {
 
     private class Visitor implements FieldVisitor {
         @Override
-        public void visit(final Field field, final Object instance) {
-            try {
-                final Type type = field.getGenericType();
-                final Object currentValue = field.get(instance);
-                // Todo(ac): Add debug log line here...
-                final Mutator mutator = config.getMutator(type);
-                final Object mutated = mutator.mutate(type, currentValue, instance, config);
-                if (mutated != currentValue) {
-                    field.set(instance, mutated);
-                }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);  // todo(ac): throw specific
+        public void visit(final FieldInfo field) {
+            final Type type = field.getGenericType();
+            final Object currentValue = field.getValue();
+            // Todo(ac): Add debug log line here...
+            final Mutator mutator = config.getMutator(type);
+            final Object mutated = mutator.mutate(type, currentValue, field.getOwningInstance(), config);
+            if (mutated != currentValue) {
+                field.setValue(mutated);
             }
         }
     }

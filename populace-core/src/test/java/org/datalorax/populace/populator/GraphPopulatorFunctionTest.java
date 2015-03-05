@@ -191,18 +191,6 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldAtLeastNotBlowUpOnTypeVariablesUntilWeSupportThem() throws Exception {
-        // Given:
-        final TypeWrappingTypeWithTypeVariables currentValue = new TypeWrappingTypeWithTypeVariables();
-
-        // When:
-        populator.populate(currentValue);
-
-        // Todo(ac): remove once type variables supported
-    }
-
-    @Test(enabled = false)
-    // Todo(ac): to support this we'll need to capture TypeVariables as we go... see test above too
     public void shouldHandleTypeVariables() throws Exception {
         // Given:
         final TypeWrappingTypeWithTypeVariables currentValue = new TypeWrappingTypeWithTypeVariables();

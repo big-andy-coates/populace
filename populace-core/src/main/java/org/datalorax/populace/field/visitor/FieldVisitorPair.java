@@ -1,8 +1,7 @@
 package org.datalorax.populace.field.visitor;
 
 import org.apache.commons.lang3.Validate;
-
-import java.lang.reflect.Field;
+import org.datalorax.populace.field.FieldInfo;
 
 /**
  * Combination visitor: combines two field visitors. The visitors will be called in order.
@@ -20,9 +19,9 @@ public class FieldVisitorPair implements FieldVisitor {
     }
 
     @Override
-    public void visit(final Field field, final Object instance) {
-        first.visit(field, instance);
-        second.visit(field, instance);
+    public void visit(final FieldInfo field) {
+        first.visit(field);
+        second.visit(field);
     }
 
     @Override

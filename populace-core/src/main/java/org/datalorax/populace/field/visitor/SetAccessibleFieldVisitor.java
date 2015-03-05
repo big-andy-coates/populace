@@ -1,6 +1,6 @@
 package org.datalorax.populace.field.visitor;
 
-import java.lang.reflect.Field;
+import org.datalorax.populace.field.FieldInfo;
 
 /**
  * A visitor which ensures the field is accessible by calling {@link java.lang.reflect.Field#setAccessible(boolean) setAccessible(true)}
@@ -10,8 +10,8 @@ public class SetAccessibleFieldVisitor implements FieldVisitor {
     public static final FieldVisitor INSTANCE = new SetAccessibleFieldVisitor();
 
     @Override
-    public void visit(final Field field, final Object instance) {
-        field.setAccessible(true);
+    public void visit(final FieldInfo fieldInfo) {
+        fieldInfo.getField().setAccessible(true);
     }
 
     @Override

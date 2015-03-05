@@ -14,7 +14,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.testng.Assert.fail;
 
 public class EnsureMapNotEmptyMutatorTest {
     private Mutator mutator;
@@ -53,11 +52,7 @@ public class EnsureMapNotEmptyMutatorTest {
         mutator.mutate(Map.class, currentValue, null, config);
     }
 
-    @Test
-    public void shouldWriteTests() throws Exception {
-        // todo(ac):
-        fail();
-    }
+    // Todo(ac): how about some tests?
 
     private void givenMutatorRegistered(Class<?> type, Mutator mutator) {
         when(config.getMutator(type)).thenReturn(mutator);

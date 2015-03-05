@@ -1,5 +1,8 @@
 package org.datalorax.populace.graph;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.datalorax.populace.field.FieldInfo;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.field.visitor.FieldVisitor;
 import org.datalorax.populace.graph.inspector.Inspector;
@@ -13,6 +16,8 @@ import java.lang.reflect.Field;
  * @author datalorax - 28/02/2015.
  */
 public class GraphWalker {
+    private static final Log LOG = LogFactory.getLog(GraphWalker.class);
+
     private final WalkerContext config;
 
     public static Builder newBuilder() {
@@ -32,26 +37,7 @@ public class GraphWalker {
     }
 
     public void walk(final Object instance, final FieldVisitor visitor) {
-        final Inspector inspector = config.getInspector(instance.getClass());
-
-        for (Field field : inspector.getFields(instance)) {
-            if (config.isExcludedField(field)) {
-                continue;
-            }
-
-            visitor.visit(field, instance);
-
-            final Object value = getValue(field, instance);
-            if (value != null) {
-                walk(value, visitor);
-            }
-        }
-
-        for (Object child : inspector.getChildren(instance)) {
-            if (child != null) {
-                walk(child, visitor);
-            }
-        }
+        walk(instance, visitor, WalkerStack.newStack(instance));
     }
 
     @Override
@@ -77,6 +63,34 @@ public class GraphWalker {
 
     GraphWalker(final WalkerContext config) {
         this.config = config;
+    }
+
+    private void walk(final Object instance, final FieldVisitor visitor, final WalkerStack stack) {
+        final Inspector inspector = config.getInspector(instance.getClass());
+
+        // Todo(ac): guard all log lines
+        LOG.info(stack.getPath() + " - Inspecting type: " + instance.getClass() + ", inspector: " + inspector.getClass());  // Todo(ac): change level to info?
+        for (Field field : inspector.getFields(instance)) {
+            if (config.isExcludedField(field)) {
+                LOG.info(stack.getPath() + " - Skipping excluded field: " + field.getName());   // todo(ac): change level to debug
+                continue;
+            }
+
+            final FieldInfo fieldInfo = new FieldInfo(field, stack.resolveType(field.getGenericType()), instance);  // Todo(ac): Lazy type resolution
+            LOG.info(stack.getPath() + " - Found field: " + field.getName() + ", type: " + fieldInfo);  // Todo(ac): change level to info?
+            visitor.visit(fieldInfo);
+
+            final Object value = getValue(field, instance);
+            if (value != null) {
+                walk(value, visitor, stack.push(field));
+            }
+        }
+
+        for (Object child : inspector.getChildren(instance)) {
+            if (child != null) {
+                walk(child, visitor, stack.push(child));
+            }
+        }
     }
 
     private static Object getValue(final Field field, final Object instance) {

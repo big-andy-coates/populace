@@ -19,6 +19,7 @@ import java.util.Map;
  *
  * @author datalorax - 27/02/2015.
  */
+// Todo(ac): Given that the system knows about containers... why do we need special mutators for maps? Just mutate the values in the map...
 public class ChangeMapValuesMutator implements Mutator {
     private static final TypeVariable<Class<Map>>[] MAP_TYPE_VARIABLES = Map.class.getTypeParameters();
     public static final Mutator INSTANCE = new ChangeMapValuesMutator();

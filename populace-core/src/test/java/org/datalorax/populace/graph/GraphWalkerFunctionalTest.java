@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.datalorax.populace.field.FieldInfoMatcher.hasField;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -44,8 +46,8 @@ public class GraphWalkerFunctionalTest {
         walker.walk(instance, visitor);
 
         // Then:
-        verify(visitor).visit(TypeWithNestedObject.class.getDeclaredField("_nested"), instance);
-        verify(visitor).visit(NestedType.class.getDeclaredField("_nested"), instance._nested);
+        verify(visitor).visit(argThat(hasField(TypeWithNestedObject.class.getDeclaredField("_nested"), instance)));
+        verify(visitor).visit(argThat(hasField(NestedType.class.getDeclaredField("_nested"), instance._nested)));
         verifyNoMoreInteractions(visitor);
     }
 
@@ -53,14 +55,14 @@ public class GraphWalkerFunctionalTest {
     public void shouldObeyFieldFilter() throws Exception {
         // Given:
         walker = GraphWalker.newBuilder()
-                .withFieldFilter(FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, filter))  // Skip statics
-                .build();
+            .withFieldFilter(FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, filter))  // Skip statics
+            .build();
 
         // When:
         walker.walk(new TypeWithStaticField(), visitor);
 
         // Then:
-        verify(visitor, never()).visit(eq(TypeWithStaticField.class.getDeclaredField("_static")), anyObject());
+        verify(visitor, never()).visit(argThat(not(hasField(TypeWithStaticField.class.getDeclaredField("_static")))));  // todo(ac): not not
     }
 
     @Test
@@ -69,7 +71,7 @@ public class GraphWalkerFunctionalTest {
         walker.walk(new TypeWithPrimitiveField(), visitor);
 
         // Then:
-        verify(visitor).visit(eq(TypeWithPrimitiveField.class.getDeclaredField("_primitive")), anyObject());
+        verify(visitor).visit(argThat(hasField(TypeWithPrimitiveField.class.getDeclaredField("_primitive"))));
         verifyNoMoreInteractions(visitor);
     }
 
@@ -79,7 +81,7 @@ public class GraphWalkerFunctionalTest {
         walker.walk(new TypeWithBoxedPrimitiveField(), visitor);
 
         // Then:
-        verify(visitor).visit(eq(TypeWithBoxedPrimitiveField.class.getDeclaredField("_boxed")), anyObject());
+        verify(visitor).visit(argThat(hasField(TypeWithBoxedPrimitiveField.class.getDeclaredField("_boxed"))));
         verifyNoMoreInteractions(visitor);
     }
 
@@ -89,7 +91,7 @@ public class GraphWalkerFunctionalTest {
         walker.walk(new TypeWithStringField(), visitor);
 
         // Then:
-        verify(visitor).visit(eq(TypeWithStringField.class.getDeclaredField("_string")), anyObject());
+        verify(visitor).visit(argThat(hasField(TypeWithStringField.class.getDeclaredField("_string"))));
         verifyNoMoreInteractions(visitor);
     }
 
@@ -99,7 +101,7 @@ public class GraphWalkerFunctionalTest {
         walker.walk(new TypeWithEnumField(), visitor);
 
         // Then:
-        verify(visitor).visit(eq(TypeWithEnumField.class.getDeclaredField("_enum")), anyObject());
+        verify(visitor).visit(argThat(hasField(TypeWithEnumField.class.getDeclaredField("_enum"))));
         verifyNoMoreInteractions(visitor);
     }
 
@@ -109,9 +111,9 @@ public class GraphWalkerFunctionalTest {
         walker.walk(new TypeWithArrayField(), visitor);
 
         // Then:
-        verify(visitor).visit(eq(TypeWithArrayField.class.getDeclaredField("_array")), anyObject());
-        verify(visitor).visit(eq(NestedType.class.getDeclaredField("_nested")), anyObject());
-        verify(visitor).visit(eq(AnotherNestedType.class.getDeclaredField("_nested")), anyObject());
+        verify(visitor).visit(argThat(hasField(TypeWithArrayField.class.getDeclaredField("_array"))));
+        verify(visitor).visit(argThat(hasField(NestedType.class.getDeclaredField("_nested"))));
+        verify(visitor).visit(argThat(hasField(AnotherNestedType.class.getDeclaredField("_nested"))));
         verifyNoMoreInteractions(visitor);
     }
 
@@ -121,9 +123,9 @@ public class GraphWalkerFunctionalTest {
         walker.walk(new TypeWithCollectionField(), visitor);
 
         // Then:
-        verify(visitor).visit(eq(TypeWithCollectionField.class.getDeclaredField("_collection")), anyObject());
-        verify(visitor).visit(eq(NestedType.class.getDeclaredField("_nested")), anyObject());
-        verify(visitor).visit(eq(AnotherNestedType.class.getDeclaredField("_nested")), anyObject());
+        verify(visitor).visit(argThat(hasField(TypeWithCollectionField.class.getDeclaredField("_collection"))));
+        verify(visitor).visit(argThat(hasField(NestedType.class.getDeclaredField("_nested"))));
+        verify(visitor).visit(argThat(hasField(AnotherNestedType.class.getDeclaredField("_nested"))));
         verifyNoMoreInteractions(visitor);
     }
 
@@ -133,9 +135,9 @@ public class GraphWalkerFunctionalTest {
         walker.walk(new TypeWithMapField(), visitor);
 
         // Then:
-        verify(visitor).visit(eq(TypeWithMapField.class.getDeclaredField("_map")), anyObject());
-        verify(visitor).visit(eq(NestedType.class.getDeclaredField("_nested")), anyObject());
-        verify(visitor).visit(eq(AnotherNestedType.class.getDeclaredField("_nested")), anyObject());
+        verify(visitor).visit(argThat(hasField(TypeWithMapField.class.getDeclaredField("_map"))));
+        verify(visitor).visit(argThat(hasField(NestedType.class.getDeclaredField("_nested"))));
+        verify(visitor).visit(argThat(hasField(AnotherNestedType.class.getDeclaredField("_nested"))));
         verifyNoMoreInteractions(visitor);
     }
 
@@ -143,16 +145,16 @@ public class GraphWalkerFunctionalTest {
     public void shouldHonourCustomInspectors() throws Exception {
         // Given:
         walker = GraphWalker.newBuilder()
-                .withInspectors(Inspectors.defaults()
-                        .withSpecificType(NestedType.class, TerminalInspector.INSTANCE)
-                        .build())
-                .build();
+            .withInspectors(Inspectors.defaults()
+                .withSpecificType(NestedType.class, TerminalInspector.INSTANCE)
+                .build())
+            .build();
 
         // When:
         walker.walk(new TypeWithNestedObject(), visitor);
 
         // Then:
-        verify(visitor, never()).visit(eq(NestedType.class.getDeclaredField("_nested")), anyObject());
+        verify(visitor, never()).visit(argThat(hasField(NestedType.class.getDeclaredField("_nested"))));
     }
 
     @Test
@@ -164,7 +166,7 @@ public class GraphWalkerFunctionalTest {
         walker.walk(new TypeWithPrivateField(), visitors);
 
         // Then:
-        verify(visitor).visit(eq(TypeWithPrivateField.class.getDeclaredField("_private")), anyObject());
+        verify(visitor).visit(argThat(hasField(TypeWithPrivateField.class.getDeclaredField("_private"))));
     }
 
     @Test(expectedExceptions = WalkerException.class)
@@ -218,6 +220,7 @@ public class GraphWalkerFunctionalTest {
         public enum SomeEnum {
             first, second, third;
         }
+
         public SomeEnum _enum = SomeEnum.first;
     }
 

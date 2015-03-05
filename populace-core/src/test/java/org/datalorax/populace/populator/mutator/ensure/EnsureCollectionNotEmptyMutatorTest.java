@@ -11,7 +11,6 @@ import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.testng.Assert.fail;
 
 public class EnsureCollectionNotEmptyMutatorTest {
     private Mutator mutator;
@@ -22,12 +21,6 @@ public class EnsureCollectionNotEmptyMutatorTest {
         config = mock(PopulatorContext.class);
 
         mutator = new EnsureCollectionNotEmptyMutator();
-    }
-
-    @Test
-    public void shouldWriteTests() throws Exception {
-        // todo(ac):
-        fail();
     }
 
     @Test
@@ -42,6 +35,8 @@ public class EnsureCollectionNotEmptyMutatorTest {
         // When:
         mutator.mutate(List.class, currentValue, null, config);
     }
+
+    // Todo(ac): how about some tests?
 
     private void givenMutatorRegistered(Class<?> type, Mutator mutator) {
         when(config.getMutator(type)).thenReturn(mutator);

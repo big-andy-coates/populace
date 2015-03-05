@@ -1,0 +1,84 @@
+package org.datalorax.populace.field;
+
+import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.field.visitor.FieldAccessException;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+
+/**
+ * @author datalorax - 04/03/2015.
+ */
+public class FieldInfo {
+    private final Field field;
+    private final Type genericType;
+    private final Object owningInstance;
+
+    public FieldInfo(final Field field, final Type genericType, final Object owningInstance) {
+        Validate.notNull(field, "field null");
+        Validate.notNull(genericType, "genericType null");
+        Validate.notNull(owningInstance, "owningInstance null");
+        this.field = field;
+        this.genericType = genericType;
+        this.owningInstance = owningInstance;
+    }
+
+    public Field getField() {
+        return field;
+    }
+
+    public Type getGenericType() {
+        return genericType;
+    }
+
+    public Object getOwningInstance() {
+        return owningInstance;
+    }
+
+    public Object getValue() {
+        try {
+            return field.get(owningInstance);
+        } catch (IllegalAccessException e) {
+            throw new FieldAccessException("Failed to access field: " + field, e);  // Todo(ac): include stack?
+        }
+    }
+
+    public void setValue(Object value) {
+        try {
+            field.set(owningInstance, value);
+        } catch (IllegalAccessException e) {
+            throw new FieldAccessException("Failed to access field: " + field, e);  // Todo(ac): include stack?
+        }
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final FieldInfo fieldInfo = (FieldInfo) o;
+
+        if (!field.equals(fieldInfo.field)) return false;
+        if (!genericType.equals(fieldInfo.genericType)) return false;
+        if (!owningInstance.equals(fieldInfo.owningInstance)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = field.hashCode();
+        result = 31 * result + genericType.hashCode();
+        result = 31 * result + owningInstance.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "FieldInfo{" +
+            "field=" + field +
+            ", genericType=" + genericType +
+            ", owningInstance=" + owningInstance +
+            '}';
+    }
+}

@@ -9,7 +9,6 @@ import java.lang.reflect.Type;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
-import static org.testng.Assert.fail;
 
 /**
  * @author datalorax - 25/02/2015.
@@ -44,10 +43,7 @@ public class GraphPopulatorTest {
         verify(walker).walk(eq(instance), any(FieldVisitor.class));
     }
 
-    @Test
-    public void shouldTest() throws Exception {
-        fail();
-    }
+    // Todo(ac): how about some tests?
 
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = mock(Mutator.class);

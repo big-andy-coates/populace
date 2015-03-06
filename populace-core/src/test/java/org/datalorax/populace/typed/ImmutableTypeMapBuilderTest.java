@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2015 Andrew Coates
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.datalorax.populace.typed;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
@@ -12,14 +28,20 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 
 public class ImmutableTypeMapBuilderTest {
     private ImmutableTypeMapBuilder<String> builder;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        builder = new ImmutableTypeMapBuilder<String>();
+        builder = new ImmutableTypeMapBuilder<String>("initial default");
+    }
+
+    @Test
+    public void shouldAlwaysHaveDefault() throws Exception {
+        // Then:
+        final ImmutableTypeMap<String> collection = builder.build();
+        assertThat(collection.get(int.class), is("initial default"));
     }
 
     @Test
@@ -93,16 +115,6 @@ public class ImmutableTypeMapBuilderTest {
     }
 
     @Test
-    public void shouldReturnNullIfNoMatchFoundAndNoDefault() throws Exception {
-        // Given:
-        final Type unregisteredType = ImmutableTypeMapBuilder.class;
-
-        // Then:
-        final ImmutableTypeMap<String> collection = builder.build();
-        assertThat(collection.get(unregisteredType), is(nullValue()));
-    }
-
-    @Test
     public void shouldInstallDefaultArray() throws Exception {
         // Given:
         final Type arrayType = TypeUtils.genericArrayType(int.class);
@@ -114,15 +126,5 @@ public class ImmutableTypeMapBuilderTest {
         // Then:
         final ImmutableTypeMap<String> collection = builder.build();
         assertThat(collection.get(arrayType), is(defaultA));
-    }
-
-    @Test
-    public void shouldReturnNullIfNoMatchFoundAndNoDefaultArray() throws Exception {
-        // Given:
-        final Type arrayType = TypeUtils.genericArrayType(int.class);
-
-        // Then:
-        final ImmutableTypeMap<String> collection = builder.build();
-        assertThat(collection.get(arrayType), is(nullValue()));
     }
 }

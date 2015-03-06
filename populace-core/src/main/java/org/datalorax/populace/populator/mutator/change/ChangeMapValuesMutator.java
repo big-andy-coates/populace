@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2015 Andrew Coates
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.datalorax.populace.populator.mutator.change;
 
 import org.apache.commons.lang3.Validate;
@@ -17,7 +33,7 @@ import java.util.Map;
  * and/or {@link org.datalorax.populace.populator.mutator.ensure.EnsureMapNotEmptyMutator} to ensure the map is not empty, if
  * the required behaviour is to always ensure a non-null, populated map instance.
  *
- * @author datalorax - 27/02/2015.
+ * @author Andrew Coates - 27/02/2015.
  */
 // Todo(ac): Given that the system knows about containers... why do we need special mutators for maps? Just mutate the values in the map...
 public class ChangeMapValuesMutator implements Mutator {

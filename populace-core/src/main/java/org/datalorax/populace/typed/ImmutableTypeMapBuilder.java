@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2015 Andrew Coates
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.datalorax.populace.typed;
 
 import org.apache.commons.lang3.Validate;
@@ -8,13 +24,14 @@ import java.util.Map;
 
 /**
  * The builder of typed collection
- * @author datalorax - 28/02/2015.
+ * @author Andrew Coates - 28/02/2015.
  */
 public class ImmutableTypeMapBuilder<T> implements ImmutableTypeMap.Builder<T> {
     private T defaultValue = null;
-    private T defaultArrayValue = null;
+    private T arrayDefaultValue = null;
     private final Map<Type, T> specificValues = new HashMap<Type, T>();
     private final Map<Class<?>, T> superValues = new HashMap<Class<?>, T>();
+    private final Map<Package, T> packageValues = new HashMap<Package, T>();
 
     @Override
     public ImmutableTypeMapBuilder<T> withSpecificTypes(final Map<Type, ? extends T> handlers) {
@@ -51,9 +68,17 @@ public class ImmutableTypeMapBuilder<T> implements ImmutableTypeMap.Builder<T> {
     }
 
     @Override
+    public ImmutableTypeMap.Builder<T> withPackageType(final Package thePackage, final T handler) {
+        Validate.notNull(thePackage, "package null");
+        Validate.notNull(handler, "handler null");
+        packageValues.put(thePackage, handler);
+        return this;
+    }
+
+    @Override
     public ImmutableTypeMapBuilder<T> withArrayDefault(final T handler) {
         Validate.notNull(handler, "handler null");
-        defaultArrayValue = handler;
+        arrayDefaultValue = handler;
         return this;
     }
 
@@ -66,20 +91,23 @@ public class ImmutableTypeMapBuilder<T> implements ImmutableTypeMap.Builder<T> {
 
     @Override
     public ImmutableTypeMap<T> build() {
-        return new ImmutableTypeMap<T>(specificValues, superValues, defaultValue, defaultArrayValue);
+        return new ImmutableTypeMap<T>(specificValues, superValues, packageValues, arrayDefaultValue, defaultValue);
     }
 
     /**
-     * Construct via {@link org.datalorax.populace.typed.ImmutableTypeMap#newBuilder()} or
+     * Construct via {@link org.datalorax.populace.typed.ImmutableTypeMap#newBuilder(Object)} or
      * {@link org.datalorax.populace.typed.ImmutableTypeMap#asBuilder(ImmutableTypeMap)}
      */
-    ImmutableTypeMapBuilder() {
+    ImmutableTypeMapBuilder(final T defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
-    ImmutableTypeMapBuilder(final Map<Type, T> specificValues, final Map<Class<?>, T> superValues, final T defaultArrayValue, final T defaultValue) {
+    ImmutableTypeMapBuilder(final Map<Type, T> specificValues, final Map<Class<?>, T> superValues,
+                            final Map<Package, T> packageValues, final T arrayDefaultValue, final T defaultValue) {
         this.specificValues.putAll(specificValues);
         this.superValues.putAll(superValues);
-        this.defaultArrayValue = defaultArrayValue;
+        this.packageValues.putAll(packageValues);
+        this.arrayDefaultValue = arrayDefaultValue;
         this.defaultValue = defaultValue;
     }
 }

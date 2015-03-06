@@ -20,7 +20,6 @@ import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 
 /**
  * Collection of InstanceFactories to handle different types.
@@ -40,11 +39,7 @@ public class InstanceFactories {
     }
 
     public interface Builder {
-        Builder withSpecificFactories(final Map<Type, ? extends InstanceFactory> factories);
-
         Builder withSpecificFactory(final Type type, final InstanceFactory factory);
-
-        Builder withSuperFactories(final Map<Class<?>, ? extends InstanceFactory> factories);
 
         Builder withSuperFactory(final Class<?> baseClass, final InstanceFactory factory);
 

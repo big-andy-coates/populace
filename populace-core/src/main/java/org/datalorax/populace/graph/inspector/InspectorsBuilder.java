@@ -16,12 +16,10 @@
 
 package org.datalorax.populace.graph.inspector;
 
-import org.datalorax.populace.type.TypeUtils;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -39,26 +37,20 @@ final class InspectorsBuilder implements Inspectors.Builder {
     }
 
     @Override
-    public Inspectors.Builder withSpecificInspectors(final Map<Type, Inspector> inspectors) {
-        inspectorsBuilder.withSpecificTypes(inspectors);
-        return this;
-    }
-
-    @Override
     public Inspectors.Builder withSpecificInspector(final Type type, final Inspector inspector) {
         inspectorsBuilder.withSpecificType(type, inspector);
         return this;
     }
 
     @Override
-    public Inspectors.Builder withSuperInspectors(final Map<Class<?>, Inspector> inspectors) {
-        inspectorsBuilder.withSuperTypes(inspectors);
+    public Inspectors.Builder withSuperInspector(final Class<?> baseClass, final Inspector inspector) {
+        inspectorsBuilder.withSuperType(baseClass, inspector);
         return this;
     }
 
     @Override
-    public Inspectors.Builder withSuperInspector(final Class<?> baseClass, final Inspector inspector) {
-        inspectorsBuilder.withSuperType(baseClass, inspector);
+    public Inspectors.Builder withPackageInspector(final String packageName, final Inspector inspector) {
+        inspectorsBuilder.withPackageType(packageName, inspector);
         return this;
     }
 
@@ -90,15 +82,10 @@ final class InspectorsBuilder implements Inspectors.Builder {
     static {
         final InspectorsBuilder builder = new InspectorsBuilder();
 
-        TypeUtils.getPrimitiveTypes().forEach(type -> builder.withSpecificInspector(type, TerminalInspector.INSTANCE));       // Todo(ac): replace with 'don't go into package java.*' type behaviour
-        TypeUtils.getBoxedPrimitiveTypes().forEach(type -> builder.withSpecificInspector(type, TerminalInspector.INSTANCE));
-
-        // Todo(ac): is it not just the case we want to not walk fields of anything under java.lang? Maybe need a 'package' walker concept?
-        builder.withSpecificInspector(String.class, TerminalInspector.INSTANCE);
-        builder.withSpecificInspector(Date.class, TerminalInspector.INSTANCE);
-
         builder.withSuperInspector(Collection.class, CollectionInspector.INSTANCE);
         builder.withSuperInspector(Map.class, MapValueInspector.INSTANCE);
+
+        builder.withPackageInspector("java", TerminalInspector.INSTANCE);
 
         DEFAULT = builder
             .withArrayDefaultInspector(ArrayInspector.INSTANCE)

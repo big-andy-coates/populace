@@ -54,7 +54,7 @@ import java.util.Map;
 public class ImmutableTypeMap<V> {
     private final Map<Type, V> specificValues;
     private final Map<Class<?>, V> superValues;
-    private final Map<Package, V> packageValues;    // Todo(ac): perfect candidate for TriMap
+    private final Map<String, V> packageValues;    // Todo(ac): perfect candidate for TriMap
     private final V arrayDefaultValue;
     private final V defaultValue;
 
@@ -68,15 +68,11 @@ public class ImmutableTypeMap<V> {
     }
 
     public interface Builder<T> {
-        Builder<T> withSpecificTypes(final Map<Type, ? extends T> handlers);
-
         Builder<T> withSpecificType(final Type type, final T handler);
-
-        Builder<T> withSuperTypes(final Map<Class<?>, ? extends T> handlers);   // Todo(ac): remove colleciton ones - lets keep the interfaces small
 
         Builder<T> withSuperType(final Class<?> baseClass, final T handler);
 
-        Builder<T> withPackageType(final Package thePackage, final T handler);
+        Builder<T> withPackageType(final String thePackage, final T handler);
 
         Builder<T> withArrayDefault(final T handler);
 
@@ -98,14 +94,14 @@ public class ImmutableTypeMap<V> {
             return value;
         }
 
-        final boolean isArray = TypeUtils.isArrayType(key);
-        final Class<?> rawType = TypeUtils.getRawType(key, null);
+        if (TypeUtils.isArrayType(key)) {
+            return arrayDefaultValue == null ? getDefault() : getArrayDefault();
+        }
 
-        if (!isArray) {
-            value = getSuper(rawType);
-            if (value != null) {
-                return value;
-            }
+        final Class<?> rawType = TypeUtils.getRawType(key, null);
+        value = getSuper(rawType);
+        if (value != null) {
+            return value;
         }
 
         value = getPackage(rawType);
@@ -113,7 +109,7 @@ public class ImmutableTypeMap<V> {
             return value;
         }
 
-        return (!isArray || arrayDefaultValue == null) ? getDefault() : getArrayDefault();
+        return getDefault();
     }
 
     /**
@@ -154,14 +150,14 @@ public class ImmutableTypeMap<V> {
     public V getPackage(final String packageName) {
         Validate.notEmpty(packageName, "packageName empty");
 
-        Map.Entry<Package, V> bestMatch = null;
+        Map.Entry<String, V> bestMatch = null;
 
-        for (Map.Entry<Package, V> entry : packageValues.entrySet()) {
-            if (!entry.getKey().getName().startsWith(packageName)) {
+        for (Map.Entry<String, V> entry : packageValues.entrySet()) {
+            if (!packageName.startsWith(entry.getKey())) {
                 continue;
             }
 
-            if (bestMatch == null || entry.getKey().getName().length() > bestMatch.getKey().getName().length()) {
+            if (bestMatch == null || entry.getKey().length() > bestMatch.getKey().length()) {
                 // First, or more specific match found:
                 bestMatch = entry;
             }
@@ -221,27 +217,22 @@ public class ImmutableTypeMap<V> {
     }
 
     ImmutableTypeMap(final Map<Type, V> specificValues, final Map<Class<?>, V> superValues,
-                     final Map<Package, V> packageValues, final V arrayDefaultValue, final V defaultValue) {
+                     final Map<String, V> packageValues, final V arrayDefaultValue, final V defaultValue) {
         Validate.notNull(specificValues, "specificValues null");
         Validate.notNull(superValues, "superValues null");
         Validate.notNull(packageValues, "packageValues null");
         Validate.notNull(defaultValue, "defaultValue null");
         this.specificValues = Collections.unmodifiableMap(new HashMap<Type, V>(specificValues));
         this.superValues = Collections.unmodifiableMap(new HashMap<Class<?>, V>(superValues));
-        this.packageValues = Collections.unmodifiableMap(new HashMap<Package, V>(packageValues));
+        this.packageValues = Collections.unmodifiableMap(new HashMap<String, V>(packageValues));
         this.arrayDefaultValue = arrayDefaultValue;
         this.defaultValue = defaultValue;
     }
 
     private V getPackage(final Class<?> rawType) {
-        Class<?> type = rawType;
-        while (type.isArray()) {
-            type = (Class<?>)TypeUtils.getArrayComponentType(rawType);
-        }
-
-        if (type.isPrimitive()) {
+        if (rawType.isPrimitive()) {
             return getPackage("java.lang");
         }
-        return getPackage(type.getPackage().getName());
+        return getPackage(rawType.getPackage().getName());
     }
 }

@@ -20,7 +20,6 @@ import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 
 /**
  * Helper functions for working with {@link org.datalorax.populace.graph.inspector.Inspector inspectors}
@@ -40,13 +39,11 @@ public class Inspectors {
 
     public interface Builder {
 
-        Builder withSpecificInspectors(final Map<Type, Inspector> inspector);
-
         Builder withSpecificInspector(final Type type, final Inspector inspector);
 
-        Builder withSuperInspectors(final Map<Class<?>, Inspector> inspector);
-
         Builder withSuperInspector(final Class<?> baseClass, final Inspector inspector);
+
+        Builder withPackageInspector(final String packageName, final Inspector inspector);
 
         Builder withArrayDefaultInspector(final Inspector inspector);
 

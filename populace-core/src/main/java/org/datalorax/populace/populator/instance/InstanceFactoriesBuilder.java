@@ -46,20 +46,8 @@ final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
     }
 
     @Override
-    public InstanceFactories.Builder withSpecificFactories(final Map<Type, ? extends InstanceFactory> factories) {
-        factoriesBuilder.withSpecificTypes(factories);
-        return this;
-    }
-
-    @Override
     public InstanceFactories.Builder withSpecificFactory(final Type type, final InstanceFactory factory) {
         factoriesBuilder.withSpecificType(type, factory);
-        return this;
-    }
-
-    @Override
-    public InstanceFactories.Builder withSuperFactories(final Map<Class<?>, ? extends InstanceFactory> factories) {
-        factoriesBuilder.withSuperTypes(factories);
         return this;
     }
 

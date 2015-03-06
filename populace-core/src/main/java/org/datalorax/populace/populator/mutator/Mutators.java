@@ -21,7 +21,6 @@ import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 
 /**
  * Helper functions for working with {@link org.datalorax.populace.populator.Mutator mutators}
@@ -40,11 +39,7 @@ public class Mutators {
     }
 
     public interface Builder {
-        Builder withSpecificMutators(final Map<Type, ? extends Mutator> mutators);
-
         Builder withSpecificMutator(final Type type, final Mutator mutator);
-
-        Builder withSuperMutators(final Map<Class<?>, ? extends Mutator> mutators);
 
         Builder withSuperMutator(final Class<?> baseClass, final Mutator mutator);
 

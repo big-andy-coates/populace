@@ -26,36 +26,18 @@ import java.util.Map;
  * The builder of typed collection
  * @author Andrew Coates - 28/02/2015.
  */
-public class ImmutableTypeMapBuilder<T> implements ImmutableTypeMap.Builder<T> {
+final class ImmutableTypeMapBuilder<T> implements ImmutableTypeMap.Builder<T> {
     private T defaultValue = null;
     private T arrayDefaultValue = null;
     private final Map<Type, T> specificValues = new HashMap<Type, T>();
     private final Map<Class<?>, T> superValues = new HashMap<Class<?>, T>();
-    private final Map<Package, T> packageValues = new HashMap<Package, T>();
-
-    @Override
-    public ImmutableTypeMapBuilder<T> withSpecificTypes(final Map<Type, ? extends T> handlers) {
-        Validate.notNull(handlers, "handlers null");
-        for (Map.Entry<Type, ? extends T> entry : handlers.entrySet()) {
-            withSpecificType(entry.getKey(), entry.getValue());
-        }
-        return this;
-    }
+    private final Map<String, T> packageValues = new HashMap<String, T>();
 
     @Override
     public ImmutableTypeMapBuilder<T> withSpecificType(final Type type, final T handler) {
         Validate.notNull(type, "type null");
         Validate.notNull(handler, "handler null");
         specificValues.put(type, handler);
-        return this;
-    }
-
-    @Override
-    public ImmutableTypeMap.Builder<T> withSuperTypes(final Map<Class<?>, ? extends T> handlers) {
-        Validate.notNull(handlers, "handlers null");
-        for (Map.Entry<Class<?>, ? extends T> entry : handlers.entrySet()) {
-            withSuperType(entry.getKey(), entry.getValue());
-        }
         return this;
     }
 
@@ -68,10 +50,10 @@ public class ImmutableTypeMapBuilder<T> implements ImmutableTypeMap.Builder<T> {
     }
 
     @Override
-    public ImmutableTypeMap.Builder<T> withPackageType(final Package thePackage, final T handler) {
-        Validate.notNull(thePackage, "package null");
+    public ImmutableTypeMap.Builder<T> withPackageType(final String packageName, final T handler) {
+        Validate.notEmpty(packageName, "packageName empty");
         Validate.notNull(handler, "handler null");
-        packageValues.put(thePackage, handler);
+        packageValues.put(packageName, handler);
         return this;
     }
 
@@ -103,7 +85,7 @@ public class ImmutableTypeMapBuilder<T> implements ImmutableTypeMap.Builder<T> {
     }
 
     ImmutableTypeMapBuilder(final Map<Type, T> specificValues, final Map<Class<?>, T> superValues,
-                            final Map<Package, T> packageValues, final T arrayDefaultValue, final T defaultValue) {
+                            final Map<String, T> packageValues, final T arrayDefaultValue, final T defaultValue) {
         this.specificValues.putAll(specificValues);
         this.superValues.putAll(superValues);
         this.packageValues.putAll(packageValues);

@@ -53,20 +53,8 @@ final class MutatorsBuilder implements  Mutators.Builder {
     }
 
     @Override
-    public Mutators.Builder withSpecificMutators(final Map<Type, ? extends Mutator> mutators) {
-        mutatorsBuilder.withSpecificTypes(mutators);
-        return this;
-    }
-
-    @Override
     public Mutators.Builder withSpecificMutator(final Type type, final Mutator mutator) {
         mutatorsBuilder.withSpecificType(type, mutator);
-        return this;
-    }
-
-    @Override
-    public Mutators.Builder withSuperMutators(final Map<Class<?>, ? extends Mutator> mutators) {
-        mutatorsBuilder.withSuperTypes(mutators);
         return this;
     }
 
@@ -107,11 +95,10 @@ final class MutatorsBuilder implements  Mutators.Builder {
         TypeUtils.getPrimitiveTypes().forEach(type -> builder.withSpecificMutator(type, PrimitiveMutator.INSTANCE));
         TypeUtils.getBoxedPrimitiveTypes().forEach(type -> builder.withSpecificMutator(type, PrimitiveMutator.INSTANCE));
 
-        // Todo(ac): what about other java lang types..
+        // Todo(ac): what about other java lang types.. BigDecimal, etc.
         builder.withSpecificMutator(String.class, StringMutator.INSTANCE);
         builder.withSpecificMutator(Date.class, DateMutator.INSTANCE);
 
-        // Todo(ac): what about base Collection.class? what instantiates that and populates...
         builder.withSuperMutator(Set.class, chain(EnsureMutator.INSTANCE, ChangeSetElementsMutator.INSTANCE));
         builder.withSuperMutator(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE, ChangeListElementsMutator.INSTANCE));
         builder.withSuperMutator(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE, ChangeMapValuesMutator.INSTANCE));

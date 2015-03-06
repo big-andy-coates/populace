@@ -20,6 +20,7 @@ package org.datalorax.populace.typed;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -34,7 +35,7 @@ import static org.hamcrest.Matchers.is;
 public class ImmutableTypeMapTest {
     private static final Map<Type, String> NO_SPECIFIC_VALUES = Collections.emptyMap();
     private static final Map<Class<?>, String> NO_SUPER_VALUES = Collections.emptyMap();
-    private static final Map<Package, String> NO_PACKAGE_VALUES = Collections.emptyMap();
+    private static final Map<String, String> NO_PACKAGE_VALUES = Collections.emptyMap();
 
     @Test
     public void shouldGetDefaultValueForNonArrayKeyIfNothingElseMatches() throws Exception {
@@ -169,7 +170,7 @@ public class ImmutableTypeMapTest {
         // Given:
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder("default")
             .withSpecificType(String.class, "specific")
-            .withPackageType(String.class.getPackage(), "package")
+            .withPackageType(String.class.getPackage().getName(), "package")
             .build();
 
         // When:
@@ -184,7 +185,7 @@ public class ImmutableTypeMapTest {
         // Given:
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder("default")
             .withSuperType(Set.class, "super")
-            .withPackageType(Set.class.getPackage(), "package")
+            .withPackageType(Set.class.getPackage().getName(), "package")
             .build();
 
         // When:
@@ -195,10 +196,10 @@ public class ImmutableTypeMapTest {
     }
 
     @Test
-    public void shouldGetPackageOverArrayDefault() throws Exception {
+    public void shouldNotGetPackageOverArrayDefault() throws Exception {
         // Given:
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder("default")
-            .withPackageType(Long.class.getPackage(), "package")
+            .withPackageType(Long.class.getPackage().getName(), "package")
             .withArrayDefault("array default")
             .build();
 
@@ -206,33 +207,48 @@ public class ImmutableTypeMapTest {
         final String value = collection.get(TypeUtils.genericArrayType(Long.class));
 
         // Then:
-        assertThat(value, is("package"));
+        assertThat(value, is("array default"));
     }
 
     @Test
     public void shouldHandlePrimitiveTypesWithPackageLevelValues() throws Exception {
         // Given:
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder("default")
-            .withPackageType(Long.class.getPackage(), "package")
+            .withPackageType(Long.class.getPackage().getName(), "package")
             .build();
 
         // When:
-        final String value = collection.get(TypeUtils.genericArrayType(long.class));
+        final String value = collection.get(long.class);
 
         // Then:
         assertThat(value, is("package"));
     }
 
     @Test
-    public void shouldPickMostSpecificPackageValue() throws Exception {
+    public void shouldNotMatchChildPackages() throws Exception {
         // Given:
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder("default")
-            .withPackageType(Collection.class.getPackage(), "no cigar")
-            .withPackageType(ConcurrentHashMap.class.getPackage(), "most specific")
+            .withPackageType(Collection.class.getPackage().getName(), "match")
+            .withPackageType(ConcurrentHashMap.class.getPackage().getName(), "child")
             .build();
 
         // When:
         final String value = collection.get(HashSet.class);
+
+        // Then:
+        assertThat(value, is("match"));
+    }
+
+    @Test
+    public void shouldPickMostSpecificPackageValue() throws Exception {
+        // Given:
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder("default")
+            .withPackageType("org", "no cigar")
+            .withPackageType("org.datalorax", "most specific")
+            .build();
+
+        // When:
+        final String value = collection.get(getClass());
 
         // Then:
         assertThat(value, is("most specific"));
@@ -241,20 +257,20 @@ public class ImmutableTypeMapTest {
     @Test
     public void shouldPickSamePackageValueRegardlessOfOrder() throws Exception {
         // Given:
-        final Map<Package, String> naturalSuperValues = new TreeMap<Package, String>(new PackageComparator()) {{
-            put(Collection.class.getPackage(), "no cigar");
-            put(ConcurrentHashMap.class.getPackage(), "most specific");
+        final Map<String, String> naturalSuperValues = new TreeMap<String, String>(Comparator.<String>naturalOrder()) {{
+            put("org", "no cigar");
+            put("org.datalorax", "most specific");
         }};
-        final Map<Package, String> reversedSuperValues = new TreeMap<Package, String>(new PackageComparator().reversed()) {{
-            put(Collection.class.getPackage(), "no cigar");
-            put(ConcurrentHashMap.class.getPackage(), "most specific");
+        final Map<String, String> reversedSuperValues = new TreeMap<String, String>(Comparator.<String>reverseOrder()) {{
+            put("org", "no cigar");
+            put("org.datalorax", "most specific");
         }};
         final ImmutableTypeMap<String> natural = new ImmutableTypeMap<String>(NO_SPECIFIC_VALUES, NO_SUPER_VALUES, naturalSuperValues, "default", "array default");
         final ImmutableTypeMap<String> reversed = new ImmutableTypeMap<String>(NO_SPECIFIC_VALUES, NO_SUPER_VALUES, reversedSuperValues, "default", "array default");
 
         // When:
-        final String nValue = natural.get(TypeUtils.parameterize(HashSet.class, String.class));
-        final String rValue = reversed.get(TypeUtils.parameterize(HashSet.class, String.class));
+        final String nValue = natural.get(getClass());
+        final String rValue = reversed.get(getClass());
 
         // Then:
         assertThat(nValue, is(rValue));
@@ -264,7 +280,7 @@ public class ImmutableTypeMapTest {
     public void shouldGetPackageOverDefault() throws Exception {
         // Given:
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder("default")
-            .withPackageType(Set.class.getPackage(), "package")
+            .withPackageType(Set.class.getPackage().getName(), "package")
             .build();
 
         // When:
@@ -288,17 +304,40 @@ public class ImmutableTypeMapTest {
         assertThat(value, is("new default"));
     }
 
+    @Test
+    public void shouldHandlePrimitivesForPackageValues() throws Exception {
+        // Given:
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder("default")
+            .withPackageType(Integer.class.getPackage().getName(), "package")
+            .build();
+
+        // When:
+        final String value = collection.get(int.class);
+
+        // Then:
+        assertThat(value, is("package"));
+    }
+
+    @Test
+    public void shouldReturnArrayDefaultForArrayOfObjects() throws Exception {
+        // Given:
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.<String>newBuilder("default")
+            .withPackageType(Integer.class.getPackage().getName(), "package")
+            .withArrayDefault("array default")
+            .build();
+        final GenericArrayType type = TypeUtils.genericArrayType(Object.class);
+
+        // When:
+        final String value = collection.get(type);
+
+        // Then:
+        assertThat(value, is("array default"));
+    }
+
     private static class ClassComparator implements Comparator<Class<?>> {
         @Override
         public int compare(final Class<?> c1, final Class<?> c2) {
             return c1.getCanonicalName().compareTo(c2.getCanonicalName());
-        }
-    }
-
-    private static class PackageComparator implements Comparator<Package> {
-        @Override
-        public int compare(final Package c1, final Package c2) {
-            return c1.getName().compareTo(c2.getName());
         }
     }
 }

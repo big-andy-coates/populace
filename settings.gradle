@@ -15,3 +15,4 @@
  */
 
 include "populace-core"
+include "populace-module-jaxb-annotations"

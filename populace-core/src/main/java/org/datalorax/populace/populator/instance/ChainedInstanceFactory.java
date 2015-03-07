@@ -27,14 +27,14 @@ public final class ChainedInstanceFactory {
     }
 
     public static InstanceFactory chain(final ChainableInstanceFactory first, final InstanceFactory second){
-        return new TeminatingChainedInstanceFactory(first, second);
+        return new TerminatingChainedInstanceFactory(first, second);
     }
 
-    public static class TeminatingChainedInstanceFactory implements InstanceFactory {
+    public static class TerminatingChainedInstanceFactory implements InstanceFactory {
         private final ChainableInstanceFactory first;
         private final InstanceFactory second;
 
-        public TeminatingChainedInstanceFactory(final ChainableInstanceFactory first, final InstanceFactory second) {
+        public TerminatingChainedInstanceFactory(final ChainableInstanceFactory first, final InstanceFactory second) {
             this.first = first;
             this.second = second;
         }
@@ -52,7 +52,7 @@ public final class ChainedInstanceFactory {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
-            final TeminatingChainedInstanceFactory that = (TeminatingChainedInstanceFactory) o;
+            final TerminatingChainedInstanceFactory that = (TerminatingChainedInstanceFactory) o;
             return first.equals(that.first) && second.equals(that.second);
         }
 
@@ -65,7 +65,7 @@ public final class ChainedInstanceFactory {
 
         @Override
         public String toString() {
-            return "TeminatingChainedInstanceFactory{" +
+            return "TerminatingChainedInstanceFactory{" +
                 "first=" + first +
                 ", second=" + second +
                 '}';
@@ -100,11 +100,7 @@ public final class ChainedInstanceFactory {
             if (o == null || getClass() != o.getClass()) return false;
 
             final ChainableChainedInstanceFactory that = (ChainableChainedInstanceFactory) o;
-
-            if (!first.equals(that.first)) return false;
-            if (!second.equals(that.second)) return false;
-
-            return true;
+            return first.equals(that.first) && second.equals(that.second);
         }
 
         @Override

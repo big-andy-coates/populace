@@ -31,7 +31,7 @@ public class PrimitiveInstanceFactory implements ChainableInstanceFactory {
     public static final PrimitiveInstanceFactory INSTANCE = new PrimitiveInstanceFactory();
 
     private static final Map<Class<?>, Object> DEFAULT_INSTANCE_MAP = new HashMap<Class<?>, Object>() {{
-       put((Class<?>)boolean.class, false);
+       put(boolean.class, false);
        put(Boolean.class, true);
        put(byte.class, (byte) 42);
        put(Byte.class, (byte) 42);

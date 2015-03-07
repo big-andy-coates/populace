@@ -28,14 +28,12 @@ public class FieldVisitorPairTest {
     private FieldVisitor second;
     private FieldInfo field;
     private FieldVisitor visitor;
-    private Object instance;
 
     @BeforeMethod
     public void setUp() throws Exception {
         first = mock(FieldVisitor.class);
         second = mock(FieldVisitor.class);
         field = mock(FieldInfo.class);
-        instance = new Object();
 
         visitor = new FieldVisitorPair(first, second);
     }

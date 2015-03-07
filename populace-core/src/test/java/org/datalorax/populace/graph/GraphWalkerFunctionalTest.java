@@ -234,7 +234,7 @@ public class GraphWalkerFunctionalTest {
     @SuppressWarnings("UnusedDeclaration")
     public static class TypeWithEnumField {
         public enum SomeEnum {
-            first, second, third;
+            first, second, third
         }
 
         public SomeEnum _enum = SomeEnum.first;

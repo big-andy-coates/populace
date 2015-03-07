@@ -38,5 +38,5 @@ public interface Mutator {
      */
     Object mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config);
 
-    // Todo(ac): wrap type, currentValue and parent in an immuatable type to pass through (allow for extension)
+    // Todo(ac): wrap type, currentValue and parent in an immutable type to pass through (allow for extension)
 }

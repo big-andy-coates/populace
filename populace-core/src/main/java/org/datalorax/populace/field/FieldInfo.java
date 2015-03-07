@@ -73,12 +73,9 @@ public class FieldInfo {
         if (o == null || getClass() != o.getClass()) return false;
 
         final FieldInfo fieldInfo = (FieldInfo) o;
-
-        if (!field.equals(fieldInfo.field)) return false;
-        if (!genericType.equals(fieldInfo.genericType)) return false;
-        if (!owningInstance.equals(fieldInfo.owningInstance)) return false;
-
-        return true;
+        return field.equals(fieldInfo.field) &&
+            genericType.equals(fieldInfo.genericType) &&
+            owningInstance.equals(fieldInfo.owningInstance);
     }
 
     @Override

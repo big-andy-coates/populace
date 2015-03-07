@@ -38,6 +38,7 @@ public class NonConcreteInstanceFactory implements InstanceFactory {
      *                        {@link NonConcreteInstanceFactory#createInstance(Class, Object)} is for a non-concrete type.
      *                        The type must be a concrete sub-type of <code>baseType</code>
      *                        <code>defaultType</code>
+     * @param <T>             The base type this factory will be used to instantiate.
      * @param concreteFactory the instance factory to delegate to for concrete types and to create instances of
      */
     public <T> NonConcreteInstanceFactory(final Class<T> baseType, final Class<? extends T> defaultType,

@@ -18,7 +18,7 @@ package org.datalorax.populace.populator.mutator.ensure;
 
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
-import org.datalorax.populace.populator.mutator.PassThroughMutator;
+import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -71,7 +71,7 @@ public class EnsureMapNotEmptyMutatorTest {
     @Test
     public void shouldNotBlowUpOnRawBaseType() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final Map currentValue = new HashMap<String, String>();
 
         // When:
@@ -81,7 +81,7 @@ public class EnsureMapNotEmptyMutatorTest {
     @Test
     public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final Map currentValue = new HashMap<String, String>();
 
         // When:

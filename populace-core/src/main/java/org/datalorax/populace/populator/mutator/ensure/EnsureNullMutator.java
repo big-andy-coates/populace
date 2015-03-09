@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.populator.mutator;
+package org.datalorax.populace.populator.mutator.ensure;
 
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
@@ -22,16 +22,16 @@ import org.datalorax.populace.populator.PopulatorContext;
 import java.lang.reflect.Type;
 
 /**
- * A no-op mutator i.e. on that doesn't mutate.
+ * A {@link org.datalorax.populace.populator.Mutator} that ensures the value is set to null.
  *
- * @author Andrew Coates - 27/02/2015.
+ * @author Andrew Coates - 09/03/2015.
  */
-public class PassThroughMutator implements Mutator {
-    public static final Mutator INSTANCE = new PassThroughMutator();
+public class EnsureNullMutator implements Mutator {
+    public static final EnsureNullMutator INSTANCE = new EnsureNullMutator();
 
     @Override
-    public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
-        return currentValue;
+    public Object mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config) {
+        return null;
     }
 
     @Override

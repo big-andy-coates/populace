@@ -30,12 +30,12 @@ import java.lang.reflect.Type;
  * @author Andrew Coates - 02/03/2015.
  */
 public class ChangeEnumMutator implements Mutator {
-    public static final Mutator INSTANCE = new ChangeEnumMutator();
+    public static final ChangeEnumMutator INSTANCE = new ChangeEnumMutator();
 
     @Override
     public Object mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config) {
         Validate.isTrue(TypeUtils.getRawType(type, null).isEnum(), "Enum type expected");
-        return currentValue == null ? currentValue : changeEnum((Enum)currentValue);
+        return changeEnum((Enum) currentValue);
     }
 
     @Override

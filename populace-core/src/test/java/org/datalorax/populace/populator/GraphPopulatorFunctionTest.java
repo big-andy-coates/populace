@@ -19,7 +19,7 @@ package org.datalorax.populace.populator;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.populator.instance.InstanceFactory;
 import org.datalorax.populace.populator.mutator.Mutators;
-import org.datalorax.populace.populator.mutator.PassThroughMutator;
+import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -362,7 +362,7 @@ public class GraphPopulatorFunctionTest {
     // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
 
     private Mutator givenMutatorRegistered(Type... types) {
-        final Mutator mutator = spy(PassThroughMutator.class);
+        final Mutator mutator = spy(NoOpMutator.class);
         final Mutators.Builder builder = Mutators.newBuilder();
         for (Type type : types) {
             builder.withSpecificMutator(type, mutator);
@@ -451,12 +451,12 @@ public class GraphPopulatorFunctionTest {
     }
 
     private static class TypeWithEnumField {
+        public SomeEnum _enum;
+
         @SuppressWarnings("UnusedDeclaration")
         public enum SomeEnum {
             forkHandles, fourCandles
         }
-
-        public SomeEnum _enum;
     }
 
     private static class WithMapOfCustomType {

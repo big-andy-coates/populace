@@ -19,7 +19,7 @@ package org.datalorax.populace.populator.mutator.change;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
-import org.datalorax.populace.populator.mutator.PassThroughMutator;
+import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -60,7 +60,7 @@ public class ChangeCollectionElementsMutatorTest {
     @Test
     public void shouldNotBlowUpOnRawBaseType() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final Set currentValue = new HashSet();
 
         // When:
@@ -70,7 +70,7 @@ public class ChangeCollectionElementsMutatorTest {
     @Test
     public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final Set currentValue = new HashSet();
 
         // When:

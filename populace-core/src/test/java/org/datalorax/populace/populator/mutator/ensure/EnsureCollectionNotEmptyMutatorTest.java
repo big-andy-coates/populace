@@ -18,7 +18,7 @@ package org.datalorax.populace.populator.mutator.ensure;
 
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
-import org.datalorax.populace.populator.mutator.PassThroughMutator;
+import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -72,7 +72,7 @@ public class EnsureCollectionNotEmptyMutatorTest {
     @Test
     public void shouldNotBlowUpOnRawBaseType() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final List currentValue = new ArrayList();
 
         // When:
@@ -82,7 +82,7 @@ public class EnsureCollectionNotEmptyMutatorTest {
     @Test
     public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final List currentValue = new ArrayList();
 
         // When:
@@ -93,9 +93,5 @@ public class EnsureCollectionNotEmptyMutatorTest {
 
     private void givenMutatorRegistered(Class<?> type, Mutator mutator) {
         when(config.getMutator(type)).thenReturn(mutator);
-    }
-
-    private <T> void givenCreateInstanceWillReturn(final Class<T> type, final T instance) {
-        when(config.createInstance(type, null)).thenReturn(instance);
     }
 }

@@ -134,10 +134,16 @@ public class GraphPopulatorFunctionTest {
         // Then:
         assertThat(populated._list, is(not(nullValue())));
         assertThat(populated._set, is(not(nullValue())));
+        assertThat(populated._collection, is(not(nullValue())));
         assertThat(populated._list, is(not(original._list)));
         assertThat(populated._set, is(not(original._set)));
+        assertThat(populated._collection, is(not(original._collection)));
         assertThat(populated._nullList, is(not(nullValue())));
         assertThat(populated._nullSet, is(not(nullValue())));
+        assertThat(populated._nullCollection, is(not(empty())));
+        assertThat(populated._nullList, is(not(empty())));
+        assertThat(populated._nullSet, is(not(empty())));
+        assertThat(populated._nullCollection, is(not(empty())));
     }
 
     @Test
@@ -417,6 +423,10 @@ public class GraphPopulatorFunctionTest {
         public Set<Long> _set = new HashSet<Long>() {{
             add(42L);
         }};
+        public Collection<Long> _nullCollection = null;
+        public Collection<Long> _collection = new ArrayList<Long>() {{
+            add(42L);
+        }};
     }
 
     private static class TypeWithMapField {
@@ -464,3 +474,5 @@ public class GraphPopulatorFunctionTest {
         public Object _null;
     }
 }
+
+// Todo(Ac): Add test for Map<String, List<Integer>>

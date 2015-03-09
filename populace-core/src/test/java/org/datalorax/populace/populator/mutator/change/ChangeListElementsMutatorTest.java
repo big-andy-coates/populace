@@ -66,7 +66,7 @@ public class ChangeListElementsMutatorTest {
     }
 
     @Test
-    public void shouldNotBlowUpOnRawTypes() throws Exception {
+    public void shouldNotBlowUpOnRawBaseType() throws Exception {
         // Given:
         givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
         final List<String> currentValue = new ArrayList<String>() {{
@@ -76,6 +76,19 @@ public class ChangeListElementsMutatorTest {
 
         // When:
         mutator.mutate(List.class, currentValue, null, config);
+    }
+
+    @Test
+    public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
+        // Given:
+        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        final List<String> currentValue = new ArrayList<String>() {{
+            //noinspection unchecked
+            add(null);
+        }};
+
+        // When:
+        mutator.mutate(ArrayList.class, currentValue, null, config);
     }
 
     @Test

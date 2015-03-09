@@ -25,16 +25,14 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
-public class ChangeSetElementsMutatorTest {
+public class ChangeCollectionElementsMutatorTest {
     private Mutator mutator;
     private PopulatorContext config;
 
@@ -42,7 +40,7 @@ public class ChangeSetElementsMutatorTest {
     public void setUp() throws Exception {
         config = mock(PopulatorContext.class);
 
-        mutator = new ChangeSetElementsMutator();
+        mutator = new ChangeCollectionElementsMutator();
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
@@ -60,7 +58,17 @@ public class ChangeSetElementsMutatorTest {
     }
 
     @Test
-    public void shouldNotBlowUpOnRawTypes() throws Exception {
+    public void shouldNotBlowUpOnRawBaseType() throws Exception {
+        // Given:
+        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        final Set currentValue = new HashSet();
+
+        // When:
+        mutator.mutate(Collection.class, currentValue, null, config);
+    }
+
+    @Test
+    public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
         // Given:
         givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
         final Set currentValue = new HashSet();
@@ -97,9 +105,9 @@ public class ChangeSetElementsMutatorTest {
         // Given:
         final Object parent = new Object();
         final Mutator componentMutator = mock(Mutator.class);
-        final Type setType = TypeUtils.parameterize(Set.class, String.class);
+        final Type setType = TypeUtils.parameterize(Collection.class, String.class);
         givenMutatorRegistered(String.class, componentMutator);
-        final Set<String> currentValue = new HashSet<String>() {{
+        final Collection currentValue = new ArrayList<String>() {{
             add("value1");
         }};
 
@@ -115,7 +123,7 @@ public class ChangeSetElementsMutatorTest {
         // Given:
         givenCreateInstanceWillReturn(Long.class, 4L);
         givenMutatorRegistered(Long.class, EnsureMutator.INSTANCE);
-        final Type baseSetType = TypeUtils.parameterize(Set.class, Number.class);
+        final Type baseSetType = TypeUtils.parameterize(Collection.class, Number.class);
         final Set<Long> currentValue = new HashSet<Long>() {{
             add(null);
             add(1L);
@@ -166,7 +174,7 @@ public class ChangeSetElementsMutatorTest {
         // Given:
         final Mutator componentMutator = mock(Mutator.class);
         givenMutatorRegistered(Number.class, componentMutator);
-        final Type baseType = TypeUtils.parameterize(Set.class, Number.class);
+        final Type baseType = TypeUtils.parameterize(Collection.class, Number.class);
         final Set<Long> currentValue = new HashSet<Long>();
 
         // When:

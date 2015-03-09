@@ -17,22 +17,24 @@
 package org.datalorax.populace.populator.mutator.change;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
+import org.datalorax.populace.type.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Change Mutator for {@link java.util.List Lists}.
+ * Change Mutator for {@link java.util.List Lists}. It is a specialised version of
+ * {@link org.datalorax.populace.populator.mutator.change.ChangeCollectionElementsMutator}, which takes advantage of lists
+ * extended API.
  *
- * If the currentValue is null or empty then this mutator does nothing. Consider using
+ * If the currentValue is null then this mutator does nothing. Unlike {@code ChangeCollectionElementsMutator} this
+ * mutator also does nothing if the list is empty. Consider using
  * {@link org.datalorax.populace.populator.mutator.ensure.EnsureMutator} to first ensure the current value is not null,
- * and/or {@link org.datalorax.populace.populator.mutator.ensure.EnsureMapNotEmptyMutator} to ensure the list is not empty,
- * if the required behaviour is to always ensure a non-null, populated list instance.
+ * and/or {@link org.datalorax.populace.populator.mutator.ensure.EnsureCollectionNotEmptyMutator} to ensure the list is
+ * not empty, if the required behaviour is to always ensure a non-null, populated list instance.
  * <p>
  * None null values are modified by mutating each entry in the list.
  *
@@ -83,8 +85,6 @@ public class ChangeListElementsMutator implements Mutator {
     }
 
     private Type getComponentType(Type type) {
-        final Map<TypeVariable<?>, Type> typeArguments = TypeUtils.getTypeArguments(type, List.class);
-        final Type componentType = typeArguments.get(LIST_TYPE_VARIABLE);
-        return componentType == null ? Object.class : componentType;
+        return TypeUtils.getTypeArgument(type, List.class, LIST_TYPE_VARIABLE);
     }
 }

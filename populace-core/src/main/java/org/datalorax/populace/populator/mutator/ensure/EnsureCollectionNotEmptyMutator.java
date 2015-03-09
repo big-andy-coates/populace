@@ -17,14 +17,13 @@
 package org.datalorax.populace.populator.mutator.ensure;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
+import org.datalorax.populace.type.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * A mutator that ensures a collection has at least valueIf it is, then the mutator adds a non-null single entry.
@@ -72,12 +71,6 @@ public class EnsureCollectionNotEmptyMutator implements Mutator {
         return getClass().getSimpleName();
     }
 
-    private Type getComponentType(Type type) {
-        final Map<TypeVariable<?>, Type> typeArguments = TypeUtils.getTypeArguments(type, Collection.class);
-        final Type componentType = typeArguments.get(COLLECTION_TYPE_VARIABLE);
-        return componentType == null ? Object.class : componentType;
-    }
-
     private Object createEntry(Type collectionType, final Object parent, PopulatorContext config) {
         final Type componentType = getComponentType(collectionType);
         final Object value = config.createInstance(componentType, parent);
@@ -85,5 +78,9 @@ public class EnsureCollectionNotEmptyMutator implements Mutator {
         final Mutator mutator = config.getMutator(componentType);
         return mutator.mutate(componentType, value, parent, config);
     }
+
+    private Type getComponentType(Type type) {
+        return TypeUtils.getTypeArgument(type, Collection.class, COLLECTION_TYPE_VARIABLE);
+    }
 }
-// Todo(ac): test
+

@@ -62,7 +62,7 @@ public class ChangeMapValuesMutatorTest {
     }
 
     @Test
-    public void shouldNotBlowUpOnRawTypes() throws Exception {
+    public void shouldNotBlowUpOnRawBaseType() throws Exception {
         // Given:
         givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
         final Map currentValue = new HashMap<String, String>() {{
@@ -71,6 +71,18 @@ public class ChangeMapValuesMutatorTest {
 
         // When:
         mutator.mutate(Map.class, currentValue, null, config);
+    }
+
+    @Test
+    public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
+        // Given:
+        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        final Map currentValue = new HashMap<String, String>() {{
+            put("key", null);
+        }};
+
+        // When:
+        mutator.mutate(HashMap.class, currentValue, null, config);
     }
 
     @Test

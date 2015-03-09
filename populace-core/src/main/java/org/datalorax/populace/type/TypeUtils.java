@@ -18,6 +18,9 @@ package org.datalorax.populace.type;
 
 import org.apache.commons.lang3.Validate;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.*;
 
 /**
@@ -53,5 +56,59 @@ public final class TypeUtils {
         final Class<?> boxed = PRIMITIVE_TO_BOXED_TYPES.get(primitiveType);
         Validate.notNull(boxed, "Not a primitive type: %s", primitiveType);
         return boxed;
+    }
+
+    /**
+     * Gets a single type argument, resolved to a class, from the set of type arguments of a class/interface based on a
+     * the {@code toClass} subtype. For instance, given the parameterised type representing {@code Map<String,Integer>}
+     * , the {@code toClass} value of {@code Map.class}, and the {@code typeVariable} of
+     * {@code Map.class.getTypeParameters()[0]}, then this method will return String.class.  This method will work even
+     * if the type represented by {@code type} is a subtype of the required type and does not itself have any template
+     * arguments. For example, this method will determine that both of the parameters for the interface {@link Map} are
+     * {@link Object} for the subtype {@link java.util.Properties Properties} even though the subtype does not directly
+     * implement the {@code Map} interface. If the {@code type} is not a parameterised type, but a raw {@code Class} then
+     * the method will return {@code Object.class}
+     * <p>
+     * This method throws {@link java.lang.IllegalArgumentException} if {@code type} is not assignable to {@code toClass}.
+     * It returns an Object.class if the actual type parameter can not be determined.
+     *
+     * @param type    the type from which to determine the type parameters of {@code toClass}
+     * @param toClass the class whose type parameter is to be determined based on the subtype {@code type}
+     * @param <T>     The type of {@code toClass}
+     * @return the {@code Class} of the type argument, or null if {@code type} is not assignable to {@code toClass}
+     * @throws java.lang.IllegalArgumentException if {@code type} is not assignable to {@code toClass}.
+     */
+    public static <T> Type getTypeArgument(final Type type, final Class<T> toClass, final TypeVariable<Class<T>> typeVariable) {
+        final Map<TypeVariable<?>, Type> typeArguments = org.apache.commons.lang3.reflect.TypeUtils.getTypeArguments(type, toClass);
+        if (typeArguments == null) {
+            throw new IllegalArgumentException(type + " is not assignable to " + toClass);
+        }
+
+        final Type typeArg = typeArguments.get(typeVariable);
+        if (typeArg instanceof ParameterizedType) {
+            return typeArg;
+        }
+        if (typeArg instanceof Class) {
+            return typeArg;
+        }
+        return Object.class;
+    }
+
+    /**
+     * Create a parameterised type instance.
+     *
+     * @see org.apache.commons.lang3.reflect.TypeUtils#parameterize(java.lang.Class, Type...)
+     */
+    public static ParameterizedType parameterise(final Class<?> raw, final Type... typeArguments) {
+        return org.apache.commons.lang3.reflect.TypeUtils.parameterize(raw, typeArguments);
+    }
+
+    /**
+     * Get the raw {@link Class} from the {@code type} provided
+     *
+     * @see org.apache.commons.lang3.reflect.TypeUtils#getRawType(java.lang.reflect.Type, java.lang.reflect.Type)
+     */
+    public static Class<?> getRawType(final Type type, final Type assigningType) {
+        return org.apache.commons.lang3.reflect.TypeUtils.getRawType(type, assigningType);
     }
 }

@@ -17,9 +17,9 @@
 package org.datalorax.populace.populator.mutator.ensure;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
+import org.datalorax.populace.type.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -73,18 +73,6 @@ public class EnsureMapNotEmptyMutator implements Mutator {
         return getClass().getSimpleName();
     }
 
-    private Type getKeyType(Type type) {
-        final Map<TypeVariable<?>, Type> typeArguments = TypeUtils.getTypeArguments(type, Map.class);
-        final Type componentType = typeArguments.get(MAP_TYPE_VARIABLES[0]);
-        return componentType == null ? Object.class : componentType;        // Todo(ac): Copying this pattern alot - move out!
-    }
-
-    private Type getValueType(Type type) {
-        final Map<TypeVariable<?>, Type> typeArguments = TypeUtils.getTypeArguments(type, Map.class);
-        final Type keyType = typeArguments.get(MAP_TYPE_VARIABLES[1]);
-        return keyType == null ? Object.class : keyType;
-    }
-
     private Object createNewKey(Type mapType, final Object parent, PopulatorContext config) {
         final Type keyType = getKeyType(mapType);
         final Object key = config.createInstance(keyType, parent);
@@ -101,6 +89,12 @@ public class EnsureMapNotEmptyMutator implements Mutator {
         return mutator.mutate(valueType, value, parent, config);
     }
 
-    // Todo(ac): test
+    private Type getKeyType(Type type) {
+        return TypeUtils.getTypeArgument(type, Map.class, MAP_TYPE_VARIABLES[0]);
+    }
+
+    private Type getValueType(Type type) {
+        return TypeUtils.getTypeArgument(type, Map.class, MAP_TYPE_VARIABLES[1]);
+    }
 }
 

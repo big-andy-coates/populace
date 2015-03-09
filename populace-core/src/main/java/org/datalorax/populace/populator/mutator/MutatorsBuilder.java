@@ -21,7 +21,6 @@ import org.datalorax.populace.populator.mutator.change.ChangeCollectionElementsM
 import org.datalorax.populace.populator.mutator.change.ChangeEnumMutator;
 import org.datalorax.populace.populator.mutator.change.ChangeListElementsMutator;
 import org.datalorax.populace.populator.mutator.change.ChangeMapValuesMutator;
-import org.datalorax.populace.populator.mutator.commbination.ChainMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureCollectionNotEmptyMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureMapNotEmptyMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureMutator;
@@ -33,6 +32,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import static org.datalorax.populace.populator.mutator.Mutators.chain;
 
 /**
  * Builder for {@link org.datalorax.populace.populator.mutator.Mutators} collection
@@ -46,10 +47,6 @@ final class MutatorsBuilder implements  Mutators.Builder {
 
     public static Mutators defaults() {
         return DEFAULT;
-    }
-
-    public static Mutator chain(final Mutator first, final Mutator second, final Mutator... additional) {
-        return ChainMutator.chain(first, second, additional);
     }
 
     @Override

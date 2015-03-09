@@ -53,6 +53,38 @@ public class InstanceFactories {
         return new InstanceFactoriesBuilder(source.nullObjectFactory, source.factories);
     }
 
+    /**
+     * Chain two {@link InstanceFactory factories} together, terminating the chain.  The {@code second}
+     * {@link InstanceFactory} will only be called if the {@code first} returns false from
+     * {@link ChainableInstanceFactory#supportsType(Class)}
+     *
+     * Multiple {@link ChainableInstanceFactory} can be chained together, but only one non-chainable instance factory
+     * can be used to terminate the chain.
+     *
+     * @param first a {@link ChainableInstanceFactory} that is the start of the chain.
+     * @param second a non-chainable instance factory, effectively terminating any chaining.
+     * @return a {@link InstanceFactory} that encapsulates the two chained factories.
+     */
+    public static InstanceFactory chain(final ChainableInstanceFactory first, final InstanceFactory second) {
+        return ChainedInstanceFactory.chain(first, second);
+    }
+
+    /**
+     * Chain two {@link InstanceFactory factories} together, terminating the chain.  The {@code second}
+     * {@link InstanceFactory} will only be called if the {@code first} returns false from
+     * {@link ChainableInstanceFactory#supportsType(Class)}
+     *
+     * Multiple {@link ChainableInstanceFactory} can be chained together, but only one non-chainable instance factory
+     * can be used to terminate the chain.
+     *
+     * @param first a {@link ChainableInstanceFactory} that is the start of the chain.
+     * @param second a non-chainable instance factory, effectively terminating any chaining.
+     * @return a {@link InstanceFactory} that encapsulates the two chained factories.
+     */
+    public static ChainableInstanceFactory chain(final ChainableInstanceFactory first, final ChainableInstanceFactory second) {
+        return ChainedInstanceFactory.chain(first, second);
+    }
+
     public interface Builder {
         Builder withSpecificFactory(final Type type, final InstanceFactory factory);
 

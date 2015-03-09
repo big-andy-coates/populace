@@ -18,6 +18,7 @@ package org.datalorax.populace.populator.mutator;
 
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.populator.Mutator;
+import org.datalorax.populace.populator.mutator.commbination.ChainMutator;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
@@ -51,6 +52,18 @@ public class Mutators {
      */
     public static Builder asBuilder(final Mutators source) {
         return new MutatorsBuilder(source.mutators);
+    }
+
+    /**
+     * Chain to mutators together. All mutators will always be called, with the output from one mutator becoming the
+     * input value to the next.
+     * @param first the first mutator to call
+     * @param second the second mutator to call
+     * @param additional additional mutators to call
+     * @return A {@link Mutator} encapsulating all the supplied mutators.
+     */
+    public static Mutator chain(final Mutator first, final Mutator second, final Mutator... additional) {
+        return ChainMutator.chain(first, second, additional);
     }
 
     public interface Builder {

@@ -37,14 +37,6 @@ final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
         return DEFAULT;
     }
 
-    public static InstanceFactory chain(final ChainableInstanceFactory first, final InstanceFactory second) {
-        return ChainedInstanceFactory.chain(first, second);
-    }
-
-    public static ChainableInstanceFactory chain(final ChainableInstanceFactory first, final ChainableInstanceFactory second) {
-        return ChainedInstanceFactory.chain(first, second);
-    }
-
     @Override
     public InstanceFactories.Builder withSpecificFactory(final Type type, final InstanceFactory factory) {
         factoriesBuilder.withSpecificType(type, factory);

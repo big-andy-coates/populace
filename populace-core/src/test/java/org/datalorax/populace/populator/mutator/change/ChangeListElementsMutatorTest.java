@@ -20,7 +20,6 @@ import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
 import org.datalorax.populace.populator.mutator.NoOpMutator;
-import org.datalorax.populace.populator.mutator.StringMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -163,7 +162,7 @@ public class ChangeListElementsMutatorTest {
     @Test
     public void shouldPutResultFromComponentMutatorBackIntoList() throws Exception {
         // Given:
-        givenMutatorRegistered(String.class, StringMutator.INSTANCE);
+        givenMutatorRegistered(String.class, ChangeStringMutator.INSTANCE);
         final List<String> currentValue = new ArrayList<String>() {{
             add("initial_value");
         }};

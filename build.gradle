@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+
+
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -53,7 +55,7 @@ subprojects {
         useTestNG()
 
         testLogging {
-            events = ["skipped", "passed", "failed"]
+            events = ["skipped", "failed"]
 
             displayGranularity = 3
         }

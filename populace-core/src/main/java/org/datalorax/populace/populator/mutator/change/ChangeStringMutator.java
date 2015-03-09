@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.populator.mutator;
+package org.datalorax.populace.populator.mutator.change;
 
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
@@ -22,11 +22,12 @@ import org.datalorax.populace.populator.PopulatorContext;
 import java.lang.reflect.Type;
 
 /**
- * Mutator for dates
+ * Mutator that changes to value of {@link java.lang.String strings}
+ *
  * @author Andrew Coates - 27/02/2015.
  */
-public class StringMutator implements Mutator {
-    public static final Mutator INSTANCE = new StringMutator();
+public class ChangeStringMutator implements Mutator {
+    public static final ChangeStringMutator INSTANCE = new ChangeStringMutator();
 
     @Override
     public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
@@ -34,7 +35,11 @@ public class StringMutator implements Mutator {
             throw new IllegalArgumentException("Unsupported type: " + type);
         }
 
-        return currentValue == null ? "dead parrot" : currentValue + " - dead parrot";
+        if (currentValue == null) {
+            return null;
+        }
+
+        return ((String) currentValue).isEmpty() ? "populated" : currentValue + " - populated";
     }
 
     @Override

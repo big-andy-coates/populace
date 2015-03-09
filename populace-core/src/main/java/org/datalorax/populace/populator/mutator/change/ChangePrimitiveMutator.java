@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.populator.mutator;
+package org.datalorax.populace.populator.mutator.change;
 
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
@@ -23,37 +23,41 @@ import java.lang.reflect.Type;
 
 /**
  * Populator for primitive and boxed primitive types
+ *
  * @author Andrew Coates - 27/02/2015.
  */
-// Todo(ac): split ensure/change
-public class PrimitiveMutator implements Mutator {
-    public static final Mutator INSTANCE = new PrimitiveMutator();
+public class ChangePrimitiveMutator implements Mutator {
+    public static final Mutator INSTANCE = new ChangePrimitiveMutator();
 
     @Override
     public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
+        if (currentValue == null) {
+            return null;
+        }
+
         if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-            return currentValue == null || !((Boolean) currentValue);
+            return !((Boolean) currentValue);
         }
         if (type.equals(byte.class) || type.equals(Byte.class)) {
-            return (byte) (currentValue == null ? 42 : ((Byte) currentValue) + 42);
+            return (byte) (((Byte) currentValue) + 42);
         }
         if (type.equals(char.class) || type.equals(Character.class)) {
-            return (char) (currentValue == null ? 'c' : ((Character) currentValue) + 1);
+            return (char) (((Character) currentValue) + 1);
         }
         if (type.equals(short.class) || type.equals(Short.class)) {
-            return (short) (currentValue == null ? 42 : ((Short) currentValue) + 42);
+            return (short) (((Short) currentValue) + 42);
         }
         if (type.equals(int.class) || type.equals(Integer.class)) {
-            return currentValue == null ? 42 : ((Integer) currentValue) + 42;
+            return ((Integer) currentValue) + 42;
         }
         if (type.equals(long.class) || type.equals(Long.class)) {
-            return currentValue == null ? 42L : ((Long) currentValue) + 42L;
+            return ((Long) currentValue) + 42L;
         }
         if (type.equals(float.class) || type.equals(Float.class)) {
-            return currentValue == null ? 4.2f : ((Float) currentValue) * 4.2f;
+            return ((Float) currentValue) * 4.2f;
         }
         if (type.equals(double.class) || type.equals(Double.class)) {
-            return currentValue == null ? 4.2 : ((Double) currentValue) * 4.2;
+            return ((Double) currentValue) * 4.2;
         }
 
         throw new IllegalArgumentException("Unsupported type: " + type);
@@ -75,4 +79,4 @@ public class PrimitiveMutator implements Mutator {
     }
 }
 
-// Todo(ac): split & add generics e.g. NumberMutator<Number>
+// Todo(ac): add generics e.g. NumberMutator<Number>

@@ -66,12 +66,32 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldHandleBoxedPrimitivesByDefault() throws Exception {
+    public void shouldNullHandleBoxedPrimitivesByDefault() throws Exception {
         // Given:
         final WithBoxedPrimitives original = new WithBoxedPrimitives();
 
         // When:
         final WithBoxedPrimitives populated = populator.populate(new WithBoxedPrimitives());
+
+        // Then:
+        assertThat(populated._boolean, is(not(nullValue())));
+        assertThat(populated._boolean, is(not(original._boolean)));
+        assertThat(populated._byte, is(not(original._byte)));
+        assertThat(populated._char, is(not(original._char)));
+        assertThat(populated._short, is(not(original._short)));
+        assertThat(populated._int, is(not(original._int)));
+        assertThat(populated._long, is(not(original._long)));
+        assertThat(populated._float, is(not(original._float)));
+        assertThat(populated._double, is(not(original._double)));
+    }
+
+    @Test
+    public void shouldHandleNullBoxedPrimitivesByDefault() throws Exception {
+        // Given:
+        final WithBoxedPrimitives original = new WithBoxedPrimitives().givenPopulated();
+
+        // When:
+        final WithBoxedPrimitives populated = populator.populate(new WithBoxedPrimitives().givenPopulated());
 
         // Then:
         assertThat(populated._boolean, is(not(nullValue())));
@@ -315,7 +335,7 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHonourFieldFilterList() throws Exception {
         // Given:
-        final WithBoxedPrimitives original = new WithBoxedPrimitives();
+        final WithPrimitives original = new WithPrimitives();
         populator = GraphPopulator.newBuilder().withFieldFilter(new FieldFilter() {
             @Override
             public boolean evaluate(final Field field) {
@@ -383,14 +403,26 @@ public class GraphPopulatorFunctionTest {
     }
 
     private static class WithBoxedPrimitives {
-        private Boolean _boolean = false;
-        private Byte _byte = 9;
-        private Character _char = 'a';
-        private Short _short = 1;
-        private Integer _int = 2;
-        private Long _long = 3L;
-        private Float _float = 1.2f;
-        private Double _double = 1.2;
+        private Boolean _boolean;
+        private Byte _byte;
+        private Character _char;
+        private Short _short;
+        private Integer _int;
+        private Long _long;
+        private Float _float;
+        private Double _double;
+
+        public WithBoxedPrimitives givenPopulated() {
+            _boolean = false;
+            _byte = 9;
+            _char = 'a';
+            _short = 1;
+            _int = 2;
+            _long = 3L;
+            _float = 1.2f;
+            _double = 1.2;
+            return this;
+        }
     }
 
     private static class WithString {

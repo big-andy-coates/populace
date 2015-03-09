@@ -30,10 +30,25 @@ import java.lang.reflect.Type;
 public class Mutators {
     private final ImmutableTypeMap<Mutator> mutators;
 
-    public static Builder newBuilder() {
+    /**
+     * @return the default set of {@link org.datalorax.populace.populator.Mutator mutators} defined by the system
+     */
+    public static Mutators defaults() {
         return MutatorsBuilder.defaults();
     }
 
+    /**
+     * @return a new Mutators builder, initialised with the defaults in the system.
+     */
+    public static Builder newBuilder() {
+        return asBuilder(defaults());
+    }
+
+    /**
+     * Convert an existing immutable set of mutators into a new builder instance
+     * @param source the source set of mutators. The builder will be pre configured with all the mutators in this set
+     * @return a new Mutators builder, initialised with the mutators in {@code source}
+     */
     public static Builder asBuilder(final Mutators source) {
         return new MutatorsBuilder(source.mutators);
     }

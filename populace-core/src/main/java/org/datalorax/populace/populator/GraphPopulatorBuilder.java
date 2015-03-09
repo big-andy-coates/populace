@@ -34,8 +34,8 @@ import org.datalorax.populace.populator.mutator.Mutators;
 final class GraphPopulatorBuilder implements GraphPopulator.Builder {
     private static final FieldFilter DEFAULT_FIELD_FILTER = FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
 
-    private Mutators mutators = Mutators.newBuilder().build();
-    private InstanceFactories instanceFactories = InstanceFactories.newBuilder().build();
+    private Mutators mutators = Mutators.defaults();
+    private InstanceFactories instanceFactories = InstanceFactories.defaults();
     private GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder().withFieldFilter(DEFAULT_FIELD_FILTER);
 
     @Override

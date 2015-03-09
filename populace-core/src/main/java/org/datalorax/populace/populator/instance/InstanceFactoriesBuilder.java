@@ -33,8 +33,8 @@ final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
     private InstanceFactory nullObjectFactory = NullInstanceFactory.INSTANCE;
     private final ImmutableTypeMap.Builder<InstanceFactory> factoriesBuilder;
 
-    public static InstanceFactories.Builder defaults() {
-        return InstanceFactories.asBuilder(DEFAULT);
+    public static InstanceFactories defaults() {
+        return DEFAULT;
     }
 
     public static InstanceFactory chain(final ChainableInstanceFactory first, final InstanceFactory second) {

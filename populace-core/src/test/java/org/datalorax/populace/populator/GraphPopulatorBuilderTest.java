@@ -106,11 +106,11 @@ public class GraphPopulatorBuilderTest {
     }
 
     private static Mutators defaultMutatorConfig() {
-        return Mutators.newBuilder().build();
+        return Mutators.defaults();
     }
 
     private InstanceFactories defaultInstanceFactories() {
-        return InstanceFactories.newBuilder().build();
+        return InstanceFactories.defaults();
     }
 
     private PopulatorContext defaultPopulatorContext() {

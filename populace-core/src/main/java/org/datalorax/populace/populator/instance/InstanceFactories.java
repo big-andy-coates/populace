@@ -30,10 +30,25 @@ public class InstanceFactories {
     private final InstanceFactory nullObjectFactory;
     private final ImmutableTypeMap<InstanceFactory> factories;
 
-    public static Builder newBuilder() {
+    /**
+     * @return the default set of {@link InstanceFactory instance factories} defined by the system
+     */
+    public static InstanceFactories defaults() {
         return InstanceFactoriesBuilder.defaults();
     }
 
+    /**
+     * @return a new InstanceFactories builder, initialised with the defaults in the system.
+     */
+    public static Builder newBuilder() {
+        return asBuilder(defaults());
+    }
+
+    /**
+     * Convert an existing immutable set of instance factories into a new builder instance
+     * @param source the source set of instance factories. The builder will be pre configured with all the factories in this set
+     * @return a new InstanceFactories builder, initialised with the factories in {@code source}
+     */
     public static Builder asBuilder(final InstanceFactories source) {
         return new InstanceFactoriesBuilder(source.nullObjectFactory, source.factories);
     }

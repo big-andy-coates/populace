@@ -72,9 +72,10 @@ public final class TypeUtils {
      * This method throws {@link java.lang.IllegalArgumentException} if {@code type} is not assignable to {@code toClass}.
      * It returns an Object.class if the actual type parameter can not be determined.
      *
-     * @param type    the type from which to determine the type parameters of {@code toClass}
-     * @param toClass the class whose type parameter is to be determined based on the subtype {@code type}
-     * @param <T>     The type of {@code toClass}
+     * @param type         the type from which to determine the type parameters of {@code toClass}
+     * @param toClass      the class whose type parameter is to be determined based on the subtype {@code type}
+     * @param typeVariable the specific typeVariable of {@code toClass} to retrieve.
+     * @param <T>          The type of {@code toClass}
      * @return the {@code Class} of the type argument, or null if {@code type} is not assignable to {@code toClass}
      * @throws java.lang.IllegalArgumentException if {@code type} is not assignable to {@code toClass}.
      */
@@ -97,6 +98,10 @@ public final class TypeUtils {
     /**
      * Create a parameterised type instance.
      *
+     * @param raw the raw class to create a parameterized type instance for
+     * @param typeArguments the types used for parameterisation
+     * @return {@link ParameterizedType}
+     *
      * @see org.apache.commons.lang3.reflect.TypeUtils#parameterize(java.lang.Class, Type...)
      */
     public static ParameterizedType parameterise(final Class<?> raw, final Type... typeArguments) {
@@ -105,6 +110,10 @@ public final class TypeUtils {
 
     /**
      * Get the raw {@link Class} from the {@code type} provided
+     *
+     * @param type to resolve
+     * @param assigningType type to be resolved against
+     * @return the resolved {@link Class} object or {@code null} if the type could not be resolved
      *
      * @see org.apache.commons.lang3.reflect.TypeUtils#getRawType(java.lang.reflect.Type, java.lang.reflect.Type)
      */

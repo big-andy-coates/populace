@@ -44,8 +44,8 @@ final class MutatorsBuilder implements  Mutators.Builder {
 
     private final ImmutableTypeMap.Builder<Mutator> mutatorsBuilder;
 
-    public static Mutators.Builder defaults() {
-        return Mutators.asBuilder(DEFAULT);
+    public static Mutators defaults() {
+        return DEFAULT;
     }
 
     public static Mutator chain(final Mutator first, final Mutator second, final Mutator... additional) {

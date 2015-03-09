@@ -26,7 +26,7 @@ import org.datalorax.populace.graph.inspector.Inspectors;
  */
 public class GraphWalkerBuilder implements GraphWalker.Builder {
     private FieldFilter fieldFilter = FieldFilters.defaults();
-    private Inspectors inspectors = Inspectors.newBuilder().build();
+    private Inspectors inspectors = Inspectors.defaults();
 
     @Override
     public GraphWalkerBuilder withFieldFilter(final FieldFilter filter) {

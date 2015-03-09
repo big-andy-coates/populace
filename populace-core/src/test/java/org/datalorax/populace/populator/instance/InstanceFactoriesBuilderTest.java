@@ -21,10 +21,10 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
 public class InstanceFactoriesBuilderTest {
@@ -88,6 +88,20 @@ public class InstanceFactoriesBuilderTest {
 
         // Then:
         assertThat(factories.get(arrayType), is(newDefaultFactory));
+    }
+
+    @Test
+    public void shouldSupportSpecificFactoryForBigDecimal() throws Exception {
+        // Given:
+        final InstanceFactory newDefaultFactory = mock(InstanceFactory.class, "default");
+
+        // When:
+        final InstanceFactories factories = builder
+            .withDefaultFactory(newDefaultFactory)
+            .build();
+
+        // Then:
+        assertThat(factories.get(BigDecimal.class), is(not(newDefaultFactory)));
     }
 
     // Todo(ac):

@@ -20,6 +20,7 @@ import org.datalorax.populace.type.TypeUtils;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -91,7 +92,8 @@ final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
         builder.withSuperFactory(Map.class, new NonConcreteInstanceFactory(Map.class, HashMap.class, DefaultInstanceFactory.INSTANCE));
         builder.withSuperFactory(Set.class, new NonConcreteInstanceFactory(Set.class, HashSet.class, DefaultInstanceFactory.INSTANCE));
         builder.withSuperFactory(List.class, new NonConcreteInstanceFactory(List.class, ArrayList.class, DefaultInstanceFactory.INSTANCE));
-        builder.withSuperFactory(Collection.class, new NonConcreteInstanceFactory(Collection.class, ArrayList.class, DefaultInstanceFactory.INSTANCE));    // Todo(ac): Questionable..
+        builder.withSuperFactory(Collection.class, new NonConcreteInstanceFactory(Collection.class, ArrayList.class, DefaultInstanceFactory.INSTANCE));
+        builder.withSpecificFactory(BigDecimal.class, BigDecimalInstanceFactory.INSTANCE);
 
         DEFAULT = builder
             .withArrayDefaultFactory(DefaultInstanceFactory.INSTANCE)   // Todo(ac): we'll need specific array factory

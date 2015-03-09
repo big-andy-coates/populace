@@ -18,20 +18,21 @@ package org.datalorax.populace.populator.instance;
 
 import org.apache.commons.lang3.Validate;
 
+import java.math.BigDecimal;
+
 /**
- * Instance factory for enums. The first value of the enum will be returned. For enums with no values the factory will
- * return null.
+ * Instance factory for {@link java.math.BigDecimal BigDecimals}.
  *
- * @author Andrew Coates - 02/03/2015.
+ * @author Andrew Coates - 09/03/2015.
  */
-public class EnumInstanceFactory implements InstanceFactory {
-    public static final InstanceFactory INSTANCE = new EnumInstanceFactory();
+public class BigDecimalInstanceFactory implements InstanceFactory {
+    public static final InstanceFactory INSTANCE = new BigDecimalInstanceFactory();
 
     @Override
     public <T> T createInstance(Class<? extends T> rawType, final Object parent) {
-        Validate.isTrue(rawType.isEnum(), "Enum type expected. Got: %s", rawType);
-        final T[] allValues = rawType.getEnumConstants();
-        return allValues.length == 0 ? null : allValues[0];
+        Validate.isTrue(rawType.equals(BigDecimal.class), "BigDecimal type expected. Got: %s", rawType);
+        //noinspection unchecked
+        return (T)new BigDecimal(1.0f);
     }
 
     @Override

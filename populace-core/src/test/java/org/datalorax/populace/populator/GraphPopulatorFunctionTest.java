@@ -25,6 +25,7 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -344,6 +345,19 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._rawList, is(not(original._rawList)));
     }
 
+    @Test
+    public void shouldWorkWithBigDecimals() throws Exception {
+        // Given:
+        final TypeWithBigDecimalField original = new TypeWithBigDecimalField();
+
+        // When:
+        final TypeWithBigDecimalField populated = populator.populate(new TypeWithBigDecimalField());
+
+        // Then:
+        assertThat(populated._bigDecimal, is(notNullValue()));
+        assertThat(populated._bigDecimal, is(not(original._bigDecimal)));
+    }
+
     // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
     // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
 
@@ -472,6 +486,10 @@ public class GraphPopulatorFunctionTest {
 
     public static class TypeWithObjectField {
         public Object _null;
+    }
+
+    public static class TypeWithBigDecimalField {
+        public BigDecimal _bigDecimal;
     }
 }
 

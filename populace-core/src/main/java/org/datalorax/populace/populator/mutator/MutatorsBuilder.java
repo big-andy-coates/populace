@@ -92,7 +92,6 @@ final class MutatorsBuilder implements  Mutators.Builder {
         TypeUtils.getPrimitiveTypes().forEach(type -> builder.withSpecificMutator(type, PrimitiveMutator.INSTANCE));
         TypeUtils.getBoxedPrimitiveTypes().forEach(type -> builder.withSpecificMutator(type, PrimitiveMutator.INSTANCE));
 
-        // Todo(ac): what about other java lang types.. BigDecimal, etc.
         builder.withSpecificMutator(String.class, StringMutator.INSTANCE);
         builder.withSpecificMutator(Date.class, DateMutator.INSTANCE);
 

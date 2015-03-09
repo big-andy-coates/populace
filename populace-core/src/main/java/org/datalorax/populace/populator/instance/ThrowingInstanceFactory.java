@@ -43,3 +43,5 @@ public class ThrowingInstanceFactory implements InstanceFactory {
         return getClass().getSimpleName();
     }
 }
+
+// Todo(ac): Add loggingNullObjectStrategy : extends NullObjectStratgey : extends InstanceFactory

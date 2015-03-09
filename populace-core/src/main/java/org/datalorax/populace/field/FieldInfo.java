@@ -39,6 +39,16 @@ public class FieldInfo {
         this.owningInstance = owningInstance;
     }
 
+    public String getName() {
+        return field.getName();
+    }
+
+    public Class<?> getDeclaringClass() {
+        return field.getDeclaringClass();
+    }
+
+    @Deprecated /// Todo(ac): remove.
+    // Deprecated as we want to encapsulate all access through this type, so that moving to getters/setters will be easy
     public Field getField() {
         return field;
     }
@@ -49,6 +59,10 @@ public class FieldInfo {
 
     public Object getOwningInstance() {
         return owningInstance;
+    }
+
+    public void ensureAccessible() {
+        field.setAccessible(true);
     }
 
     public Object getValue() {
@@ -95,3 +109,5 @@ public class FieldInfo {
             '}';
     }
 }
+
+// Todo(ac): test

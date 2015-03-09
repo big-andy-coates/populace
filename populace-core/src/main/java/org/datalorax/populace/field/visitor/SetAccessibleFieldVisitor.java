@@ -27,7 +27,7 @@ public class SetAccessibleFieldVisitor implements FieldVisitor {
 
     @Override
     public void visit(final FieldInfo fieldInfo) {
-        fieldInfo.getField().setAccessible(true);
+        fieldInfo.ensureAccessible();
     }
 
     @Override

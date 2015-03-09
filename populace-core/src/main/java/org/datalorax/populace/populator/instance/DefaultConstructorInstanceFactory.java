@@ -25,10 +25,15 @@ import java.lang.reflect.Modifier;
 
 /**
  * Instance factory that uses a classes default constructor to create a new instance of the type.
+ *
  * @author Andrew Coates - 02/03/2015.
  */
-public class DefaultInstanceFactory implements InstanceFactory {
-    public static final InstanceFactory INSTANCE = new DefaultInstanceFactory();
+public class DefaultConstructorInstanceFactory implements InstanceFactory {
+    public static final InstanceFactory INSTANCE = new DefaultConstructorInstanceFactory();
+
+    private static boolean isInnerClass(final Class<?> rawType) {
+        return rawType.getEnclosingClass() != null && !Modifier.isStatic(rawType.getModifiers());
+    }
 
     @Override
     public <T> T createInstance(Class<? extends T> rawType, final Object parent) {
@@ -56,10 +61,6 @@ public class DefaultInstanceFactory implements InstanceFactory {
     @Override
     public String toString() {
         return getClass().getSimpleName();
-    }
-
-    private static boolean isInnerClass(final Class<?> rawType) {
-        return rawType.getEnclosingClass() != null && !Modifier.isStatic(rawType.getModifiers());
     }
 
     private <T> T createNewTopLevel(final Class<? extends T> rawType) throws IllegalAccessException, InvocationTargetException, InstantiationException {

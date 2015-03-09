@@ -30,9 +30,35 @@ import java.util.*;
  */
 final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
     private static final InstanceFactories DEFAULT;
-
-    private InstanceFactory nullObjectFactory = NullInstanceFactory.INSTANCE;
     private final ImmutableTypeMap.Builder<InstanceFactory> factoriesBuilder;
+    private InstanceFactory nullObjectFactory = NullInstanceFactory.INSTANCE;
+
+    InstanceFactoriesBuilder(final InstanceFactory nullObjectFactory, final ImmutableTypeMap<InstanceFactory> factories) {
+        this.nullObjectFactory = nullObjectFactory;
+        this.factoriesBuilder = ImmutableTypeMap.asBuilder(factories);
+    }
+
+    private InstanceFactoriesBuilder() {
+        this.factoriesBuilder = ImmutableTypeMap.newBuilder(DefaultConstructorInstanceFactory.INSTANCE);
+    }
+
+    static {
+        final InstanceFactoriesBuilder builder = new InstanceFactoriesBuilder();
+
+        TypeUtils.getPrimitiveTypes().forEach(type -> builder.withSpecificFactory(type, PrimitiveInstanceFactory.INSTANCE));
+        TypeUtils.getBoxedPrimitiveTypes().forEach(type -> builder.withSpecificFactory(type, PrimitiveInstanceFactory.INSTANCE));
+
+        builder.withSuperFactory(Enum.class, EnumInstanceFactory.INSTANCE);
+        builder.withSuperFactory(Map.class, new DefaultTypeInstanceFactory(Map.class, HashMap.class, DefaultConstructorInstanceFactory.INSTANCE));
+        builder.withSuperFactory(Set.class, new DefaultTypeInstanceFactory(Set.class, HashSet.class, DefaultConstructorInstanceFactory.INSTANCE));
+        builder.withSuperFactory(List.class, new DefaultTypeInstanceFactory(List.class, ArrayList.class, DefaultConstructorInstanceFactory.INSTANCE));
+        builder.withSuperFactory(Collection.class, new DefaultTypeInstanceFactory(Collection.class, ArrayList.class, DefaultConstructorInstanceFactory.INSTANCE));
+        builder.withSpecificFactory(BigDecimal.class, BigDecimalInstanceFactory.INSTANCE);
+
+        DEFAULT = builder
+            .withArrayDefaultFactory(DefaultConstructorInstanceFactory.INSTANCE)   // Todo(ac): we'll need specific array factory
+            .build();
+    }
 
     public static InstanceFactories defaults() {
         return DEFAULT;
@@ -71,32 +97,5 @@ final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
     @Override
     public InstanceFactories build() {
         return new InstanceFactories(nullObjectFactory, factoriesBuilder.build());
-    }
-
-    InstanceFactoriesBuilder(final InstanceFactory nullObjectFactory, final ImmutableTypeMap<InstanceFactory> factories) {
-        this.nullObjectFactory = nullObjectFactory;
-        this.factoriesBuilder = ImmutableTypeMap.asBuilder(factories);
-    }
-
-    private InstanceFactoriesBuilder() {
-        this.factoriesBuilder = ImmutableTypeMap.newBuilder(DefaultInstanceFactory.INSTANCE);
-    }
-
-    static {
-        final InstanceFactoriesBuilder builder = new InstanceFactoriesBuilder();
-
-        TypeUtils.getPrimitiveTypes().forEach(type -> builder.withSpecificFactory(type, PrimitiveInstanceFactory.INSTANCE));
-        TypeUtils.getBoxedPrimitiveTypes().forEach(type -> builder.withSpecificFactory(type, PrimitiveInstanceFactory.INSTANCE));
-
-        builder.withSuperFactory(Enum.class, EnumInstanceFactory.INSTANCE);
-        builder.withSuperFactory(Map.class, new NonConcreteInstanceFactory(Map.class, HashMap.class, DefaultInstanceFactory.INSTANCE));
-        builder.withSuperFactory(Set.class, new NonConcreteInstanceFactory(Set.class, HashSet.class, DefaultInstanceFactory.INSTANCE));
-        builder.withSuperFactory(List.class, new NonConcreteInstanceFactory(List.class, ArrayList.class, DefaultInstanceFactory.INSTANCE));
-        builder.withSuperFactory(Collection.class, new NonConcreteInstanceFactory(Collection.class, ArrayList.class, DefaultInstanceFactory.INSTANCE));
-        builder.withSpecificFactory(BigDecimal.class, BigDecimalInstanceFactory.INSTANCE);
-
-        DEFAULT = builder
-            .withArrayDefaultFactory(DefaultInstanceFactory.INSTANCE)   // Todo(ac): we'll need specific array factory
-            .build();
     }
 }

@@ -23,11 +23,12 @@ import java.lang.reflect.Modifier;
 /**
  * Instance factory for handling non-concrete types e.g. interface and abstract types. The factory delegates any
  * concrete types its called with to the <code>concreteFactory</code> provided to the constructor. For non-concrete
- * types the factory creates and instance of the <code>defaultType</code> passed to the constructor.
+ * types the factory creates an instance of the <code>defaultType</code> passed to the constructor, using the
+ * {@code concreteFactory} passed in.
  *
  * @author Andrew Coates - 02/03/2015.
  */
-public class NonConcreteInstanceFactory implements InstanceFactory {
+public class DefaultTypeInstanceFactory implements InstanceFactory {
     private final Class<?> baseType;
     private final Class<?> defaultType;
     private final InstanceFactory concreteFactory;
@@ -35,13 +36,13 @@ public class NonConcreteInstanceFactory implements InstanceFactory {
     /**
      * @param baseType        the base type that this instance factory supports, i.e. the lowest common denominator.
      * @param defaultType     the type to instantiate when a call to
-     *                        {@link NonConcreteInstanceFactory#createInstance(Class, Object)} is for a non-concrete type.
+     *                        {@link DefaultTypeInstanceFactory#createInstance(Class, Object)} is for a non-concrete type.
      *                        The type must be a concrete sub-type of <code>baseType</code>
      *                        <code>defaultType</code>
      * @param <T>             The base type this factory will be used to instantiate.
      * @param concreteFactory the instance factory to delegate to for concrete types and to create instances of
      */
-    public <T> NonConcreteInstanceFactory(final Class<T> baseType, final Class<? extends T> defaultType,
+    public <T> DefaultTypeInstanceFactory(final Class<T> baseType, final Class<? extends T> defaultType,
                                           final InstanceFactory concreteFactory) {
         Validate.notNull(baseType, "baseType null");
         Validate.notNull(defaultType, "defaultType null");
@@ -49,6 +50,10 @@ public class NonConcreteInstanceFactory implements InstanceFactory {
         this.baseType = baseType;
         this.defaultType = defaultType;
         this.concreteFactory = concreteFactory;
+    }
+
+    private static boolean isConcrete(final Class<?> rawType) {
+        return !rawType.isInterface() && !Modifier.isAbstract(rawType.getModifiers());
     }
 
     @Override
@@ -59,7 +64,11 @@ public class NonConcreteInstanceFactory implements InstanceFactory {
             return concreteFactory.createInstance(rawType, parent);
         }
 
-        // Todo(ac): what if raw type is not super of default?
+        if (!rawType.isAssignableFrom(defaultType)) {
+            throw new UnsupportedOperationException("Unsupported type: " + rawType +
+                ", consider installing a either a specific or super InstanceFactory to handle this type");
+        }
+
         //noinspection unchecked
         return (T) concreteFactory.createInstance(defaultType, parent);
     }
@@ -69,7 +78,7 @@ public class NonConcreteInstanceFactory implements InstanceFactory {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final NonConcreteInstanceFactory that = (NonConcreteInstanceFactory) o;
+        final DefaultTypeInstanceFactory that = (DefaultTypeInstanceFactory) o;
         return baseType.equals(that.baseType) &&
             concreteFactory.equals(that.concreteFactory) &&
             defaultType.equals(that.defaultType);
@@ -85,14 +94,10 @@ public class NonConcreteInstanceFactory implements InstanceFactory {
 
     @Override
     public String toString() {
-        return "NonConcreteInstanceFactory{" +
+        return "DefaultTypeInstanceFactory{" +
             "baseType=" + baseType +
             ", defaultType=" + defaultType +
             ", concreteFactory=" + concreteFactory +
             '}';
-    }
-
-    private static boolean isConcrete(final Class<?> rawType) {
-        return !rawType.isInterface() && !Modifier.isAbstract(rawType.getModifiers());
     }
 }

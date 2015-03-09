@@ -19,6 +19,7 @@ package org.datalorax.populace.populator.instance;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.AbstractSequentialList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -27,11 +28,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 
-public class NonConcreteInstanceFactoryTest {
+public class DefaultTypeInstanceFactoryTest {
     private final Class<List> baseType = List.class;
     private final Class<ArrayList> defaultType = ArrayList.class;
     private InstanceFactory concreteFactory;
-    private NonConcreteInstanceFactory factory;
+    private DefaultTypeInstanceFactory factory;
     private Object parent;
 
     @BeforeMethod
@@ -39,22 +40,22 @@ public class NonConcreteInstanceFactoryTest {
         concreteFactory = mock(InstanceFactory.class);
         parent = mock(Object.class);
 
-        factory = new NonConcreteInstanceFactory(baseType, defaultType, concreteFactory);
+        factory = new DefaultTypeInstanceFactory(baseType, defaultType, concreteFactory);
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowIfNullBaseType() throws Exception {
-        new NonConcreteInstanceFactory(null, defaultType, concreteFactory);
+        new DefaultTypeInstanceFactory(null, defaultType, concreteFactory);
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowIfNullDefaultType() throws Exception {
-        new NonConcreteInstanceFactory(baseType, null, concreteFactory);
+        new DefaultTypeInstanceFactory(baseType, null, concreteFactory);
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowIfNullConcreteFactory() throws Exception {
-        new NonConcreteInstanceFactory(baseType, defaultType, null);
+        new DefaultTypeInstanceFactory(baseType, defaultType, null);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
@@ -102,6 +103,19 @@ public class NonConcreteInstanceFactoryTest {
 
         // When:
         final List instance = factory.createInstance(List.class, parent);
+
+        // Then:
+        assertThat(instance, is(expected));
+    }
+
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void shouldThrowExceptionIfDefaultTypeNotCompatibleWithRequestedType() throws Exception {
+        // Given:
+        final ArrayList expected = mock(ArrayList.class);
+        when(concreteFactory.createInstance(ArrayList.class, parent)).thenReturn(expected);
+
+        // When:
+        final List instance = factory.createInstance(AbstractSequentialList.class, parent);
 
         // Then:
         assertThat(instance, is(expected));

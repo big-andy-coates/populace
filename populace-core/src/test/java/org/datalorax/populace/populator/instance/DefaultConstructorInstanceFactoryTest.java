@@ -24,12 +24,12 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class DefaultInstanceFactoryTest {
+public class DefaultConstructorInstanceFactoryTest {
     private InstanceFactory factory;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        factory = DefaultInstanceFactory.INSTANCE;
+        factory = DefaultConstructorInstanceFactory.INSTANCE;
     }
 
     @Test
@@ -89,6 +89,9 @@ public class DefaultInstanceFactoryTest {
         factory.createInstance(AbstractType.class, null);
     }
 
+    public interface InterfaceType {
+    }
+
     public static final class PublicTypeWithPublicConstructor {
     }
 
@@ -109,9 +112,6 @@ public class DefaultInstanceFactoryTest {
         @SuppressWarnings("UnusedParameters")
         public TypeWithNoDefaultConstructor(String s) {
         }
-    }
-
-    public interface InterfaceType {
     }
 
     public static abstract class AbstractType {

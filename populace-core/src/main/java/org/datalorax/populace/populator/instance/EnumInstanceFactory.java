@@ -28,7 +28,7 @@ public class EnumInstanceFactory implements InstanceFactory {
     public static final InstanceFactory INSTANCE = new EnumInstanceFactory();
 
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, final Object parent) {
+    public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
         Validate.isTrue(rawType.isEnum(), "Enum type expected. Got: %s", rawType);
         final T[] allValues = rawType.getEnumConstants();
         return allValues.length == 0 ? null : allValues[0];

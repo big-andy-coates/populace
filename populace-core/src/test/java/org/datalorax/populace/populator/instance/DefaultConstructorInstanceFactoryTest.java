@@ -35,7 +35,7 @@ public class DefaultConstructorInstanceFactoryTest {
     @Test
     public void shouldUseDefaultConstructorToCreateInstance() throws Exception {
         // When:
-        final PublicTypeWithPublicConstructor instance = factory.createInstance(PublicTypeWithPublicConstructor.class, null);
+        final PublicTypeWithPublicConstructor instance = factory.createInstance(PublicTypeWithPublicConstructor.class, null, null);
 
         // Then:
         assertThat(instance, is(notNullValue()));
@@ -44,7 +44,7 @@ public class DefaultConstructorInstanceFactoryTest {
     @Test
     public void shouldWorkWithPrivateConstructor() throws Exception {
         // When:
-        final PublicTypeWithPrivateConstructor instance = factory.createInstance(PublicTypeWithPrivateConstructor.class, null);
+        final PublicTypeWithPrivateConstructor instance = factory.createInstance(PublicTypeWithPrivateConstructor.class, null, null);
 
         // Then:
         assertThat(instance, is(notNullValue()));
@@ -53,7 +53,7 @@ public class DefaultConstructorInstanceFactoryTest {
     @Test
     public void shouldWorkWithPrivateClass() throws Exception {
         // When:
-        final PrivateType instance = factory.createInstance(PrivateType.class, null);
+        final PrivateType instance = factory.createInstance(PrivateType.class, null, null);
 
         // Then:
         assertThat(instance, is(notNullValue()));
@@ -65,7 +65,7 @@ public class DefaultConstructorInstanceFactoryTest {
         final TypeWithInner parent = new TypeWithInner();
 
         // When:
-        final TypeWithInner.Inner instance = factory.createInstance(TypeWithInner.Inner.class, parent);
+        final TypeWithInner.Inner instance = factory.createInstance(TypeWithInner.Inner.class, parent, null);
 
         // Then:
         assertThat(instance, is(notNullValue()));
@@ -74,19 +74,19 @@ public class DefaultConstructorInstanceFactoryTest {
     @Test(expectedExceptions = PopulatorException.class)
     public void shouldThrowIfNoDefaultConstructor() throws Exception {
         // When:
-        factory.createInstance(TypeWithNoDefaultConstructor.class, null);
+        factory.createInstance(TypeWithNoDefaultConstructor.class, null, null);
     }
 
     @Test(expectedExceptions = PopulatorException.class)
     public void shouldThrowIfInterface() throws Exception {
         // When:
-        factory.createInstance(InterfaceType.class, null);
+        factory.createInstance(InterfaceType.class, null, null);
     }
 
     @Test(expectedExceptions = PopulatorException.class)
     public void shouldThrowIfAbstract() throws Exception {
         // When:
-        factory.createInstance(AbstractType.class, null);
+        factory.createInstance(AbstractType.class, null, null);
     }
 
     public interface InterfaceType {

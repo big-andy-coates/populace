@@ -36,7 +36,7 @@ public class DefaultConstructorInstanceFactory implements InstanceFactory {
     }
 
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, final Object parent) {
+    public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
         try {
             if (isInnerClass(rawType)) {
                 return createNewInnerClass(rawType, parent);

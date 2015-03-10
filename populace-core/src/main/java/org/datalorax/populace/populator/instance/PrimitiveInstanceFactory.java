@@ -55,7 +55,7 @@ public class PrimitiveInstanceFactory implements ChainableInstanceFactory {
     }
 
     @Override
-    public <T> T createInstance(final Class<? extends T> type, final Object parent) {
+    public <T> T createInstance(final Class<? extends T> type, final Object parent, final InstanceFactories instanceFactories) {
         final Object instance = DEFAULT_INSTANCE_MAP.get(type);
         Validate.notNull(instance, "Unsupported type %s", type);
         return (T)instance;

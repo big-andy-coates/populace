@@ -24,7 +24,7 @@ public class ThrowingInstanceFactory implements InstanceFactory {
     public static final ThrowingInstanceFactory INSTANCE = new ThrowingInstanceFactory();
 
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, final Object parent) {
+    public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
         throw new UnsupportedOperationException("Unsupported type: " + rawType);
     }
 

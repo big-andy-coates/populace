@@ -36,9 +36,8 @@ public class DefaultTypeInstanceFactory implements InstanceFactory {
     /**
      * @param baseType        the base type that this instance factory supports, i.e. the lowest common denominator.
      * @param defaultType     the type to instantiate when a call to
-     *                        {@link DefaultTypeInstanceFactory#createInstance(Class, Object)} is for a non-concrete type.
-     *                        The type must be a concrete sub-type of <code>baseType</code>
-     *                        <code>defaultType</code>
+     *                        {@link DefaultTypeInstanceFactory#createInstance(Class, Object, InstanceFactories)} is for a
+     *                        non-concrete type. The type must be a concrete sub-type of {@code baseType}
      * @param <T>             The base type this factory will be used to instantiate.
      * @param concreteFactory the instance factory to delegate to for concrete types and to create instances of
      */
@@ -57,11 +56,11 @@ public class DefaultTypeInstanceFactory implements InstanceFactory {
     }
 
     @Override
-    public <T> T createInstance(final Class<? extends T> rawType, final Object parent) {
+    public <T> T createInstance(final Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
         Validate.isAssignableFrom(baseType, rawType, "Factory only supports types derived from %s", defaultType);
 
         if (isConcrete(rawType)) {
-            return concreteFactory.createInstance(rawType, parent);
+            return concreteFactory.createInstance(rawType, parent, instanceFactories);
         }
 
         if (!rawType.isAssignableFrom(defaultType)) {
@@ -70,7 +69,7 @@ public class DefaultTypeInstanceFactory implements InstanceFactory {
         }
 
         //noinspection unchecked
-        return (T) concreteFactory.createInstance(defaultType, parent);
+        return (T) concreteFactory.createInstance(defaultType, parent, instanceFactories);
     }
 
     @Override

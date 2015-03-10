@@ -26,12 +26,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 public class PrimitiveInstanceFactoryTest {
+    private static Object[][] asObjectArray(final List<Class<?>> types) {
+        final Object[][] data = new Object[types.size()][];
+        int i = 0;
+        for (Class<?> type : types) {
+            data[i++] = new Object[]{type};
+        }
+        return data;
+    }
+
     @Test(dataProvider = "primitive")
     public void shouldSupportPrimitiveType(Class<?> type) throws Exception {
         // Given:
         final Class<?> boxed = TypeUtils.getBoxedTypeForPrimitive(type);
         // When:
-        final Object result = PrimitiveInstanceFactory.INSTANCE.createInstance(type, null);
+        final Object result = PrimitiveInstanceFactory.INSTANCE.createInstance(type, null, null);
 
         // Then:
         assertThat(result, is(notNullValue()));
@@ -41,7 +50,7 @@ public class PrimitiveInstanceFactoryTest {
     @Test(dataProvider = "boxed")
     public void shouldSupportBoxedPrimitiveType(Class<?> type) throws Exception {
         // When:
-        final Object result = PrimitiveInstanceFactory.INSTANCE.createInstance(type, null);
+        final Object result = PrimitiveInstanceFactory.INSTANCE.createInstance(type, null, null);
 
         // Then:
         assertThat(result, is(notNullValue()));
@@ -71,14 +80,5 @@ public class PrimitiveInstanceFactoryTest {
     @DataProvider(name = "boxed")
     public Object[][] getBoxedPrimitives() {
         return asObjectArray(TypeUtils.getBoxedPrimitiveTypes());
-    }
-
-    private static Object[][] asObjectArray(final List<Class<?>> types) {
-        final Object[][] data = new Object[types.size()][];
-        int i = 0;
-        for (Class<?> type : types) {
-            data[i++] = new Object[] {type};
-        }
-        return data;
     }
 }

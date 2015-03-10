@@ -29,7 +29,7 @@ public class BigDecimalInstanceFactory implements InstanceFactory {
     public static final InstanceFactory INSTANCE = new BigDecimalInstanceFactory();
 
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, final Object parent) {
+    public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
         Validate.isTrue(rawType.equals(BigDecimal.class), "BigDecimal type expected. Got: %s", rawType);
         //noinspection unchecked
         return (T)new BigDecimal(1.0f);

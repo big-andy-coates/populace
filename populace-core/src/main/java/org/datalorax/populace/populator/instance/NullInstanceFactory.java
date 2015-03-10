@@ -24,7 +24,7 @@ public class NullInstanceFactory implements InstanceFactory {
     public static final NullInstanceFactory INSTANCE = new NullInstanceFactory();
 
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, final Object parent) {
+    public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
         return null;
     }
 

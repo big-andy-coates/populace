@@ -22,6 +22,9 @@ package org.datalorax.populace.populator.instance;
  * @author Andrew Coates - 03/03/2015.
  */
 public final class ChainedInstanceFactory {
+    private ChainedInstanceFactory() {
+    }
+
     public static ChainableInstanceFactory chain(final ChainableInstanceFactory first, final ChainableInstanceFactory second){
         return new ChainableChainedInstanceFactory(first, second);
     }
@@ -40,11 +43,11 @@ public final class ChainedInstanceFactory {
         }
 
         @Override
-        public <T> T createInstance(final Class<? extends T> rawType, final Object parent) {
+        public <T> T createInstance(final Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
             if (first.supportsType(rawType)) {
-                return first.createInstance(rawType, parent);
+                return first.createInstance(rawType, parent, instanceFactories);
             }
-            return second.createInstance(rawType, parent);
+            return second.createInstance(rawType, parent, instanceFactories);
         }
 
         @Override
@@ -87,11 +90,11 @@ public final class ChainedInstanceFactory {
         }
 
         @Override
-        public <T> T createInstance(final Class<? extends T> rawType, final Object parent) {
+        public <T> T createInstance(final Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
             if (first.supportsType(rawType)) {
-                return first.createInstance(rawType, parent);
+                return first.createInstance(rawType, parent, instanceFactories);
             }
-            return second.createInstance(rawType, parent);
+            return second.createInstance(rawType, parent, instanceFactories);
         }
 
         @Override
@@ -118,6 +121,4 @@ public final class ChainedInstanceFactory {
                 '}';
         }
     }
-
-    private ChainedInstanceFactory() {}
 }

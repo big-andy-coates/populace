@@ -16,20 +16,21 @@
 
 package org.datalorax.populace.populator;
 
-import org.datalorax.populace.field.filter.FieldFilter;
+import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.populator.instance.InstanceFactory;
 import org.datalorax.populace.populator.mutator.Mutators;
 import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
@@ -271,7 +272,7 @@ public class GraphPopulatorFunctionTest {
         populator.populate(currentValue);
 
         // Then:
-        verify(nullHandler).createInstance(Object.class, currentValue);
+        verify(nullHandler).createInstance(eq(Object.class), eq(currentValue), any(InstanceFactories.class));
     }
 
     @Test
@@ -336,12 +337,9 @@ public class GraphPopulatorFunctionTest {
     public void shouldHonourFieldFilterList() throws Exception {
         // Given:
         final WithPrimitives original = new WithPrimitives();
-        populator = GraphPopulator.newBuilder().withFieldFilter(new FieldFilter() {
-            @Override
-            public boolean evaluate(final Field field) {
-                final String name = field.getName();
-                return !(name.equals("_char") || name.equals("_int"));
-            }
+        populator = GraphPopulator.newBuilder().withFieldFilter(field -> {
+            final String name = field.getName();
+            return !(name.equals("_char") || name.equals("_int"));
         }).build();
 
         // When:
@@ -505,7 +503,7 @@ public class GraphPopulatorFunctionTest {
     }
 
     public static class TypeWrappingTypeWithTypeVariables {
-        public TypeWithTypeVariables<String, Integer> _type = new TypeWithTypeVariables<String, Integer>();
+        public TypeWithTypeVariables<String, Integer> _type = new TypeWithTypeVariables<>();
 
         public TypeWrappingTypeWithTypeVariables() {
             _type._map.put("key", null);
@@ -513,7 +511,7 @@ public class GraphPopulatorFunctionTest {
     }
 
     public static class TypeWithTypeVariables<K, V> {
-        public Map<K, V> _map = new HashMap<K, V>();
+        public Map<K, V> _map = new HashMap<>();
     }
 
     public static class TypeWithObjectField {

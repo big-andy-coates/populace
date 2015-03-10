@@ -31,7 +31,7 @@ import java.util.*;
 final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
     private static final InstanceFactories DEFAULT;
     private final ImmutableTypeMap.Builder<InstanceFactory> factoriesBuilder;
-    private InstanceFactory nullObjectFactory = NullInstanceFactory.INSTANCE;
+    private InstanceFactory nullObjectFactory = NullInstanceFactory.INSTANCE;   // Todo(ac): switch to logging factory
 
     InstanceFactoriesBuilder(final InstanceFactory nullObjectFactory, final ImmutableTypeMap<InstanceFactory> factories) {
         this.nullObjectFactory = nullObjectFactory;

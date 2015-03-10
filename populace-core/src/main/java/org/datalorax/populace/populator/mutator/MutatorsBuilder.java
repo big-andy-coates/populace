@@ -25,6 +25,7 @@ import org.datalorax.populace.type.TypeUtils;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +58,7 @@ final class MutatorsBuilder implements  Mutators.Builder {
         TypeUtils.getBoxedPrimitiveTypes().forEach(type -> builder.withSpecificMutator(type, chain(EnsureMutator.INSTANCE, ChangePrimitiveMutator.INSTANCE)));
 
         builder.withSpecificMutator(String.class, chain(EnsureMutator.INSTANCE, ChangeStringMutator.INSTANCE));
+        builder.withSpecificMutator(BigDecimal.class, chain(EnsureMutator.INSTANCE, ChangeBigDecimalMutator.INSTANCE));
         builder.withSpecificMutator(Date.class, DateMutator.INSTANCE);
 
         builder.withSuperMutator(Collection.class, chain(EnsureMutator.INSTANCE, ChangeCollectionElementsMutator.INSTANCE));

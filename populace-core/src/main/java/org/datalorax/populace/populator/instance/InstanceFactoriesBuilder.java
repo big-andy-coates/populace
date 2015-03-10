@@ -54,7 +54,7 @@ final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
         builder.withSuperFactory(Set.class, new DefaultTypeInstanceFactory(Set.class, HashSet.class, DefaultConstructorInstanceFactory.INSTANCE));
         builder.withSuperFactory(List.class, new DefaultTypeInstanceFactory(List.class, ArrayList.class, DefaultConstructorInstanceFactory.INSTANCE));
         builder.withSuperFactory(Collection.class, new DefaultTypeInstanceFactory(Collection.class, ArrayList.class, DefaultConstructorInstanceFactory.INSTANCE));
-        builder.withSpecificFactory(BigDecimal.class, BigDecimalInstanceFactory.INSTANCE);
+        builder.withSpecificFactory(BigDecimal.class, BigDecimalInstanceFactory.LARGE_INSTANCE);
 
         DEFAULT = builder
             .withArrayDefaultFactory(DefaultConstructorInstanceFactory.INSTANCE)   // Todo(ac): we'll need specific array factory

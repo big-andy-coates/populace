@@ -17,28 +17,30 @@
 package org.datalorax.populace.populator.mutator.change;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 
 /**
- * Change mutator for enums. The mutator will change the value of the enum to another valid value in the enumeration,
- * assuming there is one. For enumerations with only a single value the value will not be changed. If the current value
- * is null the value will also not be changed.
- * @author Andrew Coates - 02/03/2015.
+ * {@link org.datalorax.populace.populator.Mutator} for {@link java.math.BigDecimal}
+ *
+ * @author Andrew Coates - 10/03/2015.
  */
-public class ChangeEnumMutator implements Mutator {
-    public static final ChangeEnumMutator INSTANCE = new ChangeEnumMutator();
+public class ChangeBigDecimalMutator implements Mutator {
+    public static final ChangeBigDecimalMutator INSTANCE = new ChangeBigDecimalMutator();
+    private static final BigDecimal DIVISOR = new BigDecimal("1.5");
 
     @Override
     public Object mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config) {
-        Validate.isTrue(TypeUtils.getRawType(type, null).isEnum(), "Enum type expected");
+        Validate.isTrue(type.equals(BigDecimal.class), "BigDecimal type expected");
         if (currentValue == null) {
             return null;
         }
-        return changeEnum((Enum) currentValue);
+
+        final BigDecimal bigDecimal = (BigDecimal) currentValue;
+        return bigDecimal.divide(DIVISOR, BigDecimal.ROUND_HALF_EVEN);
     }
 
     @Override
@@ -54,15 +56,5 @@ public class ChangeEnumMutator implements Mutator {
     @Override
     public String toString() {
         return getClass().getSimpleName();
-    }
-
-    private Object changeEnum(final Enum currentValue) {
-        final Object[] allValues = currentValue.getDeclaringClass().getEnumConstants();
-        if (allValues.length <= 1) {
-            return currentValue;
-        }
-
-        final int newOrdinal = (currentValue.ordinal() + 1) % allValues.length;
-        return allValues[newOrdinal];
     }
 }

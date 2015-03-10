@@ -57,19 +57,9 @@ public class PrimitiveInstanceFactoryTest {
         assertThat(result, is(instanceOf(type)));
     }
 
-    @Test(dataProvider = "primitive")
-    public void shouldSupportPrimitiveTypes(Class<?> type) throws Exception {
-        assertThat(PrimitiveInstanceFactory.INSTANCE.supportsType(type), is(true));
-    }
-
-    @Test(dataProvider = "boxed")
-    public void shouldSupportBoxedPrimitiveTypes(Class<?> type) throws Exception {
-        assertThat(PrimitiveInstanceFactory.INSTANCE.supportsType(type), is(true));
-    }
-
     @Test
-    public void shouldNotSupportNonPrimitiveTypes() throws Exception {
-        assertThat(PrimitiveInstanceFactory.INSTANCE.supportsType(String.class), is(false));
+    public void shouldReturnNullForNonPrimitiveTypes() throws Exception {
+        assertThat(PrimitiveInstanceFactory.INSTANCE.createInstance(String.class, null, null), is(nullValue()));
     }
 
     @DataProvider(name = "primitive")

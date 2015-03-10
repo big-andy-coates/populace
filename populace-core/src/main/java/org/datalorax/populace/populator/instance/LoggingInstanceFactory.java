@@ -16,16 +16,22 @@
 
 package org.datalorax.populace.populator.instance;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
- * Instance factory that returns null.
+ * A {@link org.datalorax.populace.populator.instance.NullObjectStrategy} that logs the type and returns {@code null}.
+ *
  * @author Andrew Coates - 02/03/2015.
  */
-public class NullInstanceFactory implements InstanceFactory {
-    public static final NullInstanceFactory INSTANCE = new NullInstanceFactory();
+public class LoggingInstanceFactory implements NullObjectStrategy {
+    public static final LoggingInstanceFactory INSTANCE = new LoggingInstanceFactory();
+    private static final Log LOG = LogFactory.getLog(LoggingInstanceFactory.class);
 
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
-        return null;
+    public void onNullObject(final Object parent) {
+        LOG.warn("A null value was encountered for which there existed no type information to use to instantiate a new " +
+            "instance. parent instance: " + parent);
     }
 
     @Override

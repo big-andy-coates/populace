@@ -47,12 +47,6 @@ public class FieldInfo {
         return field.getDeclaringClass();
     }
 
-    @Deprecated /// Todo(ac): remove.
-    // Deprecated as we want to encapsulate all access through this type, so that moving to getters/setters will be easy
-    public Field getField() {
-        return field;
-    }
-
     public Type getGenericType() {
         return genericType;
     }

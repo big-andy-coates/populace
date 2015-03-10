@@ -16,29 +16,34 @@
 
 package org.datalorax.populace.populator.mutator.commbination;
 
+import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
 
 import java.lang.reflect.Type;
 
 /**
+ * A mutator that chains together two other mutators. In output from the first mutator becomes the input to the next.
+ *
  * @author Andrew Coates - 02/03/2015.
  */
-public class ChainMutator implements Mutator {
+public class ChainedMutator implements Mutator {
     private final Mutator first;
     private final Mutator second;
 
-    public static Mutator chain(final Mutator first, final Mutator second, final Mutator... additional) {
-        ChainMutator chain = new ChainMutator(first, second);
-        for (Mutator mutator : additional) {
-            chain = new ChainMutator(chain, mutator);
-        }
-        return chain;
-    }
-
-    public ChainMutator(final Mutator first, final Mutator second) {
+    public ChainedMutator(final Mutator first, final Mutator second) {
+        Validate.notNull(first, "first null");
+        Validate.notNull(second, "second null");
         this.first = first;
         this.second = second;
+    }
+
+    public static Mutator chain(final Mutator first, final Mutator second, final Mutator... additional) {
+        ChainedMutator chain = new ChainedMutator(first, second);
+        for (Mutator mutator : additional) {
+            chain = new ChainedMutator(chain, mutator);
+        }
+        return chain;
     }
 
     @Override
@@ -52,7 +57,7 @@ public class ChainMutator implements Mutator {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final ChainMutator that = (ChainMutator) o;
+        final ChainedMutator that = (ChainedMutator) o;
         return first.equals(that.first) && second.equals(that.second);
     }
 

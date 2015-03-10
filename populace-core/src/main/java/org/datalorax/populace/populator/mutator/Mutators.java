@@ -18,7 +18,7 @@ package org.datalorax.populace.populator.mutator;
 
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.populator.Mutator;
-import org.datalorax.populace.populator.mutator.commbination.ChainMutator;
+import org.datalorax.populace.populator.mutator.commbination.ChainedMutator;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
@@ -30,6 +30,11 @@ import java.lang.reflect.Type;
  */
 public class Mutators {
     private final ImmutableTypeMap<Mutator> mutators;
+
+    Mutators(final ImmutableTypeMap<Mutator> mutators) {
+        Validate.notNull(mutators, "mutators null");
+        this.mutators = mutators;
+    }
 
     /**
      * @return the default set of {@link org.datalorax.populace.populator.Mutator mutators} defined by the system
@@ -63,19 +68,7 @@ public class Mutators {
      * @return A {@link Mutator} encapsulating all the supplied mutators.
      */
     public static Mutator chain(final Mutator first, final Mutator second, final Mutator... additional) {
-        return ChainMutator.chain(first, second, additional);
-    }
-
-    public interface Builder {
-        Builder withSpecificMutator(final Type type, final Mutator mutator);
-
-        Builder withSuperMutator(final Class<?> baseClass, final Mutator mutator);
-
-        Builder withArrayDefaultMutator(final Mutator mutator);
-
-        Builder withDefaultMutator(final Mutator mutator);
-
-        Mutators build();
+        return ChainedMutator.chain(first, second, additional);
     }
 
     public Mutator get(final Type key) {
@@ -103,8 +96,15 @@ public class Mutators {
             '}';
     }
 
-    Mutators(final ImmutableTypeMap<Mutator> mutators) {
-        Validate.notNull(mutators, "mutators null");
-        this.mutators = mutators;
+    public interface Builder {
+        Builder withSpecificMutator(final Type type, final Mutator mutator);
+
+        Builder withSuperMutator(final Class<?> baseClass, final Mutator mutator);
+
+        Builder withArrayDefaultMutator(final Mutator mutator);
+
+        Builder withDefaultMutator(final Mutator mutator);
+
+        Mutators build();
     }
 }

@@ -26,6 +26,7 @@ import java.util.Vector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 
 public class DefaultTypeInstanceFactoryTest {
@@ -60,10 +61,26 @@ public class DefaultTypeInstanceFactoryTest {
         new DefaultTypeInstanceFactory(baseType, defaultType, null);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
-    public void shouldThrowIfRequestedTypeNotSubtypeOfDefaultType() throws Exception {
+    @Test
+    public void shouldReturnNullIfRequestedTypeNotSubtypeOfDefaultType() throws Exception {
         // When:
-        factory.createInstance(String.class, null, null);
+        final String instance = factory.createInstance(String.class, null, null);
+
+        // Then:
+        assertThat(instance, is(nullValue()));
+    }
+
+    @Test
+    public void shouldReturnNullIfDefaultTypeNotCompatibleWithRequestedType() throws Exception {
+        // Given:
+        final ArrayList expected = mock(ArrayList.class);
+        when(concreteFactory.createInstance(ArrayList.class, parent, instanceFactories)).thenReturn(expected);
+
+        // When:
+        final List instance = factory.createInstance(AbstractSequentialList.class, parent, instanceFactories);
+
+        // Then:
+        assertThat(instance, is(nullValue()));
     }
 
     @Test
@@ -105,19 +122,6 @@ public class DefaultTypeInstanceFactoryTest {
 
         // When:
         final List instance = factory.createInstance(List.class, parent, instanceFactories);
-
-        // Then:
-        assertThat(instance, is(expected));
-    }
-
-    @Test(expectedExceptions = UnsupportedOperationException.class)
-    public void shouldThrowExceptionIfDefaultTypeNotCompatibleWithRequestedType() throws Exception {
-        // Given:
-        final ArrayList expected = mock(ArrayList.class);
-        when(concreteFactory.createInstance(ArrayList.class, parent, instanceFactories)).thenReturn(expected);
-
-        // When:
-        final List instance = factory.createInstance(AbstractSequentialList.class, parent, instanceFactories);
 
         // Then:
         assertThat(instance, is(expected));

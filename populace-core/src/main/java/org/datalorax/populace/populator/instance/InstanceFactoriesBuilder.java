@@ -31,10 +31,11 @@ import java.util.*;
 final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
     private static final InstanceFactories DEFAULT;
     private final ImmutableTypeMap.Builder<InstanceFactory> factoriesBuilder;
-    private InstanceFactory nullObjectFactory = NullInstanceFactory.INSTANCE;   // Todo(ac): switch to logging factory
+    private NullObjectStrategy nullObjectStrategy = LoggingInstanceFactory.INSTANCE;
 
-    InstanceFactoriesBuilder(final InstanceFactory nullObjectFactory, final ImmutableTypeMap<InstanceFactory> factories) {
-        this.nullObjectFactory = nullObjectFactory;
+    InstanceFactoriesBuilder(final NullObjectStrategy nullObjectStrategy,
+                             final ImmutableTypeMap<InstanceFactory> factories) {
+        this.nullObjectStrategy = nullObjectStrategy;
         this.factoriesBuilder = ImmutableTypeMap.asBuilder(factories);
     }
 
@@ -89,13 +90,13 @@ final class InstanceFactoriesBuilder implements InstanceFactories.Builder {
     }
 
     @Override
-    public InstanceFactories.Builder withNullObjectFactory(final InstanceFactory factory) {
-        nullObjectFactory = factory;
+    public InstanceFactories.Builder withNullObjectStrategy(final NullObjectStrategy strategy) {
+        nullObjectStrategy = strategy;
         return this;
     }
 
     @Override
     public InstanceFactories build() {
-        return new InstanceFactories(nullObjectFactory, factoriesBuilder.build());
+        return new InstanceFactories(nullObjectStrategy, factoriesBuilder.build());
     }
 }

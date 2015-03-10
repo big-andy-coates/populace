@@ -22,8 +22,8 @@ import java.lang.reflect.Modifier;
 
 /**
  * Instance factory for handling non-concrete types e.g. interface and abstract types. The factory delegates any
- * concrete types its called with to the <code>concreteFactory</code> provided to the constructor. For non-concrete
- * types the factory creates an instance of the <code>defaultType</code> passed to the constructor, using the
+ * concrete types its called with to the {@code concreteFactory} provided to the constructor. For non-concrete
+ * types the factory creates an instance of the {@code defaultType} passed to the constructor, using the
  * {@code concreteFactory} passed in.
  *
  * @author Andrew Coates - 02/03/2015.
@@ -57,15 +57,16 @@ public class DefaultTypeInstanceFactory implements InstanceFactory {
 
     @Override
     public <T> T createInstance(final Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
-        Validate.isAssignableFrom(baseType, rawType, "Factory only supports types derived from %s", defaultType);
+        if (notSupported(rawType)) {
+            return null;
+        }
 
         if (isConcrete(rawType)) {
             return concreteFactory.createInstance(rawType, parent, instanceFactories);
         }
 
-        if (!rawType.isAssignableFrom(defaultType)) {
-            throw new UnsupportedOperationException("Unsupported type: " + rawType +
-                ", consider installing a either a specific or super InstanceFactory to handle this type");
+        if (notCompatibleWithDefaultType(rawType)) {
+            return null;
         }
 
         //noinspection unchecked
@@ -98,5 +99,13 @@ public class DefaultTypeInstanceFactory implements InstanceFactory {
             ", defaultType=" + defaultType +
             ", concreteFactory=" + concreteFactory +
             '}';
+    }
+
+    private boolean notSupported(final Class<?> rawType) {
+        return !baseType.isAssignableFrom(rawType);
+    }
+
+    private boolean notCompatibleWithDefaultType(final Class<?> rawType) {
+        return !rawType.isAssignableFrom(defaultType);
     }
 }

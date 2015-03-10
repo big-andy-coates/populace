@@ -16,8 +16,7 @@
 
 package org.datalorax.populace.populator;
 
-import org.datalorax.populace.populator.instance.InstanceFactories;
-import org.datalorax.populace.populator.instance.InstanceFactory;
+import org.datalorax.populace.populator.instance.NullObjectStrategy;
 import org.datalorax.populace.populator.mutator.Mutators;
 import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.testng.annotations.BeforeMethod;
@@ -30,7 +29,6 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
@@ -260,19 +258,19 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldAllowCustomNullObjectHandling() throws Exception {
         // Given:
-        final InstanceFactory nullHandler = mock(InstanceFactory.class);
+        final NullObjectStrategy nullHandler = mock(NullObjectStrategy.class);
         final TypeWithObjectField currentValue = new TypeWithObjectField();
         final GraphPopulator.Builder builder = GraphPopulator.newBuilder();
         populator = builder.withInstanceFactories(builder
             .instanceFactoriesBuilder()
-            .withNullObjectFactory(nullHandler).build())
+            .withNullObjectStrategy(nullHandler).build())
             .build();
 
         // When:
         populator.populate(currentValue);
 
         // Then:
-        verify(nullHandler).createInstance(eq(Object.class), eq(currentValue), any(InstanceFactories.class));
+        verify(nullHandler).onNullObject(eq(currentValue));
     }
 
     @Test

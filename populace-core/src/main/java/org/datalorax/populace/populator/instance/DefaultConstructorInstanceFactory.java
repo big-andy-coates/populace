@@ -24,7 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
 /**
- * Instance factory that uses a classes default constructor to create a new instance of the type.
+ * Instance factory that uses a classes default constructor to create a new instance of the type, or throws if it can't
  *
  * @author Andrew Coates - 02/03/2015.
  */

@@ -16,11 +16,13 @@
 
 package org.datalorax.populace.populator.instance;
 
+import java.lang.reflect.Type;
+
 /**
  * @author Andrew Coates - 09/03/2015.
  */
 public class InstanceCreationException extends RuntimeException {
-    public InstanceCreationException(final String message, final Class<?> type, final Throwable cause) {
+    public InstanceCreationException(final String message, final Type type, final Throwable cause) {
         super(message + ". Type: " + type, cause);
     }
 }

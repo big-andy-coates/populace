@@ -70,7 +70,7 @@ public class ChainedMutator implements Mutator {
 
     @Override
     public String toString() {
-        return "ChainMutator{" +
+        return "ChainedMutator{" +
             "first=" + first +
             ", second=" + second +
             '}';

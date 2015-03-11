@@ -16,7 +16,9 @@
 
 
 
+
+
 //noinspection GroovyAssignabilityCheck
 dependencies {
-    compile(project: 'populace-core')
+    compile project(':populace-core')
 }

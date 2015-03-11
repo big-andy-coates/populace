@@ -46,6 +46,21 @@ public class CollectionInspector implements Inspector {
         //noinspection unchecked
         return (Collection<Object>) instance;
     }
+
+    @Override
+    public boolean equals(final Object that) {
+        return this == that || (that != null && getClass() == that.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }
 
 // Todo(ac): all these inspectors need tests and hardening

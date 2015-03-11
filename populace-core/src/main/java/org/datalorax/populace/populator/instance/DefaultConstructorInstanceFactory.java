@@ -35,10 +35,6 @@ public class DefaultConstructorInstanceFactory implements InstanceFactory {
         return rawType.getEnclosingClass() != null && !Modifier.isStatic(rawType.getModifiers());
     }
 
-    private static boolean isInnerClass(final Class<?> rawType) {
-        return rawType.getEnclosingClass() != null && !Modifier.isStatic(rawType.getModifiers());
-    }
-
     @Override
     public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
         try {

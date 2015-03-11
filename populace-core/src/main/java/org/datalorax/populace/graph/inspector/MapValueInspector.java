@@ -46,4 +46,19 @@ public class MapValueInspector implements Inspector {
         //noinspection unchecked
         return ((Map<?, ?>) instance).values();
     }
+
+    @Override
+    public boolean equals(final Object that) {
+        return this == that || (that != null && getClass() == that.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }

@@ -16,14 +16,15 @@
 
 package org.datalorax.populace.instance;
 
-import org.datalorax.populace.populator.instance.ChainableInstanceFactory;
 import org.datalorax.populace.populator.instance.InstanceCreationException;
 import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.populator.instance.InstanceFactory;
+import org.datalorax.populace.type.TypeUtils;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 /**
  * Instance factory to can be used to create new instances for interface types that are marked with
@@ -31,23 +32,18 @@ import java.lang.reflect.Method;
  *
  * @author Andrew Coates - 09/03/2015.
  */
-public class JaxBInstanceFactory implements ChainableInstanceFactory {
+public class JaxBInstanceFactory implements InstanceFactory {
     public static final JaxBInstanceFactory INSTANCE = new JaxBInstanceFactory();
 
-    private static <T> Class<? extends T> getValueType(final Class<? extends T> rawType, final XmlJavaTypeAdapter annotation) {
+    private static Class<?> getValueType(final Class<?> rawType, final XmlJavaTypeAdapter annotation) {
         try {
             final Class<? extends XmlAdapter> adapterType = annotation.value();
             final Method marshalMethod = adapterType.getMethod("marshal", rawType);
             //noinspection unchecked
-            return (Class<? extends T>) marshalMethod.getReturnType();
+            return marshalMethod.getReturnType();
         } catch (NoSuchMethodException e) {
             throw new InstanceCreationException("Failed to determine value to for type marked with @XmlJavaTypeAdapter", rawType, e);
         }
-    }
-
-    @Override
-    public boolean supportsType(Class<?> rawType) {
-        return rawType.getAnnotation(XmlJavaTypeAdapter.class) != null;
     }
 
     @Override
@@ -57,9 +53,46 @@ public class JaxBInstanceFactory implements ChainableInstanceFactory {
             return null;
         }
 
-        final Class<? extends T> returnType = getValueType(rawType, annotation);
+        final Object value = createValueInstance(rawType, parent, instanceFactories, annotation);
+        //noinspection unchecked
+        return (T) convert(annotation, value);
+    }
 
-        final InstanceFactory factory = instanceFactories.get(returnType);
-        return factory.createInstance(returnType, parent, instanceFactories);
+    @Override
+    public boolean equals(final Object that) {
+        return this == that || (that != null && getClass() == that.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
+
+    private <T> Object createValueInstance(final Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories, final XmlJavaTypeAdapter annotation) {
+        final Class<?> valueType = getValueType(rawType, annotation);
+        final InstanceFactory factory = instanceFactories.get(valueType);
+        return factory.createInstance(valueType, parent, instanceFactories);
+    }
+
+    // Todo(ac): Maybe the way to handle this is to have the annotation inspector provide a 'converter' that wraps the instance factory?
+    private Object convert(final XmlJavaTypeAdapter annotation, final Object value) {
+        final Class<? extends XmlAdapter> adapterType = annotation.value();
+
+        try {
+            final XmlAdapter adapter = adapterType.getConstructor().newInstance();
+            //noinspection unchecked
+            return adapter.unmarshal(value);
+        } catch (Exception e) {
+            // Todo(ac): Test!!!!
+            final Type boundType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class, XmlAdapter.class.getTypeParameters()[1]);
+            throw new InstanceCreationException("Failed to marshal from @XmlJavaTypeAdaptor's ValueType to BoundType. " +
+                "annotation: " + annotation + ", valueType: " + (value == null ? "unknown (numm value)" : value.getClass()),
+                boundType, e);
+        }
     }
 }

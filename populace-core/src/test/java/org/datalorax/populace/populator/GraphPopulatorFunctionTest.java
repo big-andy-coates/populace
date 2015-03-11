@@ -17,6 +17,7 @@
 package org.datalorax.populace.populator;
 
 import org.datalorax.populace.field.filter.FieldFilter;
+import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.populator.instance.InstanceFactory;
 import org.datalorax.populace.populator.mutator.Mutators;
 import org.datalorax.populace.populator.mutator.PassThroughMutator;
@@ -244,7 +245,7 @@ public class GraphPopulatorFunctionTest {
         populator.populate(currentValue);
 
         // Then:
-        verify(nullHandler).createInstance(Object.class, currentValue);
+        verify(nullHandler).createInstance(eq(Object.class), eq(currentValue), isA(InstanceFactories.class));
     }
 
     @Test
@@ -427,12 +428,12 @@ public class GraphPopulatorFunctionTest {
     }
 
     private static class TypeWithEnumField {
+        public SomeEnum _enum;
+
         @SuppressWarnings("UnusedDeclaration")
         public enum SomeEnum {
             forkHandles, fourCandles
         }
-
-        public SomeEnum _enum;
     }
 
     private static class WithMapOfCustomType {

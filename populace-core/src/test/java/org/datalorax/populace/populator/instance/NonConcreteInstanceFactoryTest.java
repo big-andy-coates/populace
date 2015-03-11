@@ -32,10 +32,12 @@ public class NonConcreteInstanceFactoryTest {
     private final Class<ArrayList> defaultType = ArrayList.class;
     private InstanceFactory concreteFactory;
     private NonConcreteInstanceFactory factory;
+    private InstanceFactories instanceFactories;
     private Object parent;
 
     @BeforeMethod
     public void setUp() throws Exception {
+        instanceFactories = mock(InstanceFactories.class);
         concreteFactory = mock(InstanceFactory.class);
         parent = mock(Object.class);
 
@@ -60,35 +62,35 @@ public class NonConcreteInstanceFactoryTest {
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldThrowIfRequestedTypeNotSubtypeOfDefaultType() throws Exception {
         // When:
-        factory.createInstance(String.class, null);
+        factory.createInstance(String.class, null, instanceFactories);
     }
 
     @Test
     public void shouldDelegateToConcreteFactoryForConcreteTypes() throws Exception {
         // When:
-        factory.createInstance(Vector.class, parent);
+        factory.createInstance(Vector.class, parent, instanceFactories);
 
         // Then:
-        verify(concreteFactory).createInstance(Vector.class, parent);
+        verify(concreteFactory).createInstance(Vector.class, parent, instanceFactories);
     }
 
     @Test
     public void shouldUseConcreteFactoryToCreateDefaultType() throws Exception {
         // When:
-        factory.createInstance(List.class, parent);
+        factory.createInstance(List.class, parent, instanceFactories);
 
         // Then:
-        verify(concreteFactory).createInstance(defaultType, parent);
+        verify(concreteFactory).createInstance(defaultType, parent, instanceFactories);
     }
 
     @Test
     public void shouldReturnInstanceFromConcreteFactoryForConcreteTypes() throws Exception {
         // Given:
         final Vector expected = mock(Vector.class);
-        when(concreteFactory.createInstance(Vector.class, parent)).thenReturn(expected);
+        when(concreteFactory.createInstance(Vector.class, parent, instanceFactories)).thenReturn(expected);
 
         // When:
-        final Vector instance = factory.createInstance(Vector.class, parent);
+        final Vector instance = factory.createInstance(Vector.class, parent, instanceFactories);
 
         // Then:
         assertThat(instance, is(expected));
@@ -98,10 +100,10 @@ public class NonConcreteInstanceFactoryTest {
     public void shouldReturnInstanceFromConcreteFactoryForNonConcreteTypes() throws Exception {
         // Given:
         final ArrayList expected = mock(ArrayList.class);
-        when(concreteFactory.createInstance(ArrayList.class, parent)).thenReturn(expected);
+        when(concreteFactory.createInstance(ArrayList.class, parent, instanceFactories)).thenReturn(expected);
 
         // When:
-        final List instance = factory.createInstance(List.class, parent);
+        final List instance = factory.createInstance(List.class, parent, instanceFactories);
 
         // Then:
         assertThat(instance, is(expected));

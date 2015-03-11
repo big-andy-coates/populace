@@ -23,19 +23,22 @@ import org.testng.annotations.Test;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 
 public class DefaultInstanceFactoryTest {
+    private InstanceFactories instanceFactories;
     private InstanceFactory factory;
 
     @BeforeMethod
     public void setUp() throws Exception {
+        instanceFactories = mock(InstanceFactories.class);
         factory = DefaultInstanceFactory.INSTANCE;
     }
 
     @Test
     public void shouldUseDefaultConstructorToCreateInstance() throws Exception {
         // When:
-        final PublicTypeWithPublicConstructor instance = factory.createInstance(PublicTypeWithPublicConstructor.class, null);
+        final PublicTypeWithPublicConstructor instance = factory.createInstance(PublicTypeWithPublicConstructor.class, null, instanceFactories);
 
         // Then:
         assertThat(instance, is(notNullValue()));
@@ -44,7 +47,7 @@ public class DefaultInstanceFactoryTest {
     @Test
     public void shouldWorkWithPrivateConstructor() throws Exception {
         // When:
-        final PublicTypeWithPrivateConstructor instance = factory.createInstance(PublicTypeWithPrivateConstructor.class, null);
+        final PublicTypeWithPrivateConstructor instance = factory.createInstance(PublicTypeWithPrivateConstructor.class, null, instanceFactories);
 
         // Then:
         assertThat(instance, is(notNullValue()));
@@ -53,7 +56,7 @@ public class DefaultInstanceFactoryTest {
     @Test
     public void shouldWorkWithPrivateClass() throws Exception {
         // When:
-        final PrivateType instance = factory.createInstance(PrivateType.class, null);
+        final PrivateType instance = factory.createInstance(PrivateType.class, null, instanceFactories);
 
         // Then:
         assertThat(instance, is(notNullValue()));
@@ -65,7 +68,7 @@ public class DefaultInstanceFactoryTest {
         final TypeWithInner parent = new TypeWithInner();
 
         // When:
-        final TypeWithInner.Inner instance = factory.createInstance(TypeWithInner.Inner.class, parent);
+        final TypeWithInner.Inner instance = factory.createInstance(TypeWithInner.Inner.class, parent, instanceFactories);
 
         // Then:
         assertThat(instance, is(notNullValue()));
@@ -74,19 +77,22 @@ public class DefaultInstanceFactoryTest {
     @Test(expectedExceptions = PopulatorException.class)
     public void shouldThrowIfNoDefaultConstructor() throws Exception {
         // When:
-        factory.createInstance(TypeWithNoDefaultConstructor.class, null);
+        factory.createInstance(TypeWithNoDefaultConstructor.class, null, instanceFactories);
     }
 
     @Test(expectedExceptions = PopulatorException.class)
     public void shouldThrowIfInterface() throws Exception {
         // When:
-        factory.createInstance(InterfaceType.class, null);
+        factory.createInstance(InterfaceType.class, null, instanceFactories);
     }
 
     @Test(expectedExceptions = PopulatorException.class)
     public void shouldThrowIfAbstract() throws Exception {
         // When:
-        factory.createInstance(AbstractType.class, null);
+        factory.createInstance(AbstractType.class, null, instanceFactories);
+    }
+
+    public interface InterfaceType {
     }
 
     public static final class PublicTypeWithPublicConstructor {
@@ -109,9 +115,6 @@ public class DefaultInstanceFactoryTest {
         @SuppressWarnings("UnusedParameters")
         public TypeWithNoDefaultConstructor(String s) {
         }
-    }
-
-    public interface InterfaceType {
     }
 
     public static abstract class AbstractType {

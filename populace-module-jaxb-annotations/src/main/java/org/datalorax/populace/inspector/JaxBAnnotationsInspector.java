@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.populator.instance;
+package org.datalorax.populace.inspector;
+
+import org.datalorax.populace.graph.inspector.Inspector;
+
+import java.lang.reflect.Field;
 
 /**
- * Instance factory that throws an UnsupportedOperationException.
- * @author Andrew Coates - 02/03/2015.
+ * An inspector replacement for the default {@link org.datalorax.populace.graph.inspector.ObjectInspector} that exposes
+ * bean properties, rather than raw fields, and which understands and uses JaxB annotations to include/exclude properties
+ * and/or map interfaces to concrete types.
+ *
+ * @author Andrew Coates - 09/03/2015.
  */
-public class ThrowingInstanceFactory implements InstanceFactory {
-    public static final ThrowingInstanceFactory INSTANCE = new ThrowingInstanceFactory();
+public class JaxBAnnotationsInspector implements Inspector {
+    public static final JaxBAnnotationsInspector INSTANCE = new JaxBAnnotationsInspector();
 
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
-        throw new UnsupportedOperationException("Unsupported type: " + rawType);
+    public Iterable<Field> getFields(final Object instance) {
+        return null;
     }
 
     @Override

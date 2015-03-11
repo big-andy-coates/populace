@@ -51,7 +51,7 @@ public class PopulatorContext {
         final Type typeToLookUp = type instanceof TypeVariable ? Object.class : type;
         final InstanceFactory factory = instanceFactories.get(typeToLookUp);
         final Class<?> rawType = TypeUtils.getRawType(typeToLookUp, null);
-        return factory.createInstance(rawType, parent);
+        return factory.createInstance(rawType, parent, instanceFactories);
     }
 
     @Override

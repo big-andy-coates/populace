@@ -30,8 +30,12 @@ import java.lang.reflect.Modifier;
 public class DefaultInstanceFactory implements InstanceFactory {
     public static final InstanceFactory INSTANCE = new DefaultInstanceFactory();
 
+    private static boolean isInnerClass(final Class<?> rawType) {
+        return rawType.getEnclosingClass() != null && !Modifier.isStatic(rawType.getModifiers());
+    }
+
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, final Object parent) {
+    public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
         try {
             if (isInnerClass(rawType)) {
                 return createNewInnerClass(rawType, parent);
@@ -56,10 +60,6 @@ public class DefaultInstanceFactory implements InstanceFactory {
     @Override
     public String toString() {
         return getClass().getSimpleName();
-    }
-
-    private static boolean isInnerClass(final Class<?> rawType) {
-        return rawType.getEnclosingClass() != null && !Modifier.isStatic(rawType.getModifiers());
     }
 
     private <T> T createNewTopLevel(final Class<? extends T> rawType) throws IllegalAccessException, InvocationTargetException, InstantiationException {

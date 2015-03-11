@@ -18,18 +18,19 @@ package org.datalorax.populace.populator.instance;
 
 /**
  * Extension point to support 'pluggable' factories for creating new instances of types.
+ *
  * @author Andrew Coates - 02/03/2015.
  */
 public interface InstanceFactory {
     /**
-     * @param rawType the type to create
-     * @param parent the parent instance, which is needed to create inner class instances. Can be null.
-     * @param <T> the type to create
+     * @param <T>               the type to create
+     * @param rawType           the type to create
+     * @param parent            the parent instance, which is needed to create inner class instances. Can be null.
+     * @param instanceFactories the set of instance factories configured in the system
      * @return a new instance
      * @throws org.datalorax.populace.populator.PopulatorException on failure to instantiate new instance
      */
-    <T> T createInstance(Class<? extends T> rawType, final Object parent);
+    <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories);
 
     // Todo(ac): do the generics work / add anything to this class?
-    // Todo(ac): consider passing Instance Factories (or context of some kind) to this method
 }

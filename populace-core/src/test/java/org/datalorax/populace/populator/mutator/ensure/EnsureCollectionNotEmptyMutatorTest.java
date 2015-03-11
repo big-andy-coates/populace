@@ -18,15 +18,16 @@ package org.datalorax.populace.populator.mutator.ensure;
 
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
-import org.datalorax.populace.populator.mutator.PassThroughMutator;
+import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 
 public class EnsureCollectionNotEmptyMutatorTest {
     private Mutator mutator;
@@ -39,26 +40,58 @@ public class EnsureCollectionNotEmptyMutatorTest {
         mutator = new EnsureCollectionNotEmptyMutator();
     }
 
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldThrowIfTypeNotACollection() throws Exception {
+        // When:
+        mutator.mutate(String.class, null, null, config);
+    }
+
     @Test
-    public void shouldNotBlowUpOnRawTypes() throws Exception {
+    public void shouldDoNothingToNullCollection() throws Exception {
+        // When:
+        final Object mutated = mutator.mutate(List.class, null, null, config);
+
+        // Then:
+        assertThat(mutated, is(nullValue()));
+    }
+
+    @Test
+    public void shouldDoNothingToNonEmptyCollection() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
-        final List currentValue = new ArrayList() {{
-            //noinspection unchecked
-            add("value");
-        }};
+        final List list = mock(List.class);
+
+        // When:
+        final Object mutated = mutator.mutate(List.class, list, null, config);
+
+        // Then:
+        assertThat(mutated, is(sameInstance(list)));
+        verify(list).isEmpty();
+        verifyNoMoreInteractions(list);
+    }
+
+    @Test
+    public void shouldNotBlowUpOnRawBaseType() throws Exception {
+        // Given:
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
+        final List currentValue = new ArrayList();
 
         // When:
         mutator.mutate(List.class, currentValue, null, config);
     }
 
-    // Todo(ac): how about some tests?
+    @Test
+    public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
+        // Given:
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
+        final List currentValue = new ArrayList();
+
+        // When:
+        mutator.mutate(ArrayList.class, currentValue, null, config);
+    }
+
+    // Todo(ac): how about some tests? including Collection<Collection<>> style
 
     private void givenMutatorRegistered(Class<?> type, Mutator mutator) {
         when(config.getMutator(type)).thenReturn(mutator);
-    }
-
-    private <T> void givenCreateInstanceWillReturn(final Class<T> type, final T instance) {
-        when(config.createInstance(type, null)).thenReturn(instance);
     }
 }

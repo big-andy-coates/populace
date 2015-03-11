@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.populator.mutator;
+package org.datalorax.populace.populator.mutator.change;
 
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
@@ -28,14 +28,14 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Andrew Coates - 27/02/2015.
  */
-public class StringMutatorTest {
+public class ChangeStringMutatorTest {
     private Mutator mutator;
     private PopulatorContext config;
 
     @BeforeMethod
     public void setUp() throws Exception {
         config = mock(PopulatorContext.class);
-        mutator = new StringMutator();
+        mutator = ChangeStringMutator.INSTANCE;
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
@@ -44,23 +44,35 @@ public class StringMutatorTest {
     }
 
     @Test
+    public void shouldReturnNullOnNullInput() throws Exception {
+        // When:
+        final String mutated = (String) mutator.mutate(String.class, null, null, config);
+
+        // Then:
+        assertThat(mutated, is(nullValue()));
+    }
+
+    @Test
     public void shouldMutateString() throws Exception {
         // Given:
         final String original = "hello";
 
         // When:
-        final String populated = (String) mutator.mutate(String.class, original, null, config);
+        final String mutated = (String) mutator.mutate(String.class, original, null, config);
 
         // Then:
-        assertThat(populated, is(not(original)));
+        assertThat(mutated, is(not(original)));
     }
 
     @Test
-    public void shouldCreateNewStringIfCurrentIsNull() throws Exception {
+    public void shouldMutateASecondTime() throws Exception {
+        // Given:
+        final String mutated = (String) mutator.mutate(String.class, "hello", null, config);
+
         // When:
-        final String populated = (String) mutator.mutate(String.class, null, null, config);
+        final String mutatedAgain = (String) mutator.mutate(String.class, mutated, null, config);
 
         // Then:
-        assertThat(populated, is(not(nullValue())));
+        assertThat(mutatedAgain, is(not(mutated)));
     }
 }

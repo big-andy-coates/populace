@@ -16,18 +16,17 @@
 
 package org.datalorax.populace.populator;
 
-import org.datalorax.populace.field.filter.FieldFilter;
-import org.datalorax.populace.populator.instance.InstanceFactories;
-import org.datalorax.populace.populator.instance.InstanceFactory;
+import org.datalorax.populace.populator.instance.NullObjectStrategy;
 import org.datalorax.populace.populator.mutator.Mutators;
-import org.datalorax.populace.populator.mutator.PassThroughMutator;
+import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.*;
 
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.anyObject;
@@ -66,12 +65,32 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldHandleBoxedPrimitivesByDefault() throws Exception {
+    public void shouldNullHandleBoxedPrimitivesByDefault() throws Exception {
         // Given:
         final WithBoxedPrimitives original = new WithBoxedPrimitives();
 
         // When:
         final WithBoxedPrimitives populated = populator.populate(new WithBoxedPrimitives());
+
+        // Then:
+        assertThat(populated._boolean, is(not(nullValue())));
+        assertThat(populated._boolean, is(not(original._boolean)));
+        assertThat(populated._byte, is(not(original._byte)));
+        assertThat(populated._char, is(not(original._char)));
+        assertThat(populated._short, is(not(original._short)));
+        assertThat(populated._int, is(not(original._int)));
+        assertThat(populated._long, is(not(original._long)));
+        assertThat(populated._float, is(not(original._float)));
+        assertThat(populated._double, is(not(original._double)));
+    }
+
+    @Test
+    public void shouldHandleNullBoxedPrimitivesByDefault() throws Exception {
+        // Given:
+        final WithBoxedPrimitives original = new WithBoxedPrimitives().givenPopulated();
+
+        // When:
+        final WithBoxedPrimitives populated = populator.populate(new WithBoxedPrimitives().givenPopulated());
 
         // Then:
         assertThat(populated._boolean, is(not(nullValue())));
@@ -135,10 +154,16 @@ public class GraphPopulatorFunctionTest {
         // Then:
         assertThat(populated._list, is(not(nullValue())));
         assertThat(populated._set, is(not(nullValue())));
+        assertThat(populated._collection, is(not(nullValue())));
         assertThat(populated._list, is(not(original._list)));
         assertThat(populated._set, is(not(original._set)));
+        assertThat(populated._collection, is(not(original._collection)));
         assertThat(populated._nullList, is(not(nullValue())));
         assertThat(populated._nullSet, is(not(nullValue())));
+        assertThat(populated._nullCollection, is(not(empty())));
+        assertThat(populated._nullList, is(not(empty())));
+        assertThat(populated._nullSet, is(not(empty())));
+        assertThat(populated._nullCollection, is(not(empty())));
     }
 
     @Test
@@ -233,19 +258,19 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldAllowCustomNullObjectHandling() throws Exception {
         // Given:
-        final InstanceFactory nullHandler = mock(InstanceFactory.class);
+        final NullObjectStrategy nullHandler = mock(NullObjectStrategy.class);
         final TypeWithObjectField currentValue = new TypeWithObjectField();
         final GraphPopulator.Builder builder = GraphPopulator.newBuilder();
         populator = builder.withInstanceFactories(builder
             .instanceFactoriesBuilder()
-            .withNullObjectFactory(nullHandler).build())
+            .withNullObjectStrategy(nullHandler).build())
             .build();
 
         // When:
         populator.populate(currentValue);
 
         // Then:
-        verify(nullHandler).createInstance(eq(Object.class), eq(currentValue), isA(InstanceFactories.class));
+        verify(nullHandler).onNullObject(eq(currentValue));
     }
 
     @Test
@@ -309,13 +334,10 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHonourFieldFilterList() throws Exception {
         // Given:
-        final WithBoxedPrimitives original = new WithBoxedPrimitives();
-        populator = GraphPopulator.newBuilder().withFieldFilter(new FieldFilter() {
-            @Override
-            public boolean evaluate(final Field field) {
-                final String name = field.getName();
-                return !(name.equals("_char") || name.equals("_int"));
-            }
+        final WithPrimitives original = new WithPrimitives();
+        populator = GraphPopulator.newBuilder().withFieldFilter(field -> {
+            final String name = field.getName();
+            return !(name.equals("_char") || name.equals("_int"));
         }).build();
 
         // When:
@@ -339,11 +361,24 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._rawList, is(not(original._rawList)));
     }
 
+    @Test
+    public void shouldWorkWithBigDecimals() throws Exception {
+        // Given:
+        final TypeWithBigDecimalField original = new TypeWithBigDecimalField();
+
+        // When:
+        final TypeWithBigDecimalField populated = populator.populate(new TypeWithBigDecimalField());
+
+        // Then:
+        assertThat(populated._bigDecimal, is(notNullValue()));
+        assertThat(populated._bigDecimal, is(not(original._bigDecimal)));
+    }
+
     // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
     // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
 
     private Mutator givenMutatorRegistered(Type... types) {
-        final Mutator mutator = spy(PassThroughMutator.class);
+        final Mutator mutator = spy(NoOpMutator.class);
         final Mutators.Builder builder = Mutators.newBuilder();
         for (Type type : types) {
             builder.withSpecificMutator(type, mutator);
@@ -364,14 +399,26 @@ public class GraphPopulatorFunctionTest {
     }
 
     private static class WithBoxedPrimitives {
-        private Boolean _boolean = false;
-        private Byte _byte = 9;
-        private Character _char = 'a';
-        private Short _short = 1;
-        private Integer _int = 2;
-        private Long _long = 3L;
-        private Float _float = 1.2f;
-        private Double _double = 1.2;
+        private Boolean _boolean;
+        private Byte _byte;
+        private Character _char;
+        private Short _short;
+        private Integer _int;
+        private Long _long;
+        private Float _float;
+        private Double _double;
+
+        public WithBoxedPrimitives givenPopulated() {
+            _boolean = false;
+            _byte = 9;
+            _char = 'a';
+            _short = 1;
+            _int = 2;
+            _long = 3L;
+            _float = 1.2f;
+            _double = 1.2;
+            return this;
+        }
     }
 
     private static class WithString {
@@ -418,6 +465,10 @@ public class GraphPopulatorFunctionTest {
         public Set<Long> _set = new HashSet<Long>() {{
             add(42L);
         }};
+        public Collection<Long> _nullCollection = null;
+        public Collection<Long> _collection = new ArrayList<Long>() {{
+            add(42L);
+        }};
     }
 
     private static class TypeWithMapField {
@@ -450,7 +501,7 @@ public class GraphPopulatorFunctionTest {
     }
 
     public static class TypeWrappingTypeWithTypeVariables {
-        public TypeWithTypeVariables<String, Integer> _type = new TypeWithTypeVariables<String, Integer>();
+        public TypeWithTypeVariables<String, Integer> _type = new TypeWithTypeVariables<>();
 
         public TypeWrappingTypeWithTypeVariables() {
             _type._map.put("key", null);
@@ -458,10 +509,16 @@ public class GraphPopulatorFunctionTest {
     }
 
     public static class TypeWithTypeVariables<K, V> {
-        public Map<K, V> _map = new HashMap<K, V>();
+        public Map<K, V> _map = new HashMap<>();
     }
 
     public static class TypeWithObjectField {
         public Object _null;
     }
+
+    public static class TypeWithBigDecimalField {
+        public BigDecimal _bigDecimal;
+    }
 }
+
+// Todo(Ac): Add test for Map<String, List<Integer>>

@@ -24,11 +24,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
 /**
- * Instance factory that uses a classes default constructor to create a new instance of the type.
+ * Instance factory that uses a classes default constructor to create a new instance of the type, or throws if it can't
+ *
  * @author Andrew Coates - 02/03/2015.
  */
-public class DefaultInstanceFactory implements InstanceFactory {
-    public static final InstanceFactory INSTANCE = new DefaultInstanceFactory();
+public class DefaultConstructorInstanceFactory implements InstanceFactory {
+    public static final InstanceFactory INSTANCE = new DefaultConstructorInstanceFactory();
+
+    private static boolean isInnerClass(final Class<?> rawType) {
+        return rawType.getEnclosingClass() != null && !Modifier.isStatic(rawType.getModifiers());
+    }
 
     private static boolean isInnerClass(final Class<?> rawType) {
         return rawType.getEnclosingClass() != null && !Modifier.isStatic(rawType.getModifiers());

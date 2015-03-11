@@ -17,9 +17,9 @@
 package org.datalorax.populace.populator.mutator.change;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
+import org.datalorax.populace.type.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -35,7 +35,8 @@ import java.util.Map;
  *
  * @author Andrew Coates - 27/02/2015.
  */
-// Todo(ac): Given that the system knows about containers... why do we need special mutators for maps? Just mutate the values in the map...
+// Todo(ac): Given that the system knows about containers... why do we need special mutators for maps?
+// Todo(ac): Just mutate the values in the map.... and does this mean we're mutating sets?
 public class ChangeMapValuesMutator implements Mutator {
     private static final TypeVariable<Class<Map>>[] MAP_TYPE_VARIABLES = Map.class.getTypeParameters();
     public static final Mutator INSTANCE = new ChangeMapValuesMutator();
@@ -79,8 +80,6 @@ public class ChangeMapValuesMutator implements Mutator {
     }
 
     private Type getValueType(Type type) {
-        final Map<TypeVariable<?>, Type> typeArguments = TypeUtils.getTypeArguments(type, Map.class);
-        final Type valueType = typeArguments.get(MAP_TYPE_VARIABLES[1]);
-        return valueType == null ? Object.class : valueType;
+        return TypeUtils.getTypeArgument(type, Map.class, MAP_TYPE_VARIABLES[1]);
     }
 }

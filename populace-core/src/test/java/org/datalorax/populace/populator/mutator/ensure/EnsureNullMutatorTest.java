@@ -14,27 +14,25 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.field.visitor;
+package org.datalorax.populace.populator.mutator.ensure;
 
-import org.datalorax.populace.field.FieldInfo;
+import org.datalorax.populace.populator.Mutator;
 import org.testng.annotations.Test;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
-public class SetAccessibleFieldVisitorTest {
-    @SuppressWarnings("UnusedDeclaration")  // Accessed via reflection
-    private String inaccessibleField;
-
+public class EnsureNullMutatorTest {
     @Test
-    public void shouldSetFieldAccessible() throws Exception {
+    public void shouldMostCertainlyReturnNull() throws Exception {
         // Given:
-        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        final Mutator mutator = EnsureNullMutator.INSTANCE;
 
         // When:
-        SetAccessibleFieldVisitor.INSTANCE.visit(fieldInfo);
+        final Object mutated = mutator.mutate(String.class, "hello", null, null);
 
         // Then:
-        verify(fieldInfo).ensureAccessible();
+        assertThat(mutated, is(nullValue()));
     }
 }

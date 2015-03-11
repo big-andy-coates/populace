@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.populator.instance;
+package org.datalorax.populace.populator.mutator.ensure;
+
+import org.datalorax.populace.populator.Mutator;
+import org.datalorax.populace.populator.PopulatorContext;
+
+import java.lang.reflect.Type;
 
 /**
- * Instance factory that returns null.
- * @author Andrew Coates - 02/03/2015.
+ * A {@link org.datalorax.populace.populator.Mutator} that ensures the value is set to null.
+ *
+ * @author Andrew Coates - 09/03/2015.
  */
-public class NullInstanceFactory implements InstanceFactory {
-    public static final NullInstanceFactory INSTANCE = new NullInstanceFactory();
+public class EnsureNullMutator implements Mutator {
+    public static final EnsureNullMutator INSTANCE = new EnsureNullMutator();
 
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
+    public Object mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config) {
         return null;
     }
 

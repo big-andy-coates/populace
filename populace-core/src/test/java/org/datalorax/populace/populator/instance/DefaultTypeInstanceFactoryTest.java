@@ -19,50 +19,68 @@ package org.datalorax.populace.populator.instance;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.AbstractSequentialList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 
-public class NonConcreteInstanceFactoryTest {
+public class DefaultTypeInstanceFactoryTest {
     private final Class<List> baseType = List.class;
     private final Class<ArrayList> defaultType = ArrayList.class;
     private InstanceFactory concreteFactory;
-    private NonConcreteInstanceFactory factory;
     private InstanceFactories instanceFactories;
+    private DefaultTypeInstanceFactory factory;
     private Object parent;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        instanceFactories = mock(InstanceFactories.class);
         concreteFactory = mock(InstanceFactory.class);
         parent = mock(Object.class);
+        instanceFactories = mock(InstanceFactories.class);
 
-        factory = new NonConcreteInstanceFactory(baseType, defaultType, concreteFactory);
+        factory = new DefaultTypeInstanceFactory(baseType, defaultType, concreteFactory);
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowIfNullBaseType() throws Exception {
-        new NonConcreteInstanceFactory(null, defaultType, concreteFactory);
+        new DefaultTypeInstanceFactory(null, defaultType, concreteFactory);
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowIfNullDefaultType() throws Exception {
-        new NonConcreteInstanceFactory(baseType, null, concreteFactory);
+        new DefaultTypeInstanceFactory(baseType, null, concreteFactory);
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowIfNullConcreteFactory() throws Exception {
-        new NonConcreteInstanceFactory(baseType, defaultType, null);
+        new DefaultTypeInstanceFactory(baseType, defaultType, null);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
-    public void shouldThrowIfRequestedTypeNotSubtypeOfDefaultType() throws Exception {
+    @Test
+    public void shouldReturnNullIfRequestedTypeNotSubtypeOfDefaultType() throws Exception {
         // When:
-        factory.createInstance(String.class, null, instanceFactories);
+        final String instance = factory.createInstance(String.class, null, null);
+
+        // Then:
+        assertThat(instance, is(nullValue()));
+    }
+
+    @Test
+    public void shouldReturnNullIfDefaultTypeNotCompatibleWithRequestedType() throws Exception {
+        // Given:
+        final ArrayList expected = mock(ArrayList.class);
+        when(concreteFactory.createInstance(ArrayList.class, parent, instanceFactories)).thenReturn(expected);
+
+        // When:
+        final List instance = factory.createInstance(AbstractSequentialList.class, parent, instanceFactories);
+
+        // Then:
+        assertThat(instance, is(nullValue()));
     }
 
     @Test

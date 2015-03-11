@@ -18,6 +18,7 @@ package org.datalorax.populace.populator.mutator;
 
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.populator.Mutator;
+import org.datalorax.populace.populator.mutator.commbination.ChainedMutator;
 import org.datalorax.populace.typed.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
@@ -30,24 +31,44 @@ import java.lang.reflect.Type;
 public class Mutators {
     private final ImmutableTypeMap<Mutator> mutators;
 
-    public static Builder newBuilder() {
+    Mutators(final ImmutableTypeMap<Mutator> mutators) {
+        Validate.notNull(mutators, "mutators null");
+        this.mutators = mutators;
+    }
+
+    /**
+     * @return the default set of {@link org.datalorax.populace.populator.Mutator mutators} defined by the system
+     */
+    public static Mutators defaults() {
         return MutatorsBuilder.defaults();
     }
 
+    /**
+     * @return a new Mutators builder, initialised with the defaults in the system.
+     */
+    public static Builder newBuilder() {
+        return asBuilder(defaults());
+    }
+
+    /**
+     * Convert an existing immutable set of mutators into a new builder instance
+     * @param source the source set of mutators. The builder will be pre configured with all the mutators in this set
+     * @return a new Mutators builder, initialised with the mutators in {@code source}
+     */
     public static Builder asBuilder(final Mutators source) {
         return new MutatorsBuilder(source.mutators);
     }
 
-    public interface Builder {
-        Builder withSpecificMutator(final Type type, final Mutator mutator);
-
-        Builder withSuperMutator(final Class<?> baseClass, final Mutator mutator);
-
-        Builder withArrayDefaultMutator(final Mutator mutator);
-
-        Builder withDefaultMutator(final Mutator mutator);
-
-        Mutators build();
+    /**
+     * Chain to mutators together. All mutators will always be called, with the output from one mutator becoming the
+     * input value to the next.
+     * @param first the first mutator to call
+     * @param second the second mutator to call
+     * @param additional additional mutators to call
+     * @return A {@link Mutator} encapsulating all the supplied mutators.
+     */
+    public static Mutator chain(final Mutator first, final Mutator second, final Mutator... additional) {
+        return ChainedMutator.chain(first, second, additional);
     }
 
     public Mutator get(final Type key) {
@@ -75,8 +96,15 @@ public class Mutators {
             '}';
     }
 
-    Mutators(final ImmutableTypeMap<Mutator> mutators) {
-        Validate.notNull(mutators, "mutators null");
-        this.mutators = mutators;
+    public interface Builder {
+        Builder withSpecificMutator(final Type type, final Mutator mutator);
+
+        Builder withSuperMutator(final Class<?> baseClass, final Mutator mutator);
+
+        Builder withArrayDefaultMutator(final Mutator mutator);
+
+        Builder withDefaultMutator(final Mutator mutator);
+
+        Mutators build();
     }
 }

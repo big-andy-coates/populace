@@ -19,8 +19,7 @@ package org.datalorax.populace.populator.mutator.change;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
-import org.datalorax.populace.populator.mutator.PassThroughMutator;
-import org.datalorax.populace.populator.mutator.StringMutator;
+import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -62,15 +61,27 @@ public class ChangeMapValuesMutatorTest {
     }
 
     @Test
-    public void shouldNotBlowUpOnRawTypes() throws Exception {
+    public void shouldNotBlowUpOnRawBaseType() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final Map currentValue = new HashMap<String, String>() {{
             put("key", null);
         }};
 
         // When:
         mutator.mutate(Map.class, currentValue, null, config);
+    }
+
+    @Test
+    public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
+        // Given:
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
+        final Map currentValue = new HashMap<String, String>() {{
+            put("key", null);
+        }};
+
+        // When:
+        mutator.mutate(HashMap.class, currentValue, null, config);
     }
 
     @Test
@@ -179,7 +190,7 @@ public class ChangeMapValuesMutatorTest {
     @Test
     public void shouldPutResultFromComponentMutatorBackIntoMapValue() throws Exception {
         // Given:
-        givenMutatorRegistered(String.class, StringMutator.INSTANCE);
+        givenMutatorRegistered(String.class, ChangeStringMutator.INSTANCE);
         final Map<Integer, String> currentValue = new HashMap<Integer, String>() {{
             put(1, "initial_value");
         }};

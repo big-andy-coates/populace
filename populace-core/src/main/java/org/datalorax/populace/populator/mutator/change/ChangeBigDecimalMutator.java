@@ -14,27 +14,33 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.populator.mutator;
+package org.datalorax.populace.populator.mutator.change;
 
+import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
 
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 
 /**
- * Mutator for dates
- * @author Andrew Coates - 27/02/2015.
+ * {@link org.datalorax.populace.populator.Mutator} for {@link java.math.BigDecimal}
+ *
+ * @author Andrew Coates - 10/03/2015.
  */
-public class StringMutator implements Mutator {
-    public static final Mutator INSTANCE = new StringMutator();
+public class ChangeBigDecimalMutator implements Mutator {
+    public static final ChangeBigDecimalMutator INSTANCE = new ChangeBigDecimalMutator();
+    private static final BigDecimal DIVISOR = new BigDecimal("1.5");
 
     @Override
-    public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
-        if (!type.equals(String.class)) {
-            throw new IllegalArgumentException("Unsupported type: " + type);
+    public Object mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config) {
+        Validate.isTrue(type.equals(BigDecimal.class), "BigDecimal type expected");
+        if (currentValue == null) {
+            return null;
         }
 
-        return currentValue == null ? "dead parrot" : currentValue + " - dead parrot";
+        final BigDecimal bigDecimal = (BigDecimal) currentValue;
+        return bigDecimal.divide(DIVISOR, BigDecimal.ROUND_HALF_EVEN);
     }
 
     @Override

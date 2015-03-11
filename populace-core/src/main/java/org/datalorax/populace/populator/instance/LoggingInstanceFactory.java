@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.field.visitor;
+package org.datalorax.populace.populator.instance;
 
-import org.datalorax.populace.field.FieldInfo;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
- * A visitor which ensures the field is accessible by calling {@link java.lang.reflect.Field#setAccessible(boolean) setAccessible(true)}
- * @author Andrew Coates - 28/02/2015.
+ * A {@link org.datalorax.populace.populator.instance.NullObjectStrategy} that logs the type and returns {@code null}.
+ *
+ * @author Andrew Coates - 02/03/2015.
  */
-public class SetAccessibleFieldVisitor implements FieldVisitor {
-    public static final FieldVisitor INSTANCE = new SetAccessibleFieldVisitor();
+public class LoggingInstanceFactory implements NullObjectStrategy {
+    public static final LoggingInstanceFactory INSTANCE = new LoggingInstanceFactory();
+    private static final Log LOG = LogFactory.getLog(LoggingInstanceFactory.class);
 
     @Override
-    public void visit(final FieldInfo fieldInfo) {
-        fieldInfo.ensureAccessible();
+    public void onNullObject(final Object parent) {
+        LOG.warn("A null value was encountered for which there existed no type information to use to instantiate a new " +
+            "instance. parent instance: " + parent);
     }
 
     @Override

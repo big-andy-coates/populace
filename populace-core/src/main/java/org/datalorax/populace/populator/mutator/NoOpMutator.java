@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.field.visitor;
+package org.datalorax.populace.populator.mutator;
 
-import org.datalorax.populace.field.FieldInfo;
+import org.datalorax.populace.populator.Mutator;
+import org.datalorax.populace.populator.PopulatorContext;
+
+import java.lang.reflect.Type;
 
 /**
- * A visitor which ensures the field is accessible by calling {@link java.lang.reflect.Field#setAccessible(boolean) setAccessible(true)}
- * @author Andrew Coates - 28/02/2015.
+ * A no-op mutator i.e. one that doesn't mutate.
+ *
+ * @author Andrew Coates - 27/02/2015.
  */
-public class SetAccessibleFieldVisitor implements FieldVisitor {
-    public static final FieldVisitor INSTANCE = new SetAccessibleFieldVisitor();
+public class NoOpMutator implements Mutator {
+    public static final NoOpMutator INSTANCE = new NoOpMutator();
 
     @Override
-    public void visit(final FieldInfo fieldInfo) {
-        fieldInfo.ensureAccessible();
+    public Object mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
+        return currentValue;
     }
 
     @Override

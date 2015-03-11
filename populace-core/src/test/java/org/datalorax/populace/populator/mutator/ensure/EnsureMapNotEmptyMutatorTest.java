@@ -18,7 +18,7 @@ package org.datalorax.populace.populator.mutator.ensure;
 
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
-import org.datalorax.populace.populator.mutator.PassThroughMutator;
+import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -26,10 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 
 public class EnsureMapNotEmptyMutatorTest {
     private Mutator mutator;
@@ -57,15 +55,37 @@ public class EnsureMapNotEmptyMutatorTest {
     }
 
     @Test
-    public void shouldNotBlowUpOnRawTypes() throws Exception {
+    public void shouldDoNothingToNonEmptyMap() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
-        final Map currentValue = new HashMap<String, String>() {{
-           put("value", null);
-        }};
+        final Map map = mock(Map.class);
+
+        // When:
+        final Object mutated = mutator.mutate(Map.class, map, null, config);
+
+        // Then:
+        assertThat(mutated, is(sameInstance(map)));
+        verify(map).isEmpty();
+        verifyNoMoreInteractions(map);
+    }
+
+    @Test
+    public void shouldNotBlowUpOnRawBaseType() throws Exception {
+        // Given:
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
+        final Map currentValue = new HashMap<String, String>();
 
         // When:
         mutator.mutate(Map.class, currentValue, null, config);
+    }
+
+    @Test
+    public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
+        // Given:
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
+        final Map currentValue = new HashMap<String, String>();
+
+        // When:
+        mutator.mutate(HashMap.class, currentValue, null, config);
     }
 
     // Todo(ac): how about some tests?

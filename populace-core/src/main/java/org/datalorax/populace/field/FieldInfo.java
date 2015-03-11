@@ -39,8 +39,12 @@ public class FieldInfo {
         this.owningInstance = owningInstance;
     }
 
-    public Field getField() {
-        return field;
+    public String getName() {
+        return field.getName();
+    }
+
+    public Class<?> getDeclaringClass() {
+        return field.getDeclaringClass();
     }
 
     public Type getGenericType() {
@@ -49,6 +53,10 @@ public class FieldInfo {
 
     public Object getOwningInstance() {
         return owningInstance;
+    }
+
+    public void ensureAccessible() {
+        field.setAccessible(true);
     }
 
     public Object getValue() {
@@ -95,3 +103,5 @@ public class FieldInfo {
             '}';
     }
 }
+
+// Todo(ac): test

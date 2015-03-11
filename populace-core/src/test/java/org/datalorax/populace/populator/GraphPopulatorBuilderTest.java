@@ -21,6 +21,7 @@ import org.datalorax.populace.field.filter.ExcludeTransientFieldsFilter;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.field.filter.FieldFilters;
 import org.datalorax.populace.graph.GraphWalker;
+import org.datalorax.populace.graph.inspector.Inspector;
 import org.datalorax.populace.graph.inspector.Inspectors;
 import org.datalorax.populace.populator.instance.InstanceFactories;
 import org.datalorax.populace.populator.mutator.Mutators;
@@ -28,7 +29,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
 public class GraphPopulatorBuilderTest {
@@ -101,16 +102,57 @@ public class GraphPopulatorBuilderTest {
         assertThat(populator, is(new GraphPopulator(walker, defaultPopulatorContext())));
     }
 
+    @Test
+    public void shouldGetFieldFilterBackFromBuilder() throws Exception {
+        // Given:
+        final FieldFilter filter = mock(FieldFilter.class);
+        builder.withFieldFilter(filter);
+
+        // When:
+        final FieldFilter returned = builder.getFieldFilter();
+
+        // Then:
+        assertThat(returned, is(sameInstance(filter)));
+    }
+
+    @Test
+    public void shouldGetInspectorsBuilderBackFromBuilder() throws Exception {
+        // Given:
+        final Inspector packageInspector = mock(Inspector.class);
+        final Inspectors inspectors = Inspectors.newBuilder().withPackageInspector("some.package", packageInspector).build();
+        builder.withInspectors(inspectors);
+
+        // When:
+        final Inspectors.Builder returned = builder.inspectorsBuilder();
+
+        // Then:
+        assertThat(returned.build(), is(equalTo(inspectors)));
+    }
+
+    @Test
+    public void shouldGetMutatorsBuilderBackFromBuilder() throws Exception {
+        // Given:
+        final Mutator specificMutator = mock(Mutator.class);
+        final Mutators mutators = Mutators.newBuilder().withSpecificMutator(String.class, specificMutator).build();
+        builder.withMutators(mutators);
+
+        // When:
+        final Mutators.Builder returned = builder.mutatorsBuilder();
+
+        // Then:
+        assertThat(returned.build(), is(equalTo(mutators)));
+    }
+
     private static FieldFilter defaultFieldFilter() {
         return FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
     }
 
     private static Mutators defaultMutatorConfig() {
-        return Mutators.newBuilder().build();
+        return Mutators.defaults();
     }
 
     private InstanceFactories defaultInstanceFactories() {
-        return InstanceFactories.newBuilder().build();
+        return InstanceFactories.defaults();
     }
 
     private PopulatorContext defaultPopulatorContext() {

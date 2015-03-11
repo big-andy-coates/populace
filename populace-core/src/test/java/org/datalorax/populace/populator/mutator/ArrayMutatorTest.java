@@ -19,6 +19,8 @@ package org.datalorax.populace.populator.mutator;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
+import org.datalorax.populace.populator.mutator.change.ChangeStringMutator;
+import org.datalorax.populace.populator.mutator.ensure.EnsureMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -30,6 +32,8 @@ import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +43,19 @@ import static org.mockito.Mockito.when;
 public class ArrayMutatorTest {
     private Mutator mutator;
     private PopulatorContext config;
+
+    private static Object deepCopy(Object original) {
+        if (original == null || !original.getClass().isArray()) {
+            return original;
+        }
+
+        final int length = Array.getLength(original);
+        final Object copy = Array.newInstance(original.getClass().getComponentType(), length);
+        for (int i = 0; i != length; i++) {
+            Array.set(copy, i, deepCopy(Array.get(original, i)));
+        }
+        return copy;
+    }
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -78,7 +95,7 @@ public class ArrayMutatorTest {
         // Then:
         assertThat("should be array", mutated.getClass().isArray(), is(true));
         assertThat("should be array of strings", mutated.getClass().getComponentType(), is((Type) String.class));
-        assertThat("should of not of changed length", ((String[]) mutated).length, is(not(0)));
+        assertThat("should not be empty array", ((String[]) mutated).length, is(not(0)));
         assertThat("should of changed element [0]", ((String[]) mutated)[0], is(not(nullValue())));
     }
 
@@ -96,7 +113,8 @@ public class ArrayMutatorTest {
     }
 
     private void givenStringMutatorRegistered() {
-        when(config.getMutator(String.class)).thenReturn(new StringMutator());
+        when(config.createInstance(eq(String.class), anyObject())).thenReturn("shrubbery");
+        when(config.getMutator(String.class)).thenReturn(Mutators.chain(EnsureMutator.INSTANCE, ChangeStringMutator.INSTANCE));
     }
 
     private void assertThatArraySameSizeButDifferent(Object original, Object mutated) {
@@ -107,7 +125,7 @@ public class ArrayMutatorTest {
         assertThat(prefix + " should be of the same type", mutated.getClass(), is((Type) original.getClass()));
         assertThat(prefix + " should be array", mutated.getClass().isArray(), is(true));
         assertThat(prefix + " should be array of " + original.getClass().getComponentType(), mutated.getClass().getComponentType(), is((Type) original.getClass().getComponentType()));
-        assertThat(prefix + " should of not of changed length", Array.getLength(mutated), is(Array.getLength(original)));
+        assertThat(prefix + " should not of changed length", Array.getLength(mutated), is(Array.getLength(original)));
 
         for (int i = 0; i != Array.getLength(mutated); ++i) {
             Object o = Array.get(original, i);
@@ -119,18 +137,5 @@ public class ArrayMutatorTest {
                 assertThat(prefix + " should of changed", o, is(not(m)));
             }
         }
-    }
-
-    private static Object deepCopy(Object original) {
-        if (original == null || !original.getClass().isArray()) {
-            return original;
-        }
-
-        final int length = Array.getLength(original);
-        final Object copy = Array.newInstance(original.getClass().getComponentType(), length);
-        for (int i = 0; i != length; i++) {
-            Array.set(copy, i, deepCopy(Array.get(original, i)));
-        }
-        return copy;
     }
 }

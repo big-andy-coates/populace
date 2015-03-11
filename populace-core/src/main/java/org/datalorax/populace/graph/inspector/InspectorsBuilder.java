@@ -32,8 +32,8 @@ final class InspectorsBuilder implements Inspectors.Builder {
 
     private final ImmutableTypeMap.Builder<Inspector> inspectorsBuilder;
 
-    public static Inspectors.Builder defaults() {
-        return Inspectors.asBuilder(DEFAULT);
+    public static Inspectors defaults() {
+        return DEFAULT;
     }
 
     @Override

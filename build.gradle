@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+
+
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -40,7 +42,7 @@ subprojects {
     }
 
     group = 'org.datalorax.populace'
-    version = '0.1.2.3-alpa'
+    version = '0.1.3-beta'
 
     idea {
         project {
@@ -53,7 +55,7 @@ subprojects {
         useTestNG()
 
         testLogging {
-            events = ["skipped", "passed", "failed"]
+            events = ["skipped", "failed"]
 
             displayGranularity = 3
         }

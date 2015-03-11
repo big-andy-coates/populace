@@ -23,7 +23,6 @@ import org.datalorax.populace.populator.instance.InstanceFactory;
 import org.datalorax.populace.populator.mutator.Mutators;
 
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 
 /**
  * Holds details of a populator's configuration
@@ -47,10 +46,8 @@ public class PopulatorContext {
     }
 
     public Object createInstance(final Type type, final Object parent) {
-        // Todo(ac): Temporary hack until we support TypeVariables properly
-        final Type typeToLookUp = type instanceof TypeVariable ? Object.class : type;
-        final InstanceFactory factory = instanceFactories.get(typeToLookUp);
-        final Class<?> rawType = TypeUtils.getRawType(typeToLookUp, null);
+        final InstanceFactory factory = instanceFactories.get(type);
+        final Class<?> rawType = TypeUtils.getRawType(type, null);
         return factory.createInstance(rawType, parent, instanceFactories);
     }
 

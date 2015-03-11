@@ -23,11 +23,15 @@ package org.datalorax.populace.populator.instance;
  */
 public interface InstanceFactory {
     /**
-     * @param <T>               the type to create
-     * @param rawType           the type to create
-     * @param parent            the parent instance, which is needed to create inner class instances. Can be null.
-     * @param instanceFactories the set of instance factories configured in the system
-     * @return a new instance
+     * Create a new instance of {@code rawType}. If the factory does not support the type it will return null. If an error
+     * occurred while attempting to create an instance it will through a
+     * {@link org.datalorax.populace.populator.PopulatorException}. Otherwise the call will return a new instance.
+     *
+     * @param <T> the type to create
+     * @param rawType the type to create
+     * @param parent the parent instance, which is needed to create inner class instances. Can be null.
+     * @param instanceFactories the set of instance factories defined in the sytem
+     * @return a new instance or null if the type is not supported by the factory.
      * @throws org.datalorax.populace.populator.PopulatorException on failure to instantiate new instance
      */
     <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories);

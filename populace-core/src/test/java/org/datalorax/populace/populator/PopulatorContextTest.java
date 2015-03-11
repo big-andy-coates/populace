@@ -17,28 +17,79 @@
 package org.datalorax.populace.populator;
 
 import org.datalorax.populace.populator.instance.InstanceFactories;
+import org.datalorax.populace.populator.instance.InstanceFactory;
 import org.datalorax.populace.populator.mutator.Mutators;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-import java.lang.reflect.Field;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 public class PopulatorContextTest {
     @Mock
     private Mutators mutators;
     @Mock
     private InstanceFactories instanceFactories;
-    private Field field;
-    private PopulatorContext config;
+    private PopulatorContext context;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        field = getClass().getDeclaredField("field");
+        context = new PopulatorContext(mutators, instanceFactories);
+    }
 
-        config = new PopulatorContext(mutators, instanceFactories);
+    @Test
+    public void shouldUseInstanceFactoriesToCreateInstance() throws Exception {
+        // Given:
+        givenInstanceFactoryInstalledFor(String.class, "expected");
+
+        // When:
+        final Object instance = context.createInstance(String.class, new Object());
+
+        // Then:
+        assertThat(instance, is("expected"));
+    }
+
+    @Test
+    public void shouldPassParentObjectToInstanceFactoryOnCreateInstance() throws Exception {
+        // Given:
+        final Object parent = new Object();
+        final InstanceFactory factory = givenInstanceFactoryInstalledFor(String.class, "expected");
+
+        // When:
+        context.createInstance(String.class, parent);
+
+        // Then:
+        verify(factory).createInstance(any(Class.class), eq(parent), any(InstanceFactories.class));
+    }
+
+    @Test
+    public void shouldPassInstanceFactoriesToInstanceFactoryOnCreateInstance() throws Exception {
+        // Given:
+        final Object parent = new Object();
+        final InstanceFactory factory = givenInstanceFactoryInstalledFor(String.class, "expected");
+
+        // When:
+        context.createInstance(String.class, parent);
+
+        // Then:
+        verify(factory).createInstance(any(Class.class), anyObject(), isA(InstanceFactories.class));
+    }
+
+
+    private <T> InstanceFactory givenInstanceFactoryInstalledFor(final Class<T> someType, final T instance) {
+        final InstanceFactory factory = mock(InstanceFactory.class);
+        when(instanceFactories.get(someType)).thenReturn(factory);
+        when(factory.createInstance(eq(someType), anyObject(), any(InstanceFactories.class))).thenReturn(instance);
+        return factory;
     }
 
     // Todo(ac): test

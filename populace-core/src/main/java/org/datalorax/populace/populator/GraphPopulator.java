@@ -43,7 +43,6 @@ public final class GraphPopulator {
     }
 
     public interface Builder {
-        // Todo(ac): not nice - client automatically looses default filters, mutators, etc. Either add docs about using *Utils.defaults() or have better pattern. (Also rename *Utils to *s)
         Builder withFieldFilter(final FieldFilter filter);
 
         FieldFilter getFieldFilter();
@@ -65,7 +64,7 @@ public final class GraphPopulator {
 
     // Todo(ac): needs a TypeReference<T> parameter...
     public <T> T populate(final T instance) {
-        walker.walk(instance, FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, new Visitor()));  // Todo(ac): this overrides any configured field filter... need to get current
+        walker.walk(instance, FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, new Visitor()));
         return instance;
     }
 
@@ -124,5 +123,3 @@ public final class GraphPopulator {
         }
     }
 }
-
-// Todo(ac): Instance factory for BigDecimal

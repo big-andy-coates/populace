@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.populator.mutator;
+package org.datalorax.populace.populator.mutator.change;
 
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.datalorax.populace.populator.mutator.PrimitiveMutatorTest.TypeTrait.typeTrait;
+import static org.datalorax.populace.populator.mutator.change.ChangePrimitiveMutatorTest.TypeTrait.typeTrait;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
@@ -34,19 +34,39 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Andrew Coates - 26/02/2015.
  */
-public class PrimitiveMutatorTest {
+public class ChangePrimitiveMutatorTest {
+    private static final List<TypeTrait<?>> PRIMITIVES = new ArrayList<TypeTrait<?>>() {{
+        add(typeTrait(boolean.class, true, false, true));
+        add(typeTrait(byte.class, (byte) 9, Byte.MIN_VALUE, Byte.MAX_VALUE));
+        add(typeTrait(char.class, 'a', Character.MIN_VALUE, Character.MAX_VALUE));
+        add(typeTrait(short.class, (short) 2, Short.MIN_VALUE, Short.MAX_VALUE));
+        add(typeTrait(int.class, 29, Integer.MIN_VALUE, Integer.MAX_VALUE));
+        add(typeTrait(long.class, 29L, Long.MIN_VALUE, Long.MAX_VALUE));
+        add(typeTrait(float.class, 2.9f, Float.MIN_VALUE, Float.MAX_VALUE));
+        add(typeTrait(double.class, 2.9, Double.MIN_VALUE, Double.MAX_VALUE));
+    }};
+    private static final List<TypeTrait<?>> BOXED_PRIMITIVES = new ArrayList<TypeTrait<?>>() {{
+        add(typeTrait(Boolean.class, true, false, true));
+        add(typeTrait(Byte.class, (byte) 9, Byte.MIN_VALUE, Byte.MAX_VALUE));
+        add(typeTrait(Character.class, 'a', Character.MIN_VALUE, Character.MAX_VALUE));
+        add(typeTrait(Short.class, (short) 2, Short.MIN_VALUE, Short.MAX_VALUE));
+        add(typeTrait(Integer.class, 29, Integer.MIN_VALUE, Integer.MAX_VALUE));
+        add(typeTrait(Long.class, 29L, Long.MIN_VALUE, Long.MAX_VALUE));
+        add(typeTrait(Float.class, 2.9f, Float.MIN_VALUE, Float.MAX_VALUE));
+        add(typeTrait(Double.class, 2.9, Double.MIN_VALUE, Double.MAX_VALUE));
+    }};
     private Mutator mutator;
     private PopulatorContext config;
 
     @BeforeMethod
     public void setUp() throws Exception {
         config = mock(PopulatorContext.class);
-        mutator = new PrimitiveMutator();
+        mutator = new ChangePrimitiveMutator();
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldThrowOnUnsupportedType() throws Exception {
-        mutator.mutate(Date.class, null, null, config);
+        mutator.mutate(Date.class, new Date(), null, config);
     }
 
     @Test(dataProvider = "primitives")
@@ -101,17 +121,13 @@ public class PrimitiveMutatorTest {
         assertThat(mutated, is(not(currentValue)));
     }
 
-    @Test(dataProvider = "boxedPrimitives")
-    public void shouldMutateNullBoxedPrimitives(TypeTrait<?> trait) throws Exception {
-        // Given:
-        final Object currentValue = null;
-
+    @Test
+    public void shouldReturnNullOnNullInput() throws Exception {
         // When:
-        final Object mutated = mutator.mutate(trait.type, currentValue, null, config);
+        final Object mutated = mutator.mutate(Integer.class, null, null, config);
 
         // Then:
-        assertThat(mutated, is(instanceOf(trait.type)));
-        assertThat(mutated, is(not(nullValue())));
+        assertThat(mutated, is(nullValue()));
     }
 
     @Test(dataProvider = "boxedPrimitives")
@@ -177,24 +193,4 @@ public class PrimitiveMutatorTest {
             return new TypeTrait<TT>(type, exampleValue, minValue, maxValue);
         }
     }
-
-    private static final List<TypeTrait<?>> PRIMITIVES = new ArrayList<TypeTrait<?>>() {{
-        add(typeTrait(boolean.class, true, false, true));
-        add(typeTrait(byte.class, (byte)9, Byte.MIN_VALUE, Byte.MAX_VALUE));
-        add(typeTrait(char.class, 'a', Character.MIN_VALUE, Character.MAX_VALUE));
-        add(typeTrait(int.class, 29, Integer.MIN_VALUE, Integer.MAX_VALUE));
-        add(typeTrait(long.class, 29L, Long.MIN_VALUE, Long.MAX_VALUE));
-        add(typeTrait(float.class, 2.9f, Float.MIN_VALUE, Float.MAX_VALUE));
-        add(typeTrait(double.class, 2.9, Double.MIN_VALUE, Double.MAX_VALUE));
-    }};
-
-    private static final List<TypeTrait<?>> BOXED_PRIMITIVES = new ArrayList<TypeTrait<?>>() {{
-        add(typeTrait(Boolean.class, true, false, true));
-        add(typeTrait(Byte.class, (byte)9, Byte.MIN_VALUE, Byte.MAX_VALUE));
-        add(typeTrait(Character.class, 'a', Character.MIN_VALUE, Character.MAX_VALUE));
-        add(typeTrait(Integer.class, 29, Integer.MIN_VALUE, Integer.MAX_VALUE));
-        add(typeTrait(Long.class, 29L, Long.MIN_VALUE, Long.MAX_VALUE));
-        add(typeTrait(Float.class, 2.9f, Float.MIN_VALUE, Float.MAX_VALUE));
-        add(typeTrait(Double.class, 2.9, Double.MIN_VALUE, Double.MAX_VALUE));
-    }};
 }

@@ -17,45 +17,44 @@
 package org.datalorax.populace.populator.mutator.change;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
+import org.datalorax.populace.type.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 
 /**
- * Change mutator for {@link java.util.Set Sets}.
+ * Change mutator for {@link java.util.Collection collections}.
  *
- * If the currentValue is null or empty then this mutator does nothing. Consider using
+ * If the currentValue is null then this mutator does nothing. Consider using
  * {@link org.datalorax.populace.populator.mutator.ensure.EnsureMutator} to first ensure the current value is not null,
- * and/or {@link org.datalorax.populace.populator.mutator.ensure.EnsureMapNotEmptyMutator} to ensure the set is not empty,
- * if the required behaviour is to always ensure a non-null, populated set instance.
+ * if the required behaviour is to always ensure a non-null, populated collection instance.
  *
- * Non null values are modified by adding an additional instance to the set of the required type.
- * This is done as mutating entries of a Set can invalidate the set and lead to undefined behaviour.
+ * Non null values are modified by adding an additional instance to the collection of the required type.
+ * This is done as mutating entries of some collection implementations, e.g. {@link java.util.Set}, can invalidate the
+ * collection and lead to undefined behaviour.
  *
  * @author Andrew Coates - 27/02/2015.
  */
-public class ChangeSetElementsMutator implements Mutator {
-    private static final TypeVariable<Class<Set>> SET_TYPE_VARIABLE = Set.class.getTypeParameters()[0];
+public class ChangeCollectionElementsMutator implements Mutator {
+    private static final TypeVariable<Class<Collection>> COLLECTION_TYPE_VARIABLE = Collection.class.getTypeParameters()[0];
 
-    public static final ChangeSetElementsMutator INSTANCE = new ChangeSetElementsMutator();
+    public static final ChangeCollectionElementsMutator INSTANCE = new ChangeCollectionElementsMutator();
 
     @Override
-    public Set<?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
-        Validate.isAssignableFrom(Set.class, TypeUtils.getRawType(type, null), "Unsupported type %s", type);
+    public Collection<?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
+        Validate.isAssignableFrom(Collection.class, TypeUtils.getRawType(type, null), "Unsupported type %s", type);
 
         if (currentValue == null) {
             return null;
         }
 
         //noinspection unchecked
-        final Set<Object> set = (Set)currentValue;
+        final Collection<Object> collection = (Collection)currentValue;
         final Type defaultComponentType = getComponentType(type);
-        final Object element = findNonNullElement(set);
+        final Object element = findNonNullElement(collection);
         final Type componentType = element == null ? defaultComponentType : element.getClass();
         final Mutator componentMutator = element == null ? config.getMutator(defaultComponentType) : config.getMutator(element.getClass());
 
@@ -65,10 +64,10 @@ public class ChangeSetElementsMutator implements Mutator {
             newItem = componentMutator.mutate(componentType, newItem, null, config);
 
             //noinspection unchecked
-            added = set.add(newItem);
+            added = collection.add(newItem);
         } while (!added);
 
-        return set;
+        return collection;
     }
 
     @Override
@@ -87,13 +86,11 @@ public class ChangeSetElementsMutator implements Mutator {
     }
 
     private Type getComponentType(Type type) {
-        final Map<TypeVariable<?>, Type> typeArguments = TypeUtils.getTypeArguments(type, Set.class);
-        final Type componentType = typeArguments.get(SET_TYPE_VARIABLE);
-        return componentType == null ? Object.class : componentType;
+        return TypeUtils.getTypeArgument(type, Collection.class, COLLECTION_TYPE_VARIABLE);
     }
 
-    private Object findNonNullElement(final Set<Object> set) {
-        for (Object o : set) {
+    private Object findNonNullElement(final Collection<Object> collection) {
+        for (Object o : collection) {
             if (o != null) {
                 return o;
             }

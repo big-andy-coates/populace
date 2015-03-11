@@ -16,8 +16,6 @@
 
 package org.datalorax.populace.populator.instance;
 
-import org.apache.commons.lang3.Validate;
-
 /**
  * Instance factory for enums. The first value of the enum will be returned. For enums with no values the factory will
  * return null.
@@ -27,9 +25,16 @@ import org.apache.commons.lang3.Validate;
 public class EnumInstanceFactory implements InstanceFactory {
     public static final InstanceFactory INSTANCE = new EnumInstanceFactory();
 
+    private static boolean notSupportedType(final Class<?> rawType) {
+        return !rawType.isEnum();
+    }
+
     @Override
     public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
-        Validate.isTrue(rawType.isEnum(), "Enum type expected");
+        if (notSupportedType(rawType)) {
+            return null;
+        }
+
         final T[] allValues = rawType.getEnumConstants();
         return allValues.length == 0 ? null : allValues[0];
     }

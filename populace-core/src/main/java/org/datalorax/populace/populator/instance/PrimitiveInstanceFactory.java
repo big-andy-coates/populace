@@ -16,8 +16,6 @@
 
 package org.datalorax.populace.populator.instance;
 
-import org.apache.commons.lang3.Validate;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +25,7 @@ import java.util.Map;
  * @author Andrew Coates - 03/03/2015.
  */
 @SuppressWarnings("unchecked")
-public class PrimitiveInstanceFactory implements ChainableInstanceFactory {
+public class PrimitiveInstanceFactory implements InstanceFactory {
     public static final PrimitiveInstanceFactory INSTANCE = new PrimitiveInstanceFactory();
 
     private static final Map<Class<?>, Object> DEFAULT_INSTANCE_MAP = new HashMap<Class<?>, Object>() {{
@@ -50,15 +48,8 @@ public class PrimitiveInstanceFactory implements ChainableInstanceFactory {
     }};
 
     @Override
-    public boolean supportsType(final Class<?> rawType) {
-        return DEFAULT_INSTANCE_MAP.containsKey(rawType);
-    }
-
-    @Override
     public <T> T createInstance(final Class<? extends T> type, final Object parent, final InstanceFactories instanceFactories) {
-        final Object instance = DEFAULT_INSTANCE_MAP.get(type);
-        Validate.notNull(instance, "Unsupported type %s", type);
-        return (T)instance;
+        return (T) DEFAULT_INSTANCE_MAP.get(type);
     }
 
     @Override

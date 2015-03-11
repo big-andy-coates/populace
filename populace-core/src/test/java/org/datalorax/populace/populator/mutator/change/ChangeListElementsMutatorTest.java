@@ -19,8 +19,7 @@ package org.datalorax.populace.populator.mutator.change;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.populator.Mutator;
 import org.datalorax.populace.populator.PopulatorContext;
-import org.datalorax.populace.populator.mutator.PassThroughMutator;
-import org.datalorax.populace.populator.mutator.StringMutator;
+import org.datalorax.populace.populator.mutator.NoOpMutator;
 import org.datalorax.populace.populator.mutator.ensure.EnsureMutator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -66,9 +65,9 @@ public class ChangeListElementsMutatorTest {
     }
 
     @Test
-    public void shouldNotBlowUpOnRawTypes() throws Exception {
+    public void shouldNotBlowUpOnRawBaseType() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, PassThroughMutator.INSTANCE);
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final List<String> currentValue = new ArrayList<String>() {{
             //noinspection unchecked
             add(null);
@@ -76,6 +75,19 @@ public class ChangeListElementsMutatorTest {
 
         // When:
         mutator.mutate(List.class, currentValue, null, config);
+    }
+
+    @Test
+    public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
+        // Given:
+        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
+        final List<String> currentValue = new ArrayList<String>() {{
+            //noinspection unchecked
+            add(null);
+        }};
+
+        // When:
+        mutator.mutate(ArrayList.class, currentValue, null, config);
     }
 
     @Test
@@ -150,7 +162,7 @@ public class ChangeListElementsMutatorTest {
     @Test
     public void shouldPutResultFromComponentMutatorBackIntoList() throws Exception {
         // Given:
-        givenMutatorRegistered(String.class, StringMutator.INSTANCE);
+        givenMutatorRegistered(String.class, ChangeStringMutator.INSTANCE);
         final List<String> currentValue = new ArrayList<String>() {{
             add("initial_value");
         }};

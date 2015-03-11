@@ -16,109 +16,62 @@
 
 package org.datalorax.populace.populator.instance;
 
+import org.apache.commons.lang3.Validate;
+
 /**
- * Instance factory that chains to other factories together.
+ * Instance factory that chains to other factories together. The second factory will only be called should the first
+ * return null.
  *
  * @author Andrew Coates - 03/03/2015.
  */
-public final class ChainedInstanceFactory {
-    private ChainedInstanceFactory() {
+public final class ChainedInstanceFactory implements InstanceFactory {
+    private final InstanceFactory first;
+    private final InstanceFactory second;
+
+    public ChainedInstanceFactory(final InstanceFactory first, final InstanceFactory second) {
+        Validate.notNull(first, "first null");
+        Validate.notNull(second, "second null");
+        this.first = first;
+        this.second = second;
     }
 
-    public static ChainableInstanceFactory chain(final ChainableInstanceFactory first, final ChainableInstanceFactory second){
-        return new ChainableChainedInstanceFactory(first, second);
+    public static InstanceFactory chain(final InstanceFactory first, final InstanceFactory second, final InstanceFactory... additional) {
+        ChainedInstanceFactory chain = new ChainedInstanceFactory(first, second);
+        for (InstanceFactory factory : additional) {
+            chain = new ChainedInstanceFactory(chain, factory);
+        }
+        return chain;
     }
 
-    public static InstanceFactory chain(final ChainableInstanceFactory first, final InstanceFactory second){
-        return new TerminatingChainedInstanceFactory(first, second);
+    @Override
+    public <T> T createInstance(final Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
+        final T instance = first.createInstance(rawType, parent, instanceFactories);
+        return instance == null ? second.createInstance(rawType, parent, instanceFactories) : instance;
     }
 
-    public static class TerminatingChainedInstanceFactory implements InstanceFactory {
-        private final ChainableInstanceFactory first;
-        private final InstanceFactory second;
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        public TerminatingChainedInstanceFactory(final ChainableInstanceFactory first, final InstanceFactory second) {
-            this.first = first;
-            this.second = second;
-        }
-
-        @Override
-        public <T> T createInstance(final Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
-            if (first.supportsType(rawType)) {
-                return first.createInstance(rawType, parent, instanceFactories);
-            }
-            return second.createInstance(rawType, parent, instanceFactories);
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            final TerminatingChainedInstanceFactory that = (TerminatingChainedInstanceFactory) o;
-            return first.equals(that.first) && second.equals(that.second);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = first.hashCode();
-            result = 31 * result + second.hashCode();
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "TerminatingChainedInstanceFactory{" +
-                "first=" + first +
-                ", second=" + second +
-                '}';
-        }
+        final ChainedInstanceFactory that = (ChainedInstanceFactory) o;
+        return first.equals(that.first) && second.equals(that.second);
     }
 
-    public static class ChainableChainedInstanceFactory implements ChainableInstanceFactory {
-        private final ChainableInstanceFactory first;
-        private final ChainableInstanceFactory second;
+    @Override
+    public int hashCode() {
+        int result = first.hashCode();
+        result = 31 * result + second.hashCode();
+        return result;
+    }
 
-        public ChainableChainedInstanceFactory(final ChainableInstanceFactory first, final ChainableInstanceFactory second) {
-            this.first = first;
-            this.second = second;
-        }
-
-        @Override
-        public boolean supportsType(final Class<?> rawType) {
-            return first.supportsType(rawType) || second.supportsType(rawType);
-        }
-
-        @Override
-        public <T> T createInstance(final Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
-            if (first.supportsType(rawType)) {
-                return first.createInstance(rawType, parent, instanceFactories);
-            }
-            return second.createInstance(rawType, parent, instanceFactories);
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            final ChainableChainedInstanceFactory that = (ChainableChainedInstanceFactory) o;
-            return first.equals(that.first) && second.equals(that.second);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = first.hashCode();
-            result = 31 * result + second.hashCode();
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "ChainableChainedInstanceFactory{" +
-                "first=" + first +
-                ", second=" + second +
-                '}';
-        }
+    @Override
+    public String toString() {
+        return "ChainedInstanceFactory{" +
+            "first=" + first +
+            ", second=" + second +
+            '}';
     }
 }
+
+// Todo(ac): If factories can return null, to support chaining, then how about specific factory returning null and falling through to super or package, or defautl...?

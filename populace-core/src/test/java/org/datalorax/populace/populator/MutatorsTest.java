@@ -45,7 +45,9 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final Mutators mutators = builder.build();
+        final Mutators mutators = builder
+            .withDefaultMutator(defaultMutator)
+            .build();
 
         // Then:
         assertThat(mutators.get(boolean.class), is(not(defaultMutator)));
@@ -64,7 +66,9 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final Mutators mutators = builder.build();
+        final Mutators mutators = builder
+            .withDefaultMutator(defaultMutator)
+            .build();
 
         // Then:
         assertThat(mutators.get(Boolean.class), is(not(defaultMutator)));
@@ -83,7 +87,9 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final Mutators mutators = builder.build();
+        final Mutators mutators = builder
+            .withDefaultMutator(defaultMutator)
+            .build();
 
         // Then:
         assertThat(mutators.get(String.class), is(not(defaultMutator)));
@@ -95,7 +101,9 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final Mutators mutators = builder.build();
+        final Mutators mutators = builder
+            .withDefaultMutator(defaultMutator)
+            .build();
 
         // Then:
         assertThat(mutators.get(Date.class), is(not(defaultMutator)));
@@ -107,7 +115,9 @@ public class MutatorsTest {
         final Mutator defaultMutator = mock(Mutator.class, "default");
 
         // When:
-        final Mutators mutators = builder.build();
+        final Mutators mutators = builder
+            .withDefaultMutator(defaultMutator)
+            .build();
 
         // Then:
         assertThat(mutators.get(List.class), is(not(defaultMutator)));
@@ -128,6 +138,21 @@ public class MutatorsTest {
     }
 
     @Test
+    public void shouldBeAbleToOverrideTheDefault() throws Exception {
+        // Given:
+        final Type unregisteredType = getClass();
+        final Mutator newDefaultMutator = mock(Mutator.class, "default");
+
+        // When:
+        final Mutators mutators = builder
+            .withDefaultMutator(newDefaultMutator)
+            .build();
+
+        // Then:
+        assertThat(mutators.get(unregisteredType), is(newDefaultMutator));
+    }
+
+    @Test
     public void shouldHaveDefaultArrayMutator() throws Exception {
         // Given:
         final Type arrayType = TypeUtils.genericArrayType(int.class);
@@ -137,5 +162,20 @@ public class MutatorsTest {
 
         // Then:
         assertThat(mutators.get(arrayType), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldBeAbleToOverrideDefaultArrayMutator() throws Exception {
+        // Given:
+        final Type arrayType = TypeUtils.genericArrayType(int.class);
+        final Mutator newDefaultMutator = mock(Mutator.class, "array default");
+
+        // When:
+        final Mutators mutators = builder
+            .withArrayDefaultMutator(newDefaultMutator)
+            .build();
+
+        // Then:
+        assertThat(mutators.get(arrayType), is(newDefaultMutator));
     }
 }

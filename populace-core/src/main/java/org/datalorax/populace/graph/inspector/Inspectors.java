@@ -29,10 +29,25 @@ import java.lang.reflect.Type;
 public class Inspectors {
     private final ImmutableTypeMap<Inspector> inspectors;
 
-    public static Builder newBuilder() {
+    /**
+     * @return the default set of {@link org.datalorax.populace.graph.inspector.Inspector inspectors} defined by the system
+     */
+    public static Inspectors defaults() {
         return InspectorsBuilder.defaults();
     }
 
+    /**
+     * @return a new Inspectors builder, initialised with the defaults in the system.
+     */
+    public static Builder newBuilder() {
+        return asBuilder(defaults());
+    }
+
+    /**
+     * Convert an existing immutable set of inspectors into a new builder instance
+     * @param source the source set of inspectors. The builder will be pre configured with all the inspectors in this set
+     * @return a new Inspectors builder, initialised with the inspectors in {@code source}
+     */
     public static Builder asBuilder(final Inspectors source) {
         return new InspectorsBuilder(source.inspectors);
     }

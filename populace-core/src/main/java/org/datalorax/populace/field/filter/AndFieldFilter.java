@@ -17,13 +17,13 @@
 package org.datalorax.populace.field.filter;
 
 import org.apache.commons.lang3.Validate;
-
-import java.lang.reflect.Field;
+import org.datalorax.populace.field.FieldInfo;
 
 /**
  * Combine two field filters with logical AND.
- * Field will only be handled if both child filters return true from their
- * {@link FieldFilter#evaluate evaluate} call
+ * Field will only be included if both child filters include the field i.e. they both return false from their
+ * {@link org.datalorax.populace.field.filter.FieldFilter#include(org.datalorax.populace.field.FieldInfo)} call.
+ *
  * @author Andrew Coates - 28/02/2015.
  */
 public class AndFieldFilter implements FieldFilter {
@@ -38,8 +38,8 @@ public class AndFieldFilter implements FieldFilter {
     }
 
     @Override
-    public boolean evaluate(final Field field) {
-        return first.evaluate(field) && second.evaluate(field);
+    public boolean include(final FieldInfo field) {
+        return first.include(field) && second.include(field);
     }
 
     @Override

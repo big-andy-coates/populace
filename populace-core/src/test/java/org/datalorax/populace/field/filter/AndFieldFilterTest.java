@@ -16,10 +16,9 @@
 
 package org.datalorax.populace.field.filter;
 
+import org.datalorax.populace.field.FieldInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.lang.reflect.Field;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -29,14 +28,14 @@ import static org.mockito.Mockito.when;
 public class AndFieldFilterTest {
     private FieldFilter first;
     private FieldFilter second;
-    private Field field;
+    private FieldInfo field;
     private FieldFilter filter;
 
     @BeforeMethod
     public void setUp() throws Exception {
         first = mock(FieldFilter.class);
         second = mock(FieldFilter.class);
-        field = getClass().getDeclaredField("field");
+        field = mock(FieldInfo.class);
 
         filter = new AndFieldFilter(first, second);
     }
@@ -54,40 +53,40 @@ public class AndFieldFilterTest {
     @Test
     public void shouldReturnFalseIfBothReturnFalse() throws Exception {
         // Given:
-        when(first.evaluate(field)).thenReturn(false);
-        when(second.evaluate(field)).thenReturn(false);
+        when(first.include(field)).thenReturn(false);
+        when(second.include(field)).thenReturn(false);
 
         // Then:
-        assertThat(filter.evaluate(field), is(false));
+        assertThat(filter.include(field), is(false));
     }
 
     @Test
     public void shouldReturnFalseIfOnlyFirstReturnsTrue() throws Exception {
         // Given:
-        when(first.evaluate(field)).thenReturn(true);
-        when(second.evaluate(field)).thenReturn(false);
+        when(first.include(field)).thenReturn(true);
+        when(second.include(field)).thenReturn(false);
 
         // Then:
-        assertThat(filter.evaluate(field), is(false));
+        assertThat(filter.include(field), is(false));
     }
 
     @Test
     public void shouldReturnFalseIfOnlySecondReturnsTrue() throws Exception {
         // Given:
-        when(first.evaluate(field)).thenReturn(false);
-        when(second.evaluate(field)).thenReturn(true);
+        when(first.include(field)).thenReturn(false);
+        when(second.include(field)).thenReturn(true);
 
         // Then:
-        assertThat(filter.evaluate(field), is(false));
+        assertThat(filter.include(field), is(false));
     }
 
     @Test
     public void shouldReturnTrueOnlyIfBothReturnTrue() throws Exception {
         // Given:
-        when(first.evaluate(field)).thenReturn(true);
-        when(second.evaluate(field)).thenReturn(true);
+        when(first.include(field)).thenReturn(true);
+        when(second.include(field)).thenReturn(true);
 
         // Then:
-        assertThat(filter.evaluate(field), is(true));
+        assertThat(filter.include(field), is(true));
     }
 }

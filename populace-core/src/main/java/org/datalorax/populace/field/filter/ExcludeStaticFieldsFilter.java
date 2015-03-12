@@ -16,8 +16,7 @@
 
 package org.datalorax.populace.field.filter;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import org.datalorax.populace.field.FieldInfo;
 
 /**
  * A field filter to excludes any static fields
@@ -27,8 +26,8 @@ public class ExcludeStaticFieldsFilter implements FieldFilter {
     public static final ExcludeStaticFieldsFilter INSTANCE = new ExcludeStaticFieldsFilter();
 
     @Override
-    public boolean evaluate(final Field field) {
-        return !Modifier.isStatic(field.getModifiers());
+    public boolean include(final FieldInfo field) {
+        return !field.isStatic();
     }
 
     @Override

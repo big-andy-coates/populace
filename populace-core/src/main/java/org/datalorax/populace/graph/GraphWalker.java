@@ -36,20 +36,20 @@ public class GraphWalker {
 
     private final WalkerContext config;
 
+    GraphWalker(final WalkerContext config) {
+        this.config = config;
+    }
+
     public static Builder newBuilder() {
         return new GraphWalkerBuilder();
     }
 
-    public interface Builder {
-        Builder withFieldFilter(final FieldFilter filter);
-
-        FieldFilter getFieldFilter();
-
-        Builder withInspectors(final Inspectors inspectors);
-
-        Inspectors.Builder inspectorsBuilder();
-
-        GraphWalker build();
+    private static Object getValue(final Field field, final Object instance) {
+        try {
+            return field.get(instance);
+        } catch (IllegalAccessException e) {
+            throw new WalkerException("Failed to get field value - consider using SetAccessibleFieldVisitor or similar", e);
+        }
     }
 
     public void walk(final Object instance, final FieldVisitor visitor) {
@@ -77,22 +77,18 @@ public class GraphWalker {
             '}';
     }
 
-    GraphWalker(final WalkerContext config) {
-        this.config = config;
-    }
-
     private void walk(final Object instance, final FieldVisitor visitor, final WalkerStack stack) {
         final Inspector inspector = config.getInspector(instance.getClass());
 
         // Todo(ac): guard all log lines
         LOG.info(stack.getPath() + " - Inspecting type: " + instance.getClass() + ", inspector: " + inspector.getClass());  // Todo(ac): change level to info?
         for (Field field : inspector.getFields(instance)) {
-            if (config.isExcludedField(field)) {
+            final FieldInfo fieldInfo = new FieldInfo(field, stack.resolveType(field.getGenericType()), instance);  // Todo(ac): Lazy type resolution
+            if (config.isExcludedField(fieldInfo)) {
                 LOG.info(stack.getPath() + " - Skipping excluded field: " + field.getName());   // todo(ac): change level to debug
                 continue;
             }
 
-            final FieldInfo fieldInfo = new FieldInfo(field, stack.resolveType(field.getGenericType()), instance);  // Todo(ac): Lazy type resolution
             LOG.info(stack.getPath() + " - Found field: " + field.getName() + ", type: " + fieldInfo);  // Todo(ac): change level to info?
             visitor.visit(fieldInfo);
 
@@ -109,12 +105,16 @@ public class GraphWalker {
         }
     }
 
-    private static Object getValue(final Field field, final Object instance) {
-        try {
-            return field.get(instance);
-        } catch (IllegalAccessException e) {
-            throw new WalkerException("Failed to get field value - consider using SetAccessibleFieldVisitor or similar", e);
-        }
+    public interface Builder {
+        Builder withFieldFilter(final FieldFilter filter);
+
+        FieldFilter getFieldFilter();
+
+        Builder withInspectors(final Inspectors inspectors);
+
+        Inspectors.Builder inspectorsBuilder();
+
+        GraphWalker build();
     }
 }
 

@@ -19,7 +19,9 @@ package org.datalorax.populace.field;
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.field.visitor.FieldAccessException;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
@@ -73,6 +75,22 @@ public class FieldInfo {
         } catch (IllegalAccessException e) {
             throw new FieldAccessException("Failed to access field: " + field, e);  // Todo(ac): include stack?
         }
+    }
+
+    public <T extends Annotation> T getAnnotation(final Class<T> type) {
+        return field.getAnnotation(type);
+    }
+
+    public boolean isTransient() {
+        return Modifier.isTransient(field.getModifiers());
+    }
+
+    public boolean isStatic() {
+        return Modifier.isStatic(field.getModifiers());
+    }
+
+    public boolean isFinal() {
+        return Modifier.isFinal(field.getModifiers());
     }
 
     @Override

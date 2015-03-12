@@ -16,8 +16,7 @@
 
 package org.datalorax.populace.field.filter;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import org.datalorax.populace.field.FieldInfo;
 
 /**
  * A field filter to excludes any transient fields
@@ -27,8 +26,8 @@ public class ExcludeFinalFieldsFilter implements FieldFilter {
     public static final ExcludeFinalFieldsFilter INSTANCE = new ExcludeFinalFieldsFilter();
 
     @Override
-    public boolean evaluate(final Field field) {
-        return !Modifier.isTransient(field.getModifiers());
+    public boolean include(final FieldInfo field) {
+        return !field.isFinal();
     }
 
     @Override

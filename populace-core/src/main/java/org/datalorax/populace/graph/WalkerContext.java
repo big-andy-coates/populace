@@ -17,11 +17,11 @@
 package org.datalorax.populace.graph;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.field.FieldInfo;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.graph.inspector.Inspector;
 import org.datalorax.populace.graph.inspector.Inspectors;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 /**
@@ -38,8 +38,8 @@ public class WalkerContext {
         this.inspectors = inspectors;
     }
 
-    public boolean isExcludedField(final Field field) {
-        return !fieldFilter.evaluate(field);
+    public boolean isExcludedField(final FieldInfo field) {
+        return !fieldFilter.include(field);
     }
 
     public Inspector getInspector(final Type type) {

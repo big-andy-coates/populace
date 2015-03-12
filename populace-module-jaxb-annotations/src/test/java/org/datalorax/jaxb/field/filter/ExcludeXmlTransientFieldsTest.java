@@ -14,34 +14,47 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.field.filter;
+package org.datalorax.jaxb.field.filter;
 
 import org.datalorax.populace.field.FieldInfo;
+import org.datalorax.populace.field.filter.FieldFilter;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import javax.xml.bind.annotation.XmlTransient;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ExcludeFinalFieldsFilterTest {
-    @Test
-    public void shouldExcludeFinalField() throws Exception {
-        // Given:
-        final FieldInfo fieldInfo = mock(FieldInfo.class);
-        when(fieldInfo.isFinal()).thenReturn(true);
+public class ExcludeXmlTransientFieldsTest {
+    private FieldInfo field;
+    private FieldFilter filter;
 
-        // Then:
-        assertThat(ExcludeFinalFieldsFilter.INSTANCE.include(fieldInfo), is(false));
+    @BeforeMethod
+    public void setUp() throws Exception {
+        field = mock(FieldInfo.class);
+
+        filter = ExcludeXmlTransientFields.INSTANCE;
     }
 
     @Test
-    public void shouldIncludeNonFinalField() throws Exception {
+    public void shouldExcludeIfFieldIsMarkedXmlTransient() throws Exception {
         // Given:
-        final FieldInfo fieldInfo = mock(FieldInfo.class);
-        when(fieldInfo.isFinal()).thenReturn(false);
+        when(field.getAnnotation(XmlTransient.class)).thenReturn(mock(XmlTransient.class));
 
         // Then:
-        assertThat(ExcludeFinalFieldsFilter.INSTANCE.include(fieldInfo), is(true));
+        assertThat(filter.include(field), is(false));
     }
+
+    @Test
+    public void shouldIncludeIfFieldNotMarkedWithXmlTransient() throws Exception {
+        // Given:
+        when(field.getAnnotation(XmlTransient.class)).thenReturn(null);
+
+        // Then:
+        assertThat(filter.include(field), is(true));
+    }
+
 }

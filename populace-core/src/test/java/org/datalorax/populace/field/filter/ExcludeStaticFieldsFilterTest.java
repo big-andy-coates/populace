@@ -16,25 +16,32 @@
 
 package org.datalorax.populace.field.filter;
 
+import org.datalorax.populace.field.FieldInfo;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ExcludeStaticFieldsFilterTest {
     @Test
     public void shouldExcludeStaticField() throws Exception {
-        assertThat(ExcludeStaticFieldsFilter.INSTANCE.evaluate(SomeClass.class.getDeclaredField("_static")), is(false));
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isStatic()).thenReturn(true);
+
+        // Then:
+        assertThat(ExcludeStaticFieldsFilter.INSTANCE.include(fieldInfo), is(false));
     }
 
     @Test
     public void shouldIncludeNonStaticField() throws Exception {
-        assertThat(ExcludeStaticFieldsFilter.INSTANCE.evaluate(SomeClass.class.getDeclaredField("_nonStatic")), is(true));
-    }
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isStatic()).thenReturn(false);
 
-    @SuppressWarnings("UnusedDeclaration")
-    private static final class SomeClass {
-        private static String _static;
-        private String _nonStatic;
+        // Then:
+        assertThat(ExcludeStaticFieldsFilter.INSTANCE.include(fieldInfo), is(true));
     }
 }

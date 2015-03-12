@@ -18,8 +18,8 @@ package org.datalorax.populace.field.filter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.field.FieldInfo;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,7 +33,7 @@ public class AllFieldFilter implements FieldFilter {
     private final List<FieldFilter> filters;
 
     public AllFieldFilter(final FieldFilter first, final FieldFilter... theRest) {
-        final List<FieldFilter> fieldFilters = new ArrayList<FieldFilter>();
+        final List<FieldFilter> fieldFilters = new ArrayList<>();
         fieldFilters.add(first);
         fieldFilters.addAll(Arrays.asList(theRest));
 
@@ -45,9 +45,9 @@ public class AllFieldFilter implements FieldFilter {
     }
 
     @Override
-    public boolean evaluate(final Field field) {
+    public boolean include(final FieldInfo field) {
         for (FieldFilter filter : filters) {
-            if (!filter.evaluate(field)) {
+            if (!filter.include(field)) {
                 return false;
             }
         }

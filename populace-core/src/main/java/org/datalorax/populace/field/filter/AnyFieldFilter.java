@@ -18,22 +18,23 @@ package org.datalorax.populace.field.filter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.field.FieldInfo;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * A combination field filter that evaluates to true if any child filters evaluates true
+ * A combination field filter that includes the field is anny of the child filters includes it
+ *
  * @author Andrew Coates - 28/02/2015.
  */
 public class AnyFieldFilter implements FieldFilter {
     private final List<FieldFilter> filters;
 
     public AnyFieldFilter(final FieldFilter first, final FieldFilter... theRest) {
-        final List<FieldFilter> fieldFilters = new ArrayList<FieldFilter>();
+        final List<FieldFilter> fieldFilters = new ArrayList<>();
         fieldFilters.add(first);
         fieldFilters.addAll(Arrays.asList(theRest));
 
@@ -45,9 +46,9 @@ public class AnyFieldFilter implements FieldFilter {
     }
 
     @Override
-    public boolean evaluate(final Field field) {
+    public boolean include(final FieldInfo field) {
         for (FieldFilter filter : filters) {
-            if (filter.evaluate(field)) {
+            if (filter.include(field)) {
                 return true;
             }
         }

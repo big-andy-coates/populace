@@ -17,13 +17,12 @@
 package org.datalorax.populace.field.filter;
 
 import org.apache.commons.lang3.Validate;
-
-import java.lang.reflect.Field;
+import org.datalorax.populace.field.FieldInfo;
 
 /**
  * Combine two field filters with logical OR.
  * Field will be handled if either child filters return true from their
- * {@link FieldFilter#evaluate evaluate} call
+ * {@link FieldFilter#include(org.datalorax.populace.field.FieldInfo)}  evaluate} call
  * @author Andrew Coates - 28/02/2015.
  */
 public class OrFieldFilter implements FieldFilter {
@@ -38,8 +37,8 @@ public class OrFieldFilter implements FieldFilter {
     }
 
     @Override
-    public boolean evaluate(final Field field) {
-        return first.evaluate(field) || second.evaluate(field);
+    public boolean include(final FieldInfo field) {
+        return first.include(field) || second.include(field);
     }
 
     @Override

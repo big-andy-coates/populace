@@ -16,10 +16,9 @@
 
 package org.datalorax.populace.field.filter;
 
+import org.datalorax.populace.field.FieldInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.lang.reflect.Field;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -30,7 +29,7 @@ public class AnyFieldFilterTest {
     private FieldFilter first;
     private FieldFilter second;
     private FieldFilter third;
-    private Field field;
+    private FieldInfo field;
     private FieldFilter filter;
 
     @BeforeMethod
@@ -38,7 +37,7 @@ public class AnyFieldFilterTest {
         first = mock(FieldFilter.class, "first");
         second = mock(FieldFilter.class, "second");
         third = mock(FieldFilter.class, "third");
-        field = getClass().getDeclaredField("field");
+        field = mock(FieldInfo.class);
 
         filter = new AnyFieldFilter(first, second, third);
     }
@@ -49,24 +48,24 @@ public class AnyFieldFilterTest {
     }
 
     @Test
-    public void shouldReturnFalseOnlyIfAllReturnFalse() throws Exception {
+    public void shouldExcludeOnlyIfAllExclude() throws Exception {
         // Given:
-        when(first.evaluate(field)).thenReturn(false);
-        when(second.evaluate(field)).thenReturn(false);
-        when(third.evaluate(field)).thenReturn(false);
+        when(first.include(field)).thenReturn(false);
+        when(second.include(field)).thenReturn(false);
+        when(third.include(field)).thenReturn(false);
 
         // Then:
-        assertThat(filter.evaluate(field), is(false));
+        assertThat(filter.include(field), is(false));
     }
 
     @Test
-    public void shouldReturnTrueIfAnyReturnTrue() throws Exception {
+    public void shouldIncludeIfAnyInclude() throws Exception {
         // Given:
-        when(first.evaluate(field)).thenReturn(false);
-        when(second.evaluate(field)).thenReturn(true);
-        when(third.evaluate(field)).thenReturn(false);
+        when(first.include(field)).thenReturn(false);
+        when(second.include(field)).thenReturn(true);
+        when(third.include(field)).thenReturn(false);
 
         // Then:
-        assertThat(filter.evaluate(field), is(true));
+        assertThat(filter.include(field), is(true));
     }
 }

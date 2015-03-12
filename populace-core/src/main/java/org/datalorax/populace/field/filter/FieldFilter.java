@@ -16,7 +16,7 @@
 
 package org.datalorax.populace.field.filter;
 
-import java.lang.reflect.Field;
+import org.datalorax.populace.field.FieldInfo;
 
 /**
  * Interface for 'pluggable' filtering of fields
@@ -24,10 +24,10 @@ import java.lang.reflect.Field;
  */
 public interface FieldFilter {
     /**
-     * Called to determine if the field should be handled or excluded.
+     * Called to determine if the {@code field} should be included or excluded
+     *
      * @param field the field to evaluate
-     * @return true if the field should be handled, false if it should be skipped / excluded.
+     * @return true if the field should be included, false for excluded.
      */
-    boolean evaluate(final Field field);    // Todo(ac): Switch to FieldInfo
-    // Todo(ac): filter is generally about excluding, yet function returns true to include. Not intuative.
+    boolean include(final FieldInfo field);
 }

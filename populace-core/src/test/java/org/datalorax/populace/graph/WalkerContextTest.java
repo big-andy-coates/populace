@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.graph;
 
+import org.datalorax.populace.field.FieldInfo;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.graph.inspector.Inspector;
 import org.datalorax.populace.graph.inspector.Inspectors;
@@ -24,7 +25,6 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,14 +37,14 @@ public class WalkerContextTest {
     private FieldFilter fieldFilter;
     @Mock
     private Inspectors inspectors;
-    private Field field;
+    private FieldInfo field;
     private WalkerContext context;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        field = getClass().getDeclaredField("field");
+        field = mock(FieldInfo.class);
 
         context = new WalkerContext(fieldFilter, inspectors);
     }
@@ -52,7 +52,7 @@ public class WalkerContextTest {
     @Test
     public void shouldExcludeFieldIfFilterReturnsFalse() throws Exception {
         // Given:
-        when(fieldFilter.evaluate(field)).thenReturn(false);
+        when(fieldFilter.include(field)).thenReturn(false);
 
         // Then:
         assertThat(context.isExcludedField(field), is(true));
@@ -61,7 +61,7 @@ public class WalkerContextTest {
     @Test
     public void shouldNotExcludeFieldIfFilterReturnsTrue() throws Exception {
         // Given:
-        when(fieldFilter.evaluate(field)).thenReturn(true);
+        when(fieldFilter.include(field)).thenReturn(true);
 
         // Then:
         assertThat(context.isExcludedField(field), is(false));

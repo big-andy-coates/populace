@@ -16,25 +16,32 @@
 
 package org.datalorax.populace.field.filter;
 
+import org.datalorax.populace.field.FieldInfo;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ExcludeTransientFieldsFilterTest {
     @Test
     public void shouldExcludeTransientField() throws Exception {
-        assertThat(ExcludeTransientFieldsFilter.INSTANCE.evaluate(SomeClass.class.getDeclaredField("_transient")), is(false));
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isTransient()).thenReturn(true);
+
+        // Then:
+        assertThat(ExcludeTransientFieldsFilter.INSTANCE.include(fieldInfo), is(false));
     }
 
     @Test
     public void shouldIncludeNonTransientField() throws Exception {
-        assertThat(ExcludeTransientFieldsFilter.INSTANCE.evaluate(SomeClass.class.getDeclaredField("_nonTransient")), is(true));
-    }
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isTransient()).thenReturn(false);
 
-    @SuppressWarnings("UnusedDeclaration")
-    private static final class SomeClass {
-        private transient String _transient;
-        private String _nonTransient;
+        // Then:
+        assertThat(ExcludeTransientFieldsFilter.INSTANCE.include(fieldInfo), is(true));
     }
 }

@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.graph;
 
+import org.datalorax.populace.field.FieldInfo;
 import org.datalorax.populace.field.filter.ExcludeStaticFieldsFilter;
 import org.datalorax.populace.field.filter.FieldFilter;
 import org.datalorax.populace.field.filter.FieldFilters;
@@ -27,7 +28,6 @@ import org.datalorax.populace.graph.inspector.TerminalInspector;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +47,7 @@ public class GraphWalkerFunctionalTest {
         filter = mock(FieldFilter.class);
         visitor = mock(FieldVisitor.class);
 
-        when(filter.evaluate(any(Field.class))).thenReturn(true);
+        when(filter.include(any(FieldInfo.class))).thenReturn(true);
 
         walker = GraphWalker.newBuilder().build();
     }
@@ -257,5 +257,5 @@ public class GraphWalkerFunctionalTest {
         }};
     }
 
-    // Todo(ac): Add field filter types to exclude circular references and to not follow parent reference in inner class.
+    // Todo(ac): Add field filter types to include circular references and to not follow parent reference in inner class.
 }

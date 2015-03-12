@@ -16,13 +16,13 @@
 
 package org.datalorax.jaxb.field.filter;
 
+import org.datalorax.populace.field.FieldInfo;
 import org.datalorax.populace.field.filter.FieldFilter;
 
 import javax.xml.bind.annotation.XmlTransient;
-import java.lang.reflect.Field;
 
 /**
- * {@link org.datalorax.populace.field.filter.FieldFilter} to exclude fields marked with
+ * {@link org.datalorax.populace.field.filter.FieldFilter} to include fields marked with
  * {@link javax.xml.bind.annotation.XmlTransient @XmlTransient}
  *
  * @author Andrew Coates - 12/03/2015.
@@ -31,8 +31,10 @@ public class ExcludeXmlTransientFields implements FieldFilter {
     public static ExcludeXmlTransientFields INSTANCE = new ExcludeXmlTransientFields();
 
     @Override
-    public boolean evaluate(final Field field) {
+    public boolean include(final FieldInfo field) {
         // Todo(ac): needs to work with getter / setter too. But need to switch to FieldInfo first.
         return field.getAnnotation(XmlTransient.class) == null;
     }
 }
+
+// Todo(ac): could do away with this if FieldInfo#isTransient returned correctly.

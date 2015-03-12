@@ -16,6 +16,8 @@
 
 
 
+
+
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -42,7 +44,7 @@ subprojects {
     }
 
     group = 'org.datalorax.populace'
-    version = '0.1.3-beta'
+    version = '0.2.0'
 
     idea {
         project {

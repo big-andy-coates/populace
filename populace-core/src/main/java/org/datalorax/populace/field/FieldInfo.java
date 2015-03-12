@@ -29,16 +29,19 @@ import java.lang.reflect.Type;
  */
 public class FieldInfo {
     private final Field field;
-    private final Type genericType;
     private final Object owningInstance;
+    private final GenericTypeProvider type;
+    private final PathProvider path;
 
-    public FieldInfo(final Field field, final Type genericType, final Object owningInstance) {
+    public FieldInfo(final Field field, final Object owningInstance, final GenericTypeProvider type, final PathProvider path) {
         Validate.notNull(field, "field null");
-        Validate.notNull(genericType, "genericType null");
+        Validate.notNull(type, "type null");
         Validate.notNull(owningInstance, "owningInstance null");
+        Validate.notNull(path, "path null");
         this.field = field;
-        this.genericType = genericType;
+        this.type = type;
         this.owningInstance = owningInstance;
+        this.path = path;
     }
 
     public String getName() {
@@ -50,7 +53,7 @@ public class FieldInfo {
     }
 
     public Type getGenericType() {
-        return genericType;
+        return type.resolveType(field.getGenericType());
     }
 
     public Object getOwningInstance() {
@@ -65,7 +68,7 @@ public class FieldInfo {
         try {
             return field.get(owningInstance);
         } catch (IllegalAccessException e) {
-            throw new FieldAccessException("Failed to access field: " + field, e);  // Todo(ac): include stack?
+            throw new FieldAccessException("Failed to access field: " + field + ", with path: " + path.getPath(), e);
         }
     }
 
@@ -73,7 +76,7 @@ public class FieldInfo {
         try {
             field.set(owningInstance, value);
         } catch (IllegalAccessException e) {
-            throw new FieldAccessException("Failed to access field: " + field, e);  // Todo(ac): include stack?
+            throw new FieldAccessException("Failed to access field: " + field + ", with path: " + path.getPath(), e);
         }
     }
 
@@ -100,14 +103,14 @@ public class FieldInfo {
 
         final FieldInfo fieldInfo = (FieldInfo) o;
         return field.equals(fieldInfo.field) &&
-            genericType.equals(fieldInfo.genericType) &&
+            getGenericType().equals(fieldInfo.getGenericType()) &&
             owningInstance.equals(fieldInfo.owningInstance);
     }
 
     @Override
     public int hashCode() {
         int result = field.hashCode();
-        result = 31 * result + genericType.hashCode();
+        result = 31 * result + getGenericType().hashCode();
         result = 31 * result + owningInstance.hashCode();
         return result;
     }
@@ -116,7 +119,7 @@ public class FieldInfo {
     public String toString() {
         return "FieldInfo{" +
             "field=" + field +
-            ", genericType=" + genericType +
+            ", genericType=" + getGenericType() +
             ", owningInstance=" + owningInstance +
             '}';
     }

@@ -80,16 +80,24 @@ public class GraphWalker {
     private void walk(final Object instance, final FieldVisitor visitor, final WalkerStack stack) {
         final Inspector inspector = config.getInspector(instance.getClass());
 
-        // Todo(ac): guard all log lines
-        LOG.info(stack.getPath() + " - Inspecting type: " + instance.getClass() + ", inspector: " + inspector.getClass());  // Todo(ac): change level to info?
+        if (LOG.isInfoEnabled()) {
+            LOG.info(stack.getPath() + " - Inspecting type: " + instance.getClass() + ", inspector: " + inspector.getClass());
+        }
+
         for (Field field : inspector.getFields(instance)) {
-            final FieldInfo fieldInfo = new FieldInfo(field, stack.resolveType(field.getGenericType()), instance);  // Todo(ac): Lazy type resolution
+            final FieldInfo fieldInfo = new FieldInfo(field, instance, stack, stack);
+
             if (config.isExcludedField(fieldInfo)) {
-                LOG.info(stack.getPath() + " - Skipping excluded field: " + field.getName());   // todo(ac): change level to debug
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(stack.getPath() + " - Skipping excluded field: " + field.getName());
+                }
                 continue;
             }
 
-            LOG.info(stack.getPath() + " - Found field: " + field.getName() + ", type: " + fieldInfo);  // Todo(ac): change level to info?
+            if (LOG.isInfoEnabled()) {
+                LOG.info(stack.getPath() + " - Found field: " + field.getName() + ", type: " + fieldInfo);
+            }
+
             visitor.visit(fieldInfo);
 
             final Object value = getValue(field, instance);
@@ -117,5 +125,3 @@ public class GraphWalker {
         GraphWalker build();
     }
 }
-
-// Todo(ac): Add stack of visited values & fields.

@@ -17,6 +17,8 @@
 package org.datalorax.populace.graph;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
+import org.datalorax.populace.field.GenericTypeProvider;
+import org.datalorax.populace.field.PathProvider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -29,8 +31,16 @@ import java.util.function.Consumer;
 /**
  * @author Andrew Coates - 04/03/2015.
  */
-public abstract class WalkerStack {
+public abstract class WalkerStack implements PathProvider, GenericTypeProvider {
     private final WalkerStack parent;
+
+    private WalkerStack() {
+        this.parent = null;
+    }
+
+    private WalkerStack(final WalkerStack parent) {
+        this.parent = parent;
+    }
 
     public static WalkerStack newStack(final Object root) {
         return new RootFrame(root);
@@ -42,14 +52,6 @@ public abstract class WalkerStack {
 
     public WalkerStack push(final Object element) {
         return new ElementFrame(this, element);
-    }
-
-    private WalkerStack() {
-        this.parent = null;
-    }
-
-    private WalkerStack(final WalkerStack parent) {
-        this.parent = parent;
     }
 
     public String getPath() {
@@ -89,6 +91,12 @@ public abstract class WalkerStack {
         final List<WalkerStack> frames = new ArrayList<>();
         forEachParent(frame -> frames.add(0, frame));
         return frames;
+    }
+
+    private void forEachParent(Consumer<WalkerStack> action) {
+        for (WalkerStack frame = this; frame != null; frame = frame.parent) {
+            action.accept(frame);
+        }
     }
 
     private static final class RootFrame extends WalkerStack {
@@ -156,12 +164,6 @@ public abstract class WalkerStack {
         @Override
         protected Type resolveTypeVariable(final TypeVariable variable) {
             return getParent().resolveTypeVariable(variable);
-        }
-    }
-
-    private void forEachParent(Consumer<WalkerStack> action) {
-        for (WalkerStack frame = this; frame != null; frame = frame.parent) {
-            action.accept(frame);
         }
     }
 }

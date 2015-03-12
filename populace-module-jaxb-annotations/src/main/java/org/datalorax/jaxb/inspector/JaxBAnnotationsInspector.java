@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.inspector;
+package org.datalorax.jaxb.inspector;
 
 import org.datalorax.populace.graph.inspector.Inspector;
 
@@ -50,3 +50,5 @@ public class JaxBAnnotationsInspector implements Inspector {
         return getClass().getSimpleName();
     }
 }
+
+// Todo(ac): use or lose

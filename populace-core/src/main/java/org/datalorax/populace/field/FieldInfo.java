@@ -105,3 +105,4 @@ public class FieldInfo {
 }
 
 // Todo(ac): test
+// Todo(ac): Have two packages under org.datalorax.populace - 'walk' and 'populate'

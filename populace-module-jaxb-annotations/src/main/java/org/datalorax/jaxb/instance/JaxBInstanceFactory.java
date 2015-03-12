@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.instance;
+package org.datalorax.jaxb.instance;
 
 import org.datalorax.populace.populator.instance.InstanceCreationException;
 import org.datalorax.populace.populator.instance.InstanceFactories;
@@ -55,7 +55,7 @@ public class JaxBInstanceFactory implements InstanceFactory {
 
         final Object value = createValueInstance(rawType, parent, instanceFactories, annotation);
         //noinspection unchecked
-        return (T) convert(annotation, value);
+        return (T) convert(annotation.value(), value, instanceFactories);
     }
 
     @Override
@@ -80,19 +80,17 @@ public class JaxBInstanceFactory implements InstanceFactory {
     }
 
     // Todo(ac): Maybe the way to handle this is to have the annotation inspector provide a 'converter' that wraps the instance factory?
-    private Object convert(final XmlJavaTypeAdapter annotation, final Object value) {
-        final Class<? extends XmlAdapter> adapterType = annotation.value();
+    private Object convert(final Class<? extends XmlAdapter> adapterType, final Object value, final InstanceFactories instanceFactories) {
+        final XmlAdapter adapter = instanceFactories.get(adapterType).createInstance(adapterType, null, instanceFactories);
 
         try {
-            final XmlAdapter adapter = adapterType.getConstructor().newInstance();
             //noinspection unchecked
             return adapter.unmarshal(value);
         } catch (Exception e) {
-            // Todo(ac): Test!!!!
+            final Type valueType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class, XmlAdapter.class.getTypeParameters()[0]);
             final Type boundType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class, XmlAdapter.class.getTypeParameters()[1]);
-            throw new InstanceCreationException("Failed to marshal from @XmlJavaTypeAdaptor's ValueType to BoundType. " +
-                "annotation: " + annotation + ", valueType: " + (value == null ? "unknown (numm value)" : value.getClass()),
-                boundType, e);
+            throw new RuntimeException("Failed to marshal between XmlTypeAdapters value and bound types. " +
+                "bound: " + boundType + ", value: " + valueType, e);
         }
     }
 }

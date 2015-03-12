@@ -84,6 +84,11 @@ public class InstanceFactories {
         return factories.get(key);
     }
 
+    // Todo(ac): expose all?, across mutators, inspectors?
+    public InstanceFactory getDefault() {
+        return factories.getDefault();
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

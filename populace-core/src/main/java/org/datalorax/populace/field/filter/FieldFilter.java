@@ -28,5 +28,6 @@ public interface FieldFilter {
      * @param field the field to evaluate
      * @return true if the field should be handled, false if it should be skipped / excluded.
      */
-    boolean evaluate(final Field field);
+    boolean evaluate(final Field field);    // Todo(ac): Switch to FieldInfo
+    // Todo(ac): filter is generally about excluding, yet function returns true to include. Not intuative.
 }

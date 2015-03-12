@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.field.filter;
+package org.datalorax.populace.populator.instance;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 
 /**
- * Interface for 'pluggable' filtering of fields
- * @author Andrew Coates - 28/02/2015.
+ * @author Andrew Coates - 09/03/2015.
  */
-public interface FieldFilter {
-    /**
-     * Called to determine if the field should be handled or excluded.
-     * @param field the field to evaluate
-     * @return true if the field should be handled, false if it should be skipped / excluded.
-     */
-    boolean evaluate(final Field field);    // Todo(ac): Switch to FieldInfo
-    // Todo(ac): filter is generally about excluding, yet function returns true to include. Not intuative.
+public class InstanceCreationException extends RuntimeException {
+    public InstanceCreationException(final String message, final Type type, final Throwable cause) {
+        super(message + ". Type: " + type, cause);
+    }
 }

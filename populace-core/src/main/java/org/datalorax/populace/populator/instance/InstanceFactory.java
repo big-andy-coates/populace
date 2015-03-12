@@ -18,6 +18,7 @@ package org.datalorax.populace.populator.instance;
 
 /**
  * Extension point to support 'pluggable' factories for creating new instances of types.
+ *
  * @author Andrew Coates - 02/03/2015.
  */
 public interface InstanceFactory {

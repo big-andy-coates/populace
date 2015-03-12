@@ -14,37 +14,25 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.graph.inspector;
+package org.datalorax.jaxb.inspector;
 
-import com.google.common.collect.ImmutableSet;
-import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.graph.inspector.Inspector;
 
 import java.lang.reflect.Field;
-import java.util.Map;
 
 /**
- * The walker walks each value in the collection, depth first. Keys are not walked.
+ * An inspector replacement for the default {@link org.datalorax.populace.graph.inspector.ObjectInspector} that exposes
+ * bean properties, rather than raw fields, and which understands and uses JaxB annotations to include/exclude properties
+ * and/or map interfaces to concrete types.
  *
- * @author Andrew Coates - 01/03/2015.
+ * @author Andrew Coates - 09/03/2015.
  */
-public class MapValueInspector implements Inspector {
-    public static final Inspector INSTANCE = new MapValueInspector();
+public class JaxBAnnotationsInspector implements Inspector {
+    public static final JaxBAnnotationsInspector INSTANCE = new JaxBAnnotationsInspector();
 
     @Override
     public Iterable<Field> getFields(final Object instance) {
-        return ImmutableSet.of();
-    }
-
-    @Override
-    public boolean typeIsCollection() {
-        return true;
-    }
-
-    @Override
-    public Iterable<?> getChildren(final Object instance) {
-        Validate.isInstanceOf(Map.class, instance);
-        //noinspection unchecked
-        return ((Map<?, ?>) instance).values();
+        return null;
     }
 
     @Override
@@ -62,3 +50,5 @@ public class MapValueInspector implements Inspector {
         return getClass().getSimpleName();
     }
 }
+
+// Todo(ac): use or lose

@@ -17,8 +17,7 @@
 package org.datalorax.populace.graph.inspector;
 
 import com.google.common.collect.ImmutableSet;
-
-import java.lang.reflect.Field;
+import org.datalorax.populace.field.RawField;
 
 /**
  * An inspector that exposes its instance as having no fields and no children i.e. stops the graph traversal from looking
@@ -30,7 +29,7 @@ public class TerminalInspector implements Inspector {
     public static final TerminalInspector INSTANCE = new TerminalInspector();
 
     @Override
-    public Iterable<Field> getFields(final Object instance) {
+    public Iterable<RawField> getFields(final Object instance) {
         return ImmutableSet.of();
     }
 

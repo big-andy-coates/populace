@@ -18,9 +18,9 @@ package org.datalorax.populace.graph.inspector;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.field.RawField;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -33,7 +33,7 @@ public class ArrayInspector implements Inspector {
     public static final Inspector INSTANCE = new ArrayInspector();
 
     @Override
-    public Iterable<Field> getFields(final Object instance) {
+    public Iterable<RawField> getFields(final Object instance) {
         return ImmutableSet.of();
     }
 

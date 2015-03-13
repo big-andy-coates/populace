@@ -21,6 +21,6 @@ import java.lang.reflect.Type;
 /**
  * @author Andrew Coates - 12/03/2015.
  */
-public interface GenericTypeProvider {
+public interface GenericTypeResolver {
     Type resolveType(final Type genericType);
 }

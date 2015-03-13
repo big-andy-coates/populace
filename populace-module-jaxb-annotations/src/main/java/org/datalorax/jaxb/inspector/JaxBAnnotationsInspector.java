@@ -16,9 +16,9 @@
 
 package org.datalorax.jaxb.inspector;
 
+import com.google.common.collect.ImmutableSet;
+import org.datalorax.populace.field.RawField;
 import org.datalorax.populace.graph.inspector.Inspector;
-
-import java.lang.reflect.Field;
 
 /**
  * An inspector replacement for the default {@link org.datalorax.populace.graph.inspector.ObjectInspector} that exposes
@@ -31,8 +31,8 @@ public class JaxBAnnotationsInspector implements Inspector {
     public static final JaxBAnnotationsInspector INSTANCE = new JaxBAnnotationsInspector();
 
     @Override
-    public Iterable<Field> getFields(final Object instance) {
-        return null;
+    public Iterable<RawField> getFields(final Object instance) {
+        return ImmutableSet.of();   // Todo(ac)
     }
 
     @Override

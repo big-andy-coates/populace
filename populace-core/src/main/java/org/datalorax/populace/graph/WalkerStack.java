@@ -17,10 +17,10 @@
 package org.datalorax.populace.graph;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
-import org.datalorax.populace.field.GenericTypeProvider;
+import org.datalorax.populace.field.GenericTypeResolver;
 import org.datalorax.populace.field.PathProvider;
+import org.datalorax.populace.field.RawField;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 /**
  * @author Andrew Coates - 04/03/2015.
  */
-public abstract class WalkerStack implements PathProvider, GenericTypeProvider {
+public abstract class WalkerStack implements PathProvider, GenericTypeResolver {
     private final WalkerStack parent;
 
     private WalkerStack() {
@@ -46,7 +46,7 @@ public abstract class WalkerStack implements PathProvider, GenericTypeProvider {
         return new RootFrame(root);
     }
 
-    public WalkerStack push(final Field field) {
+    public WalkerStack push(final RawField field) {
         return new FieldFrame(this, field);
     }
 
@@ -118,9 +118,9 @@ public abstract class WalkerStack implements PathProvider, GenericTypeProvider {
     }
 
     private static final class FieldFrame extends WalkerStack {
-        private final Field field;
+        private final RawField field;
 
-        public FieldFrame(final WalkerStack parent, final Field field) {
+        public FieldFrame(final WalkerStack parent, final RawField field) {
             super(parent);
             this.field = field;
         }

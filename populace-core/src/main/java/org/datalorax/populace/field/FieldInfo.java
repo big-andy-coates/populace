@@ -20,27 +20,25 @@ import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.field.visitor.FieldAccessException;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
  * @author Andrew Coates - 04/03/2015.
  */
 public class FieldInfo {
-    private final Field field;
+    private final RawField field;
     private final Object owningInstance;
-    private final GenericTypeProvider type;
+    private final GenericTypeResolver typeResolver;
     private final PathProvider path;
 
-    public FieldInfo(final Field field, final Object owningInstance, final GenericTypeProvider type, final PathProvider path) {
+    public FieldInfo(final RawField field, final Object owningInstance, final GenericTypeResolver typeResolver, final PathProvider path) {
         Validate.notNull(field, "field null");
-        Validate.notNull(type, "type null");
         Validate.notNull(owningInstance, "owningInstance null");
+        Validate.notNull(typeResolver, "typeResolver null");
         Validate.notNull(path, "path null");
         this.field = field;
-        this.type = type;
         this.owningInstance = owningInstance;
+        this.typeResolver = typeResolver;
         this.path = path;
     }
 
@@ -53,7 +51,7 @@ public class FieldInfo {
     }
 
     public Type getGenericType() {
-        return type.resolveType(field.getGenericType());
+        return typeResolver.resolveType(field.getGenericType());
     }
 
     public Object getOwningInstance() {
@@ -61,22 +59,22 @@ public class FieldInfo {
     }
 
     public void ensureAccessible() {
-        field.setAccessible(true);
+        field.ensureAccessible();
     }
 
     public Object getValue() {
         try {
-            return field.get(owningInstance);
+            return field.getValue(getOwningInstance());
         } catch (IllegalAccessException e) {
-            throw new FieldAccessException("Failed to access field: " + field + ", with path: " + path.getPath(), e);
+            throw new FieldAccessException(field, path.getPath(), e);
         }
     }
 
     public void setValue(Object value) {
         try {
-            field.set(owningInstance, value);
+            field.setValue(getOwningInstance(), value);
         } catch (IllegalAccessException e) {
-            throw new FieldAccessException("Failed to access field: " + field + ", with path: " + path.getPath(), e);
+            throw new FieldAccessException(field, path.getPath(), e);
         }
     }
 
@@ -85,15 +83,15 @@ public class FieldInfo {
     }
 
     public boolean isTransient() {
-        return Modifier.isTransient(field.getModifiers());
+        return field.isTransient();
     }
 
     public boolean isStatic() {
-        return Modifier.isStatic(field.getModifiers());
+        return field.isStatic();
     }
 
     public boolean isFinal() {
-        return Modifier.isFinal(field.getModifiers());
+        return field.isFinal();
     }
 
     @Override
@@ -101,17 +99,17 @@ public class FieldInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final FieldInfo fieldInfo = (FieldInfo) o;
-        return field.equals(fieldInfo.field) &&
-            getGenericType().equals(fieldInfo.getGenericType()) &&
-            owningInstance.equals(fieldInfo.owningInstance);
+        final FieldInfo that = (FieldInfo) o;
+        return field.equals(that.field) && owningInstance.equals(that.owningInstance)
+            && path.equals(that.path) && typeResolver.equals(that.typeResolver);
     }
 
     @Override
     public int hashCode() {
         int result = field.hashCode();
-        result = 31 * result + getGenericType().hashCode();
         result = 31 * result + owningInstance.hashCode();
+        result = 31 * result + typeResolver.hashCode();
+        result = 31 * result + path.hashCode();
         return result;
     }
 
@@ -119,8 +117,9 @@ public class FieldInfo {
     public String toString() {
         return "FieldInfo{" +
             "field=" + field +
-            ", genericType=" + getGenericType() +
             ", owningInstance=" + owningInstance +
+            ", typeResolver=" + typeResolver +
+            ", path=" + path +
             '}';
     }
 }

@@ -17,8 +17,11 @@
 package org.datalorax.populace.graph.inspector;
 
 import com.google.common.collect.ImmutableSet;
+import org.datalorax.populace.field.RawField;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An inspector that exposes objects as having fields, but no child elements
@@ -29,8 +32,12 @@ public class ObjectInspector implements Inspector {
     public static final Inspector INSTANCE = new ObjectInspector();
 
     @Override
-    public Iterable<Field> getFields(final Object instance) {
-        return ImmutableSet.copyOf(instance.getClass().getDeclaredFields());
+    public Iterable<RawField> getFields(final Object instance) {
+        final List<RawField> fields = new ArrayList<>();
+        for (Field field : instance.getClass().getDeclaredFields()) {
+            fields.add(new RawField(field));
+        }
+        return ImmutableSet.copyOf(fields);
     }
 
     @Override

@@ -17,12 +17,11 @@
 package org.datalorax.populace.graph.inspector;
 
 import com.google.common.collect.ImmutableSet;
-
-import java.lang.reflect.Field;
+import org.datalorax.populace.field.RawField;
 
 /**
  * Interface for 'pluggable' walking of fields. Inspectors for non-collection types should just implement
- * {@link Inspector#getFields(Object)}. Inspectors for collection types e.g. arrays, lists, maps, etc, should
+ * {@link Inspector#getFields}. Inspectors for collection types e.g. arrays, lists, maps, etc, should
  * override {@link Inspector#typeIsCollection()} to return true and provide implementation for {@link Inspector#getChildren(Object)}.
  *
  * @author Andrew Coates - 28/02/2015.
@@ -34,7 +33,7 @@ public interface Inspector {
      * @param instance the instance
      * @return the set of fields this instance supports
      */
-    Iterable<Field> getFields(Object instance);
+    Iterable<RawField> getFields(Object instance);
 
     /**
      * @return true if the type the inspector supports is a collection type, false otherwise

@@ -15,6 +15,8 @@ Unless required by applicable law or agreed to in writing, software distributed 
 See the License for the specific language governing permissions and limitations under the License.
 
 # How to build
+[![Build Status](https://travis-ci.org/datalorax/populace.svg?branch=master)](https://travis-ci.org/datalorax/populace)
+
 ## Prerequisites
 Before building the code you'll need:
 

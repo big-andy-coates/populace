@@ -31,7 +31,7 @@ public class CollectionInspector implements Inspector {
     public static final Inspector INSTANCE = new CollectionInspector();
 
     @Override
-    public Iterable<RawField> getFields(final Object instance) {
+    public Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
         return ImmutableSet.of();
     }
 

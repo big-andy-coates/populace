@@ -24,11 +24,16 @@ import static org.hamcrest.Matchers.is;
 public class TerminalInspectorTest {
     @Test
     public void shouldReturnNoFields() throws Exception {
-        assertThat(TerminalInspector.INSTANCE.getFields(null).iterator().hasNext(), is(false));
+        assertThat(TerminalInspector.INSTANCE.getFields(SomeType.class, null).iterator().hasNext(), is(false));
     }
 
     @Test
     public void shouldReturnNoChildren() throws Exception {
-        assertThat(TerminalInspector.INSTANCE.getChildren(null).iterator().hasNext(), is(false));
+        assertThat(TerminalInspector.INSTANCE.getChildren(new SomeType()).iterator().hasNext(), is(false));
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public static class SomeType {
+        public String field;
     }
 }

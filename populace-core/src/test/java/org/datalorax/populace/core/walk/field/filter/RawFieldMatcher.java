@@ -42,11 +42,15 @@ public class RawFieldMatcher extends TypeSafeDiagnosingMatcher<RawField> {
         boolean match = true;
         if (!name.equals(item.getName())) {
             match = false;
-            mismatchDescription.appendText("Expected name ").appendValue(name).appendText(", got ").appendValue(item.getName());
+            mismatchDescription.appendText(" Actual field name ").appendValue(item.getName());
         }
         if (!type.equals(item.getDeclaringClass())) {
             match = false;
-            mismatchDescription.appendText("Expected type ").appendValue(type).appendText(", got ").appendValue(item.getDeclaringClass());
+            if (type.getSimpleName().equals(item.getDeclaringClass().getSimpleName())) {
+                mismatchDescription.appendText(" Actual type ").appendValue(item.getDeclaringClass());
+            } else {
+                mismatchDescription.appendText(" Actual type ").appendValue(item.getDeclaringClass().getSimpleName());
+            }
         }
         return match;
     }

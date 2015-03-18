@@ -29,7 +29,7 @@ public class TerminalInspector implements Inspector {
     public static final TerminalInspector INSTANCE = new TerminalInspector();
 
     @Override
-    public Iterable<RawField> getFields(final Object instance) {
+    public Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
         return ImmutableSet.of();
     }
 

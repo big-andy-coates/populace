@@ -30,10 +30,11 @@ public interface Inspector {
     /**
      * Return the set of fields this instance supports
      *
-     * @param instance the instance
-     * @return the set of fields this instance supports
+     * @param type the type to inspect
+     * @param inspectors all the inspectors configured in the system.
+     * @return the set of fields this type supports
      */
-    Iterable<RawField> getFields(Object instance);
+    Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors);
 
     /**
      * @return true if the type the inspector supports is a collection type, false otherwise
@@ -48,7 +49,7 @@ public interface Inspector {
      * @param instance the instance.
      * @return the set of child elements, or an empty collection for non-collection types.
      */
-    default Iterable<?> getChildren(Object instance) {
+    default Iterable<?> getChildren(final Object instance) {
         return ImmutableSet.of();
     }
 }

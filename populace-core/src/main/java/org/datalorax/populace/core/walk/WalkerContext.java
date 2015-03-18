@@ -46,6 +46,10 @@ public class WalkerContext {
         return inspectors.get(type);
     }
 
+    public Inspectors getInspectors() {
+        return inspectors;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

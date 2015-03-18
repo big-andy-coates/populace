@@ -16,9 +16,6 @@
 
 package org.datalorax.populace.core.walk.inspector;
 
-import com.google.common.collect.ImmutableSet;
-import org.datalorax.populace.core.walk.field.RawField;
-
 /**
  * An inspector that exposes its instance as having no fields and no children i.e. stops the graph traversal from looking
  * inside the instance.
@@ -27,11 +24,6 @@ import org.datalorax.populace.core.walk.field.RawField;
  */
 public class TerminalInspector implements Inspector {
     public static final TerminalInspector INSTANCE = new TerminalInspector();
-
-    @Override
-    public Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
-        return ImmutableSet.of();
-    }
 
     @Override
     public boolean equals(final Object that) {

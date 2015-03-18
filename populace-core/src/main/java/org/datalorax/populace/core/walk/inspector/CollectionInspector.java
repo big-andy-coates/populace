@@ -16,9 +16,7 @@
 
 package org.datalorax.populace.core.walk.inspector;
 
-import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.core.walk.field.RawField;
 
 import java.util.Collection;
 
@@ -29,16 +27,6 @@ import java.util.Collection;
  */
 public class CollectionInspector implements Inspector {
     public static final Inspector INSTANCE = new CollectionInspector();
-
-    @Override
-    public Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
-        return ImmutableSet.of();
-    }
-
-    @Override
-    public boolean typeIsCollection() {
-        return true;
-    }
 
     @Override
     public Iterable<?> getChildren(final Object instance) {

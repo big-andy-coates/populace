@@ -21,7 +21,7 @@ import org.datalorax.populace.core.walk.field.RawField;
 import org.datalorax.populace.core.walk.inspector.Inspector;
 
 /**
- * An inspector replacement for the default {@link org.datalorax.populace.core.walk.inspector.ObjectInspector} that exposes
+ * An inspector replacement for the default {@link org.datalorax.populace.core.walk.inspector.FieldInspector} that exposes
  * bean properties, rather than raw fields, and which understands and uses JaxB annotations to include/include properties
  * and/or map interfaces to concrete types.
  *

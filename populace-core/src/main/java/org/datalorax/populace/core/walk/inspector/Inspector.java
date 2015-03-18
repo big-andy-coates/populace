@@ -22,7 +22,8 @@ import org.datalorax.populace.core.walk.field.RawField;
 /**
  * Interface for 'pluggable' walking of fields. Inspectors for non-collection types should just implement
  * {@link Inspector#getFields}. Inspectors for collection types e.g. arrays, lists, maps, etc, should
- * override {@link Inspector#typeIsCollection()} to return true and provide implementation for {@link Inspector#getChildren(Object)}.
+ * provide implementation for {@link Inspector#getChildren(Object)}. Hybrid inspectors that return both
+ * fields and children are supported.
  *
  * @author Andrew Coates - 28/02/2015.
  */
@@ -30,16 +31,12 @@ public interface Inspector {
     /**
      * Return the set of fields this instance supports
      *
-     * @param instance the instance
-     * @return the set of fields this instance supports
+     * @param type the type to inspect
+     * @param inspectors all the inspectors configured in the system.
+     * @return the set of fields this type supports
      */
-    Iterable<RawField> getFields(Object instance);
-
-    /**
-     * @return true if the type the inspector supports is a collection type, false otherwise
-     */
-    default boolean typeIsCollection() {
-        return false;
+    default Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
+        return ImmutableSet.of();
     }
 
     /**
@@ -48,7 +45,7 @@ public interface Inspector {
      * @param instance the instance.
      * @return the set of child elements, or an empty collection for non-collection types.
      */
-    default Iterable<?> getChildren(Object instance) {
+    default Iterable<?> getChildren(final Object instance) {
         return ImmutableSet.of();
     }
 }

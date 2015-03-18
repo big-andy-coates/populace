@@ -95,7 +95,7 @@ public class GraphWalker {
             LOG.info(stack.getPath() + " - Inspecting type: " + instance.getClass() + ", inspector: " + inspector.getClass());
         }
 
-        for (RawField field : inspector.getFields(instance)) {
+        for (RawField field : inspector.getFields(instance.getClass(), context.getInspectors())) {
             final FieldInfo fieldInfo = new FieldInfo(field, instance, stack, stack);
 
             if (context.isExcludedField(fieldInfo)) {

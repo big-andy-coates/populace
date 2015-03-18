@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.jaxb.instance;
+package org.datalorax.populace.core.jaxb.instance;
 
 import org.datalorax.populace.core.populate.instance.InstanceCreationException;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;

@@ -18,24 +18,25 @@ package org.datalorax.populace.core.walk.inspector;
 
 import com.google.common.collect.ImmutableSet;
 import org.datalorax.populace.core.walk.field.RawField;
+import org.datalorax.populace.core.walk.field.StandardField;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An inspector that exposes objects as having fields, but no child elements
+ * An inspector that exposes instances as having fields, but no child elements.
  *
  * @author Andrew Coates - 28/02/2015.
  */
-public class ObjectInspector implements Inspector {
-    public static final Inspector INSTANCE = new ObjectInspector();
+public class FieldInspector implements Inspector {
+    public static final Inspector INSTANCE = new FieldInspector();
 
     @Override
     public Iterable<RawField> getFields(final Object instance) {
         final List<RawField> fields = new ArrayList<>();
         for (Field field : instance.getClass().getDeclaredFields()) {
-            fields.add(new RawField(field));
+            fields.add(new StandardField(field));
         }
         return ImmutableSet.copyOf(fields);
     }

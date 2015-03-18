@@ -17,7 +17,6 @@
 package org.datalorax.populace.core.jaxb;
 
 import org.datalorax.populace.core.populate.GraphPopulator;
-import org.datalorax.populace.jaxb.PopulaceJaxB;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

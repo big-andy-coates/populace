@@ -16,80 +16,92 @@
 
 package org.datalorax.populace.core.walk.field;
 
-import org.apache.commons.lang3.Validate;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
- * @author Andrew Coates - 04/03/2015.
+ * @author Andrew Coates - 13/03/2015.
  */
-public class RawField {
-    private final Field field;
+public interface RawField {
+    /**
+     * @return the name of the field represented by this {@code RawField} object
+     */
+    String getName();
 
-    public RawField(final Field field) {
-        Validate.notNull(field, "field null");
-        this.field = field;
-    }
+    /**
+     * @return the {@code Class} object representing the class or interface
+     * that declares the field represented by this {@code Field} object.
+     */
+    Class<?> getDeclaringClass();
 
-    public String getName() {
-        return field.getName();
-    }
+    /**
+     * Returns a {@code Type} object that represents the declared type for the field represented by this {@code RawField}
+     * object.
+     * <p>
+     * If the {@code Type} is a parameterized type, the {@code Type} object returned must accurately reflect the actual
+     * type parameters used in the source code.
+     * <p>
+     * If the type of the underlying field is a type variable or a parameterized type, it is created. Otherwise, it is
+     * resolved.
+     * <p>
+     * The implementation of this method must follow the contract given for {@link java.lang.reflect.Field#getGenericType()}
+     *
+     * @see java.lang.reflect.Field#getGenericType()
+     */
+    Type getGenericType();
 
-    public Class<?> getDeclaringClass() {
-        return field.getDeclaringClass();
-    }
+    /**
+     * Returns the value of the field represented by this {@code RawField}, on the specified {@code instance}. The
+     * value is automatically wrapped in an object if it has a primitive type.
+     * <p>
+     * The implementation of this method must follow the contract given for {@link java.lang.reflect.Field#get(Object)}
+     *
+     * @param owningInstance object from which the represented field's value is
+     *                       to be extracted
+     * @return the value of the represented field in object
+     * {@code owningInstance}. primitive values are wrapped in an appropriate
+     * object before being returned
+     * @see java.lang.reflect.Field#get(Object)
+     */
+    Object getValue(Object owningInstance) throws ReflectiveOperationException;
 
-    public Type getGenericType() {
-        return field.getGenericType();
-    }
+    /**
+     * Sets the field represented by this {@code RawField} object on the specified object argument to the specified new
+     * value. The new value is automatically unwrapped if the underlying field has a primitive type.
+     * <p>
+     * The implementation of this method must follow the contract given for {@link java.lang.reflect.Field#set(Object, Object)}.
+     *
+     * @param owningInstance the object whose field should be modified
+     * @param value          the new value for the field of {@code owningInstance}
+     *                       being modified
+     * @see java.lang.reflect.Field#set(Object, Object)
+     */
+    void setValue(Object owningInstance, Object value) throws ReflectiveOperationException;
 
-    public void ensureAccessible() {
-        field.setAccessible(true);
-    }
+    /**
+     * return the instance of the annotation if it is present on the field represented by this {@code RawField} object,
+     * or otherwise null.
+     */
+    <T extends Annotation> T getAnnotation(Class<T> type);
 
-    public Object getValue(final Object owningInstance) throws IllegalAccessException {
-        return field.get(owningInstance);
-    }
+    /**
+     * Ensure the field represented by this {@code RawField} is accessible i.e that calls to {@link #getValue(Object)}
+     * and {@link #setValue(Object, Object)} won't through {@link java.lang.IllegalAccessException}
+     */
+    void ensureAccessible();
 
-    public void setValue(final Object owningInstance, Object value) throws IllegalAccessException {
-        field.set(owningInstance, value);
-    }
+    /**
+     * @return true if the field represented by this {@code RawField} is transient, false otherwise
+     */
+    boolean isTransient();
 
-    public <T extends Annotation> T getAnnotation(final Class<T> type) {
-        return field.getAnnotation(type);
-    }
+    /**
+     * @return true if the field represented by this {@code RawField} is static, false otherwise
+     */
+    boolean isStatic();
 
-    public boolean isTransient() {
-        return Modifier.isTransient(field.getModifiers());
-    }
-
-    public boolean isStatic() {
-        return Modifier.isStatic(field.getModifiers());
-    }
-
-    public boolean isFinal() {
-        return Modifier.isFinal(field.getModifiers());
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        final RawField that = (RawField) o;
-        return field.equals(that.field);
-    }
-
-    @Override
-    public int hashCode() {
-        return field.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return field.toString();
-    }
+    /**
+     * @return true if the field represented by this {@code RawField} is final, false otherwise
+     */
+    boolean isFinal();
 }

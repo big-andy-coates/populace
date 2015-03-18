@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.jaxb;
+package org.datalorax.populace.core.jaxb;
 
+import org.datalorax.populace.core.jaxb.field.filter.ExcludeXmlTransientFields;
+import org.datalorax.populace.core.jaxb.instance.JaxBInstanceFactory;
 import org.datalorax.populace.core.populate.GraphPopulator;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
-import org.datalorax.populace.jaxb.field.filter.ExcludeXmlTransientFields;
-import org.datalorax.populace.jaxb.instance.JaxBInstanceFactory;
 
 /**
  * Installer for JaxB specific handlers

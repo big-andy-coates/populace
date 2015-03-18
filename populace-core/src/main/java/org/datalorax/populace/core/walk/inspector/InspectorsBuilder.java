@@ -37,7 +37,7 @@ final class InspectorsBuilder implements Inspectors.Builder {
     }
 
     private InspectorsBuilder() {
-        this.inspectorsBuilder = ImmutableTypeMap.newBuilder(ObjectInspector.INSTANCE);
+        this.inspectorsBuilder = ImmutableTypeMap.newBuilder(FieldInspector.INSTANCE);
     }
 
     static {

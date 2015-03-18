@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An inspector that exposes objects as having fields, but no child elements
+ * An inspector that exposes instances as having fields, but no child elements.
  *
  * @author Andrew Coates - 28/02/2015.
  */
-public class ObjectInspector implements Inspector {
-    public static final Inspector INSTANCE = new ObjectInspector();
+public class FieldInspector implements Inspector {
+    public static final Inspector INSTANCE = new FieldInspector();
 
     @Override
     public Iterable<RawField> getFields(final Object instance) {

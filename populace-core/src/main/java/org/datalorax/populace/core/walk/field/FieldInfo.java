@@ -64,7 +64,7 @@ public class FieldInfo {
     public Object getValue() {
         try {
             return field.getValue(getOwningInstance());
-        } catch (IllegalAccessException e) {
+        } catch (ReflectiveOperationException e) {
             throw new FieldAccessException(field, path.getPath(), e);
         }
     }
@@ -72,7 +72,7 @@ public class FieldInfo {
     public void setValue(Object value) {
         try {
             field.setValue(getOwningInstance(), value);
-        } catch (IllegalAccessException e) {
+        } catch (ReflectiveOperationException e) {
             throw new FieldAccessException(field, path.getPath(), e);
         }
     }

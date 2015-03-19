@@ -22,7 +22,7 @@ import org.datalorax.populace.core.walk.WalkerException;
  * @author Andrew Coates - 04/03/2015.
  */
 public class FieldAccessException extends WalkerException {
-    public FieldAccessException(final RawField field, final String path, final Throwable cause) {
-        super(String.format("Failed to access field: " + field + ", with path: " + path), cause);
+    public FieldAccessException(final RawField field, final PathProvider path, final Throwable cause) {
+        super(String.format("Failed to access field: " + field), path, cause);
     }
 }

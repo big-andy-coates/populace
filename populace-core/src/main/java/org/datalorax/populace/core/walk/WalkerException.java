@@ -16,11 +16,25 @@
 
 package org.datalorax.populace.core.walk;
 
+import org.datalorax.populace.core.walk.field.PathProvider;
+
 /**
  * @author Andrew Coates - 28/02/2015.
  */
 public class WalkerException extends RuntimeException {
-    public WalkerException(final String message, final Throwable cause) {
+    private final PathProvider path;
+
+    public WalkerException(final String message, final PathProvider path, final Throwable cause) {
         super(message, cause);
+        this.path = path;
+    }
+
+    public String getPath() {
+        return path.getPath();
+    }
+
+    @Override
+    public String getMessage() {
+        return super.getMessage() + " - Path: " + getPath();
     }
 }

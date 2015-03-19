@@ -23,8 +23,14 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'signing'
+    apply plugin: 'maven'
+
+    group = "com.github.datalorax.populace"
+    version = "0.3.1"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 
     repositories {
         mavenCentral()
@@ -41,15 +47,6 @@ subprojects {
         testCompile 'org.mockito:mockito-all:1.10.+'
     }
 
-    group = 'org.datalorax.populace'
-    version = '0.3.0'
-
-    idea {
-        project {
-            // Todo(ac): languageLevel = '1.8'
-        }
-    }
-
     //noinspection GroovyAssignabilityCheck
     test {
         useTestNG()
@@ -64,9 +61,85 @@ subprojects {
     jar.dependsOn test
     jar.dependsOn javadoc
 
-    // Todo(aC): Add release task to build jar, javadoc and upload to GitHub. Util then, look to add javadoc to GitHub Pages
-    // Todo(ac): use http://teamcity.codebetter.com/registerUser.html as build server.
-    // Todo(ac): Integrate with Github using: http://blog.jetbrains.com/teamcity/2013/02/automatically-building-pull-requests-from-github-with-teamcity/
+    task javaDocJar(type: Jar, dependsOn: 'javadoc') {
+        from javadoc.destinationDir
+        classifier = 'javadoc'
+    }
+
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allSource
+        classifier = 'sources'
+    }
+
+    artifacts {
+        archives jar
+        archives javaDocJar
+        archives sourcesJar
+    }
+
+    signing {
+        sign configurations.archives
+    }
+
+    // remove test dependencies from pom file
+    conf2ScopeMappings.mappings.remove(configurations.testCompile)
+
+    //noinspection GroovyAssignabilityCheck
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                uniqueVersion = true
+
+                beforeDeployment { deployment -> signing.signPom(deployment) }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                pom.project {
+                    name 'Populace'
+                    inceptionYear '2014'
+                    packaging 'jar'
+                    description 'Object graph walker and populator'
+                    url 'https://github.com/datalorax/populace'
+
+                    scm {
+                        url 'https://github.com/datalorax/populace'
+                        connection 'scm:git:git://github.com/datalorax/populace.git'
+                        developerConnection 'scm:git:git@github.com:datalorax/populace.git'
+                    }
+
+                    issueManagement {
+                        url 'https://github.com/datalorax/populace/issues'
+                        system 'GitHub Issues'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'datalorax'
+                            name 'Andrew Coates'
+                            url 'https://github.com/datalorax'
+                            email 'datalorax@gmail.com'
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Todo(aC): Add release task to upload to central and create draft release on GitHub.  Maybe pickup release notes from source... or even better, pick up all issues & PRs merged to master sinse last release!
 }
 
 defaultTasks 'clean', 'jar'

@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.populate.instance;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.populate.PopulatorException;
 
@@ -64,7 +65,7 @@ public class DefaultConstructorInstanceFactory implements InstanceFactory {
     }
 
     private <T> T createNewTopLevel(final Class<? extends T> rawType) throws IllegalAccessException, InvocationTargetException, InstantiationException {
-        final Constructor<?> defaultConstructor = getDefaultConstructor(rawType);
+        final Constructor<?> defaultConstructor = getConstructor(rawType);
 
         //noinspection unchecked
         return (T) defaultConstructor.newInstance();
@@ -72,20 +73,22 @@ public class DefaultConstructorInstanceFactory implements InstanceFactory {
 
     private <T> T createNewInnerClass(final Class<? extends T> rawType, final Object parent) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         Validate.notNull(parent, "Parent of inner class was null");
-        final Constructor<?> defaultConstructor = getDefaultConstructor(rawType, parent.getClass());
+        final Constructor<?> defaultConstructor = getConstructor(rawType, parent.getClass());
 
         //noinspection unchecked
         return (T) defaultConstructor.newInstance(parent);
     }
 
-    private <T> Constructor<? extends T> getDefaultConstructor(final Class<? extends T> rawType, Class<?>... parameterTypes) {
+    private <T> Constructor<? extends T> getConstructor(final Class<? extends T> rawType, Class<?>... parameterTypes) {
         try {
             final Constructor<? extends T> defaultConstructor = rawType.getDeclaredConstructor(parameterTypes);
             defaultConstructor.setAccessible(true);
             return defaultConstructor;
         } catch (NoSuchMethodException e) {
-            throw new PopulatorException("No default constructor could be found for type: " + rawType +
-                ", consider adding a custom InstanceFactory to handle this type", e);
+            throw new PopulatorException("Failed to instantiate type as no viable constructor could be found for type: " + rawType +
+                ", parameters: " + StringUtils.join(parameterTypes, ',') +
+                ", availableConstructors: " + StringUtils.join(rawType.getDeclaredConstructors(), ',') +
+                ", either add a default constructor, or consider adding a custom InstanceFactory to handle this type", e);
         }
     }
 }

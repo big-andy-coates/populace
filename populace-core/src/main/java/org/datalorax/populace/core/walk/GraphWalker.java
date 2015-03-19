@@ -19,6 +19,7 @@ package org.datalorax.populace.core.walk;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.datalorax.populace.core.walk.field.FieldInfo;
+import org.datalorax.populace.core.walk.field.PathProvider;
 import org.datalorax.populace.core.walk.field.RawField;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspector;
@@ -56,6 +57,18 @@ public class GraphWalker {
         return new GraphWalkerBuilder();
     }
 
+    private static void logDebug(String message, PathProvider path) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(path.getPath() + " - " + message);
+        }
+    }
+
+    private static void logInfo(String message, PathProvider path) {
+        if (LOG.isInfoEnabled()) {
+            LOG.info(path.getPath() + " - " + message);
+        }
+    }
+
     /**
      * Recursively walk the fields on {@code instance} and any objects it links too, calling back on {@code visitor} for
      * each field as it is discovered.
@@ -90,37 +103,62 @@ public class GraphWalker {
 
     private void walk(final Object instance, final FieldVisitor visitor, final WalkerStack stack) {
         final Inspector inspector = context.getInspector(instance.getClass());
+        logInfo("Walking type: " + instance.getClass() + ", inspector: " + inspector.getClass(), stack);
 
-        if (LOG.isInfoEnabled()) {
-            LOG.info(stack.getPath() + " - Inspecting type: " + instance.getClass() + ", inspector: " + inspector.getClass());
+        walkFields(instance, visitor, inspector, stack);
+        walkChildren(instance, visitor, stack, inspector);
+    }
+
+    private void walkFields(final Object instance, final FieldVisitor visitor, final Inspector inspector, final WalkerStack instanceStack) {
+        final Iterable<RawField> fields = inspector.getFields(instance.getClass(), context.getInspectors());
+        if (!fields.iterator().hasNext()) {
+            return;
         }
 
-        for (RawField field : inspector.getFields(instance.getClass(), context.getInspectors())) {
-            final FieldInfo fieldInfo = new FieldInfo(field, instance, stack, stack);
+        logInfo("Walking fields of type: " + instance.getClass() + ", inspector: " + inspector.getClass(), instanceStack);
+
+        for (RawField field : fields) {
+            final WalkerStack fieldStack = instanceStack.push(field);
+            final FieldInfo fieldInfo = new FieldInfo(field, instance, fieldStack, fieldStack);
 
             if (context.isExcludedField(fieldInfo)) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(stack.getPath() + " - Skipping excluded field: " + field.getName());
-                }
+                logDebug("Skipping excluded field: " + fieldInfo.getName(), fieldStack);
                 continue;
             }
 
-            if (LOG.isInfoEnabled()) {
-                LOG.info(stack.getPath() + " - Found field: " + field.getName() + ", type: " + fieldInfo);
-            }
+            logInfo("Visiting field: " + fieldInfo, fieldStack);
 
-            visitor.visit(fieldInfo);
+            try {
+                visitor.visit(fieldInfo);
+            } catch (Exception e) {
+                throw new WalkerException("Visitor threw exception while visiting field.", fieldStack, e);
+            }
 
             final Object value = fieldInfo.getValue();
-            if (value != null) {
-                walk(value, visitor, stack.push(field));
+            if (value == null) {
+                logDebug("Skipping null field: " + fieldInfo.getName(), fieldStack);
+                continue;
             }
+
+            walk(value, visitor, fieldStack);
+        }
+    }
+
+    private void walkChildren(final Object instance, final FieldVisitor visitor, final WalkerStack stack, final Inspector inspector) {
+        final Iterable<?> children = inspector.getChildren(instance);
+        if (!children.iterator().hasNext()) {
+            return;
         }
 
-        for (Object child : inspector.getChildren(instance)) {
-            if (child != null) {
-                walk(child, visitor, stack.push(child));
+        logInfo("Walking children of type: " + instance.getClass() + ", inspector: " + inspector.getClass(), stack);
+
+        for (Object child : children) {
+            if (child == null) {
+                logDebug("Skipping null child", stack);
+                continue;
             }
+
+            walk(child, visitor, stack.push(child));
         }
     }
 

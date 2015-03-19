@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.jaxb.field.filter;
+package org.datalorax.populace.jaxb.field.filter;
 
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;

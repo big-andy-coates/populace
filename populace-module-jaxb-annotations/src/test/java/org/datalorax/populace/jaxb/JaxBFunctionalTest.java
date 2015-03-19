@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.jaxb;
+package org.datalorax.populace.jaxb;
 
 import org.datalorax.populace.core.populate.GraphPopulator;
 import org.testng.annotations.BeforeMethod;

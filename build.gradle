@@ -16,12 +16,6 @@
 
 
 
-
-
-
-
-
-
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -148,7 +142,6 @@ subprojects {
     }
 
     // Todo(aC): Add release task to upload to central and create draft release on GitHub.  Maybe pickup release notes from source... or even better, pick up all issues & PRs merged to master sinse last release!
-    // Todo(ac): Switch to: https://github.com/bmuschko/gradle-nexus-plugin
 }
 
 private boolean hasRequiredProperties() {

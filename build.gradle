@@ -20,8 +20,6 @@
 
 
 
-
-
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -44,9 +42,9 @@ subprojects {
 
     //noinspection GroovyAssignabilityCheck
     dependencies {
-        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.+'
+        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.2'
         compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
-        compile 'com.google.guava:guava:18.+'
+        compile 'com.google.guava:guava:18.0'
 
         testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.+'
         testCompile 'org.testng:testng:6.8.+'
@@ -115,8 +113,8 @@ subprojects {
                         url 'https://github.com/datalorax/populace'
 
                         scm {
-                            url 'https://github.com/datalorax/populace'
-                            connection 'scm:git:git://github.com/datalorax/populace.git'
+                            url 'git@github.com:datalorax/populace.git'
+                            connection 'scm:git:git@github.com:datalorax/populace.git'
                             developerConnection 'scm:git:git@github.com:datalorax/populace.git'
                         }
 
@@ -148,7 +146,6 @@ subprojects {
     }
 
     // Todo(aC): Add release task to upload to central and create draft release on GitHub.  Maybe pickup release notes from source... or even better, pick up all issues & PRs merged to master sinse last release!
-    // Todo(ac): Switch to: https://github.com/bmuschko/gradle-nexus-plugin
 }
 
 private boolean hasRequiredProperties() {

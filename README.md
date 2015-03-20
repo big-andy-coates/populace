@@ -28,94 +28,91 @@ Additional modules provide specialised extensions to the core Populace library:
   recognises the [@XmlJavaTypeAdapter](http://docs.oracle.com/javase/8/docs/api/javax/xml/bind/annotation/adapters/XmlJavaTypeAdapter.html)
   annotation, which is commonly used to link interfaces to concrete types. The factory can then instantiate the appropriate
   concrete implementation when a interface field is encountered.
-  See the [read me](https://github.com/datalorax/populace/tree/master/populace-module-jaxb-annotations\READAME.md) for more info
+  See the [read me](https://github.com/datalorax/populace/tree/master/populace-module-jaxb-annotations/README.md) for more info
 
 ### Examples
 
 The examples below use the following simple domain model:
 
 ```java
+public class Contacts {
+    private List<Person> people = new ArrayList<>();
 
-    public class Contacts {
-        private List<Person> people = new ArrayList<>();
+    public List<Person> getPeople() {
+        return people;
+    }
+}
 
-        public List<Person> getPeople() {
-            return people;
-        }
+public class Person {
+    private final String name;
+    private final Address address;
+
+    public Person(final String name, final Address address) {
+        this.name = name;
+        this.address = address;
     }
 
-    public class Person {
-        private final String name;
-        private final Address address;
-
-        public Person(final String name, final Address address) {
-            this.name = name;
-            this.address = address;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public Address getAddress() {
-            return address;
-        }
-
-        // Used by Populace.
-        private Person() {
-            name = null;
-            address = null;
-        }
+    public String getName() {
+        return name;
     }
 
-    public class Address {
-        private final List<String> lines;
-
-        public Address(List<String> lines) {
-            this.lines = Collections.unmodifiableList(new ArrayList<>(lines));
-        }
-
-        public List<String> getLines() {
-            return lines;
-        }
-
-        // Used by Populace
-        private Address() {
-            lines = null;
-        }
+    public Address getAddress() {
+        return address;
     }
+
+    // Used by Populace.
+    private Person() {
+        name = null;
+        address = null;
+    }
+}
+
+public class Address {
+    private final List<String> lines;
+
+    public Address(List<String> lines) {
+        this.lines = Collections.unmodifiableList(new ArrayList<>(lines));
+    }
+
+    public List<String> getLines() {
+        return lines;
+    }
+
+    // Used by Populace
+    private Address() {
+        lines = null;
+    }
+}
 ```
 
 ### Walk example
-You can walk all the fields of a populated `Contacts` list like this:
-NB: Without the `SetAccessibleFieldVisitor` visitor the code would throw a `IllegalAccessException` as the fields are
- private
+You can walk all the fields of a populated `Contacts` list as follows, (NB: Without the `SetAccessibleFieldVisitor`
+visitor the code would throw a `IllegalAccessException` as the fields are private).
 
 ```java
+Contacts contacts = createPopulatedContacts();
+GraphWalker walker = GraphWalker.newBuilder().build();
 
-    Contacts contacts = createPopulatedContacts();
-    GraphWalker walker = GraphWalker.newBuilder().build();
+FieldVisitor visitor = FieldVisitors.chain(
+    SetAccessibleFieldVisitor.INSTANCE,
+    field -> System.out.println(field.getName() + "=" + field.getValue()));
 
-    FieldVisitor visitor = FieldVisitors.chain(
-        SetAccessibleFieldVisitor.INSTANCE,
-        field -> System.out.println(field.getName() + "=" + field.getValue()));
-
-    walker.walk(contacts, visitor);
+walker.walk(contacts, visitor);
 ```
 
 ### Populate example
 You can create a populated instance of `Contacts` with the following code:
 
 ```java
-    final GraphPopulator populator = GraphPopulator.newBuilder().build();
-    final Contacts contacts = populator.populate(Contacts.class);
+GraphPopulator populator = GraphPopulator.newBuilder().build();
+Contacts contacts = populator.populate(Contacts.class);
 ```
 
-Or you can populate an existing instance of `Contacts` like this:
+Or you can populate an existing instance of `Contacts` with the following code:
 
 ```java
-    final GraphPopulator populator = GraphPopulator.newBuilder().build();
-    final Contacts contacts = populator.populate(new Contacts());
+GraphPopulator populator = GraphPopulator.newBuilder().build();
+Contacts contacts = populator.populate(new Contacts());
 ```
 
 ## License
@@ -160,5 +157,3 @@ Then import the project into your workspace.
 
 ## Contributing
 Contributing is good! Please get stuck in, but first read [notes on contributing](./CONTRIBUTING.md)
-
-

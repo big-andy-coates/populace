@@ -30,8 +30,8 @@ public class PopulateExample {
     @Test
     public void shouldPopulateContacts() throws Exception {
         // Example used in main README.md
-        final GraphPopulator populator = GraphPopulator.newBuilder().build();
-        final Contacts contacts = populator.populate(Contacts.class);
+        GraphPopulator populator = GraphPopulator.newBuilder().build();
+        Contacts contacts = populator.populate(Contacts.class);
 
         assertThat(contacts.getPeople(), is(not(empty())));
         assertThat(contacts.getPeople().get(0), is(not(nullValue())));
@@ -46,8 +46,8 @@ public class PopulateExample {
     @Test
     public void shouldPopulateExistingContacts() throws Exception {
         // Example used in main README.md
-        final GraphPopulator populator = GraphPopulator.newBuilder().build();
-        final Contacts contacts = populator.populate(new Contacts());
+        GraphPopulator populator = GraphPopulator.newBuilder().build();
+        Contacts contacts = populator.populate(new Contacts());
 
         assertThat(contacts.getPeople(), is(not(empty())));
         assertThat(contacts.getPeople().get(0), is(not(nullValue())));

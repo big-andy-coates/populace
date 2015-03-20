@@ -16,6 +16,8 @@
 
 
 
+
+
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -40,8 +42,8 @@ subprojects {
     dependencies {
         compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.+'
         compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
-
         compile 'com.google.guava:guava:18.+'
+
         testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.+'
         testCompile 'org.testng:testng:6.8.+'
         testCompile 'org.mockito:mockito-all:1.10.+'
@@ -81,57 +83,59 @@ subprojects {
         sign configurations.archives
     }
 
-    // remove test dependencies from pom file
-    conf2ScopeMappings.mappings.remove(configurations.testCompile)
+    if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')) {
+        //noinspection GroovyAssignabilityCheck
+        uploadArchives {
+            repositories {
+                mavenDeployer {
+                    uniqueVersion = true
 
-    //noinspection GroovyAssignabilityCheck
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                uniqueVersion = true
+                    // remove test dependencies from pom file
+                    conf2ScopeMappings.mappings.remove(configurations.testCompile)
 
-                beforeDeployment { deployment -> signing.signPom(deployment) }
+                    beforeDeployment { deployment -> signing.signPom(deployment) }
 
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
+                    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                        authentication(userName: ossrhUsername, password: ossrhPassword)
+                    }
 
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
+                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                        authentication(userName: ossrhUsername, password: ossrhPassword)
+                    }
 
-                pom.project {
-                    name 'Populace'
-                    inceptionYear '2014'
-                    packaging 'jar'
-                    description 'Object graph walker and populator'
-                    url 'https://github.com/datalorax/populace'
-
-                    scm {
+                    pom.project {
+                        name 'Populace'
+                        inceptionYear '2014'
+                        packaging 'jar'
+                        description 'Object graph walker and populator'
                         url 'https://github.com/datalorax/populace'
-                        connection 'scm:git:git://github.com/datalorax/populace.git'
-                        developerConnection 'scm:git:git@github.com:datalorax/populace.git'
-                    }
 
-                    issueManagement {
-                        url 'https://github.com/datalorax/populace/issues'
-                        system 'GitHub Issues'
-                    }
-
-                    licenses {
-                        license {
-                            name 'The Apache License, Version 2.0'
-                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                            distribution 'repo'
+                        scm {
+                            url 'https://github.com/datalorax/populace'
+                            connection 'scm:git:git://github.com/datalorax/populace.git'
+                            developerConnection 'scm:git:git@github.com:datalorax/populace.git'
                         }
-                    }
 
-                    developers {
-                        developer {
-                            id 'datalorax'
-                            name 'Andrew Coates'
-                            url 'https://github.com/datalorax'
-                            email 'datalorax@gmail.com'
+                        issueManagement {
+                            url 'https://github.com/datalorax/populace/issues'
+                            system 'GitHub Issues'
+                        }
+
+                        licenses {
+                            license {
+                                name 'The Apache License, Version 2.0'
+                                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                                distribution 'repo'
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id 'datalorax'
+                                name 'Andrew Coates'
+                                url 'https://github.com/datalorax'
+                                email 'datalorax@gmail.com'
+                            }
                         }
                     }
                 }

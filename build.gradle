@@ -18,6 +18,8 @@
 
 
 
+
+
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -111,8 +113,8 @@ subprojects {
                         url 'https://github.com/datalorax/populace'
 
                         scm {
-                            url 'https://github.com/datalorax/populace'
-                            connection 'scm:git:git://github.com/datalorax/populace.git'
+                            url 'git@github.com:datalorax/populace.git'
+                            connection 'scm:git:git@github.com:datalorax/populace.git'
                             developerConnection 'scm:git:git@github.com:datalorax/populace.git'
                         }
 

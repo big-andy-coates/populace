@@ -85,7 +85,7 @@ public class Address {
 }
 ```
 
-### Walk example
+#### Walk example
 You can walk all the fields of a populated `Contacts` list as follows, (NB: Without the `SetAccessibleFieldVisitor`
 visitor the code would throw a `IllegalAccessException` as the fields are private).
 
@@ -100,7 +100,7 @@ FieldVisitor visitor = FieldVisitors.chain(
 walker.walk(contacts, visitor);
 ```
 
-### Populate example
+#### Populate example
 You can create a populated instance of `Contacts` with the following code:
 
 ```java

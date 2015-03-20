@@ -20,6 +20,8 @@
 
 
 
+
+
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -81,11 +83,11 @@ subprojects {
         archives sourcesJar
     }
 
-    signing {
-        sign configurations.archives
-    }
+    if (hasRequiredProperties()) {
+        signing {
+            sign configurations.archives
+        }
 
-    if (project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')) {
         //noinspection GroovyAssignabilityCheck
         uploadArchives {
             repositories {
@@ -147,6 +149,12 @@ subprojects {
 
     // Todo(aC): Add release task to upload to central and create draft release on GitHub.  Maybe pickup release notes from source... or even better, pick up all issues & PRs merged to master sinse last release!
     // Todo(ac): Switch to: https://github.com/bmuschko/gradle-nexus-plugin
+}
+
+private boolean hasRequiredProperties() {
+    // Properties optionally picked up from ~/.gradle/gradle.properties for signing and uploading to central
+    project.hasProperty('signing.keyId') && project.hasProperty('signing.password') && project.hasProperty('signing.secretKeyRingFile') &&
+            project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
 }
 
 defaultTasks 'clean', 'jar'

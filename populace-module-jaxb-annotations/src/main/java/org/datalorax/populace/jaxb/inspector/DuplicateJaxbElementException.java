@@ -14,27 +14,15 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.walk;
+package org.datalorax.populace.jaxb.inspector;
 
-import org.datalorax.populace.core.walk.field.PathProvider;
+import org.datalorax.populace.core.walk.field.RawField;
 
 /**
- * @author Andrew Coates - 28/02/2015.
+ * @author Andrew Coates - 16/03/2015.
  */
-public class WalkerException extends RuntimeException {
-    private final PathProvider path;
-
-    public WalkerException(final String message, final PathProvider path, final Throwable cause) {
-        super(message, cause);
-        this.path = path;
-    }
-
-    public String getPath() {
-        return path.getPath();
-    }
-
-    @Override
-    public String getMessage() {
-        return super.getMessage() + " - Path: " + getPath();
+public class DuplicateJaxbElementException extends RuntimeException {
+    public DuplicateJaxbElementException(final String name, final Class<?> declaringClass, final RawField other) {
+        super("A duplicate element was encountered. name: " + name + ", onClass: " + declaringClass + ", existingElement: " + other);
     }
 }

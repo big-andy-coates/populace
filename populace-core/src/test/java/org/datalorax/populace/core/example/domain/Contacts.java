@@ -14,27 +14,18 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.walk;
+package org.datalorax.populace.core.example.domain;
 
-import org.datalorax.populace.core.walk.field.PathProvider;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * @author Andrew Coates - 28/02/2015.
+ * @author Andrew Coates - 20/03/2015.
  */
-public class WalkerException extends RuntimeException {
-    private final PathProvider path;
+public class Contacts {
+    private List<Person> people = new ArrayList<>();
 
-    public WalkerException(final String message, final PathProvider path, final Throwable cause) {
-        super(message, cause);
-        this.path = path;
-    }
-
-    public String getPath() {
-        return path.getPath();
-    }
-
-    @Override
-    public String getMessage() {
-        return super.getMessage() + " - Path: " + getPath();
+    public List<Person> getPeople() {
+        return people;
     }
 }

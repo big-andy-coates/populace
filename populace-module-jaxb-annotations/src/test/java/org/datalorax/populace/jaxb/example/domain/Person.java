@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.walk;
+package org.datalorax.populace.jaxb.example.domain;
 
-import org.datalorax.populace.core.walk.field.PathProvider;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * @author Andrew Coates - 28/02/2015.
+ * @author Andrew Coates - 20/03/2015.
  */
-public class WalkerException extends RuntimeException {
-    private final PathProvider path;
+@XmlJavaTypeAdapter(PersonAdapter.class)
+public interface Person {
+    @XmlElement
+    String getName();
 
-    public WalkerException(final String message, final PathProvider path, final Throwable cause) {
-        super(message, cause);
-        this.path = path;
-    }
+    @XmlElement
+    Address getAddress();
 
-    public String getPath() {
-        return path.getPath();
-    }
-
-    @Override
-    public String getMessage() {
-        return super.getMessage() + " - Path: " + getPath();
-    }
+    @XmlElement
+    CreditCardDetails getCardDetails();
 }

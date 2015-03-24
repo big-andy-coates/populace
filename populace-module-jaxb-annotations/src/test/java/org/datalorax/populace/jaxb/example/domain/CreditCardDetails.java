@@ -14,27 +14,16 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.walk;
-
-import org.datalorax.populace.core.walk.field.PathProvider;
+package org.datalorax.populace.jaxb.example.domain;
 
 /**
- * @author Andrew Coates - 28/02/2015.
+ * @author Andrew Coates - 20/03/2015.
  */
-public class WalkerException extends RuntimeException {
-    private final PathProvider path;
+@SuppressWarnings("UnusedDeclaration")
+public class CreditCardDetails {
+    private String cardNumber;
 
-    public WalkerException(final String message, final PathProvider path, final Throwable cause) {
-        super(message, cause);
-        this.path = path;
-    }
-
-    public String getPath() {
-        return path.getPath();
-    }
-
-    @Override
-    public String getMessage() {
-        return super.getMessage() + " - Path: " + getPath();
+    public String getCardNumber() {
+        return cardNumber;
     }
 }

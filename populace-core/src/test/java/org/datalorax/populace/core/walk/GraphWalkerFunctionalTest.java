@@ -34,8 +34,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.datalorax.populace.core.walk.field.FieldInfoMatcher.hasField;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
+import static org.testng.Assert.fail;
 
 public class GraphWalkerFunctionalTest {
     private GraphWalker walker;
@@ -190,6 +193,31 @@ public class GraphWalkerFunctionalTest {
         walker.walk(new TypeWithPrivateField(), visitor);
     }
 
+    @Test
+    public void shouldIncludePathInExceptions() throws Exception {
+        // Given:
+        doThrow(new RuntimeException()).when(visitor).visit(any(FieldInfo.class));
+
+        // When:
+        try {
+            walker.walk(new TypeWithNestedObject(), visitor);
+            fail("should of thrown exception");
+        } catch (WalkerException e) {
+            // Then:
+            assertThat(e.getPath(), containsString("TypeWithNestedObject._nested"));
+            assertThat(e.toString(), containsString("TypeWithNestedObject._nested"));
+        }
+    }
+
+    @Test
+    public void shouldVisitFieldsOfSuperTypes() throws Exception {
+        // When:
+        walker.walk(new TypeWithSuper(), visitor);
+
+        // Then:
+        verify(visitor).visit(argThat(hasField("_superField", SuperType.class)));
+    }
+
     @SuppressWarnings("UnusedDeclaration")
     public static class TypeWithNestedObject {
         public NestedType _nested = new NestedType();
@@ -255,6 +283,16 @@ public class GraphWalkerFunctionalTest {
             put("nt", new NestedType());
             put("ant", new AnotherNestedType());
         }};
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public static class SuperType {
+        public String _superField;
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public static class TypeWithSuper extends SuperType {
+
     }
 
     // Todo(ac): Add field filter types to include circular references and to not follow parent reference in inner class.

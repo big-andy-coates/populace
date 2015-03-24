@@ -33,12 +33,11 @@ public class FieldInspector implements Inspector {
     public static final Inspector INSTANCE = new FieldInspector();
 
     @Override
-    public Iterable<RawField> getFields(final Object instance) {
-        final List<RawField> fields = new ArrayList<>();
-        for (Field field : instance.getClass().getDeclaredFields()) {
-            fields.add(new StandardField(field));
-        }
-        return ImmutableSet.copyOf(fields);
+    public Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
+        final List<RawField> collected = new ArrayList<>();
+        collectFields(type, collected);
+        collectSuperFields(type, inspectors, collected);
+        return ImmutableSet.copyOf(collected);
     }
 
     @Override
@@ -54,5 +53,28 @@ public class FieldInspector implements Inspector {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    private void collectFields(final Class<?> type, final List<RawField> collected) {
+        for (Field field : type.getDeclaredFields()) {
+            if (field.isSynthetic()) {
+                continue;
+            }
+
+            collected.add(new StandardField(field));
+        }
+    }
+
+    private void collectSuperFields(final Class<?> type, final Inspectors inspectors, final List<RawField> collected) {
+        final Class<?> superClass = type.getSuperclass();
+        if (Object.class.equals(superClass)) {
+            return;
+        }
+
+        final Inspector superInspector = inspectors.get(superClass);
+        final Iterable<RawField> superFields = superInspector.getFields(superClass, inspectors);
+        for (RawField superField : superFields) {
+            collected.add(superField);
+        }
     }
 }

@@ -14,27 +14,32 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.walk;
-
-import org.datalorax.populace.core.walk.field.PathProvider;
+package org.datalorax.populace.core.example.domain;
 
 /**
- * @author Andrew Coates - 28/02/2015.
+ * @author Andrew Coates - 20/03/2015.
  */
-public class WalkerException extends RuntimeException {
-    private final PathProvider path;
+@SuppressWarnings("UnusedDeclaration")
+public class Person {
+    private final String name;
+    private final Address address;
 
-    public WalkerException(final String message, final PathProvider path, final Throwable cause) {
-        super(message, cause);
-        this.path = path;
+    public Person(final String name, final Address address) {
+        this.name = name;
+        this.address = address;
     }
 
-    public String getPath() {
-        return path.getPath();
+    // Used by Populace.
+    private Person() {
+        name = null;
+        address = null;
     }
 
-    @Override
-    public String getMessage() {
-        return super.getMessage() + " - Path: " + getPath();
+    public String getName() {
+        return name;
+    }
+
+    public Address getAddress() {
+        return address;
     }
 }

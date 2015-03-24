@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.walk.inspector;
+package org.datalorax.populace.core.walk.inspector.annotation;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 
 /**
- * @author Andrew Coates - 16/03/2015.
+ * Default annotation inspector for Populace. The inspector obtains annotations of the supplied {@code field}
+ *
+ * @author Andrew Coates - 24/03/2015.
  */
-public class InspectionException extends RuntimeException {
-    public InspectionException(final String msg, final Throwable cause) {
-        super(msg, cause);
-    }
+public class SimpleAnnotationInspector implements AnnotationInspector {
+    public static final SimpleAnnotationInspector INSTANCE = new SimpleAnnotationInspector();
 
-    public InspectionException(final String msg) {
-        super(msg);
+    @Override
+    public <T extends Annotation> T getAnnotation(final Field field, final Class<T> type) {
+        return field.getAnnotation(type);
     }
 }

@@ -19,7 +19,7 @@ package org.datalorax.populace.core.walk.inspector;
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.util.ImmutableTypeMap;
 import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;
-import org.datalorax.populace.core.walk.inspector.annotation.PopulaceAnnotationInspector;
+import org.datalorax.populace.core.walk.inspector.annotation.SimpleAnnotationInspector;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -43,7 +43,7 @@ final class InspectorsBuilder implements Inspectors.Builder {
 
     private InspectorsBuilder() {
         this.inspectorsBuilder = ImmutableTypeMap.newBuilder(FieldInspector.INSTANCE);
-        this.annotationInspector = PopulaceAnnotationInspector.INSTANCE;
+        this.annotationInspector = SimpleAnnotationInspector.INSTANCE;
     }
 
     static {

@@ -59,13 +59,26 @@ public class JaxbAssumptionsTest {
 
     @Test
     public void shouldIgnoreSetterWithUnrelatedTypes() throws Exception {
-        final TypeWithUnrelatedGetterAndSetter serialised = new TypeWithUnrelatedGetterAndSetter(1);
+        // Given:
+        final TypeWithUnrelatedSetter serialised = new TypeWithUnrelatedSetter(1);
 
         // When:
-        final TypeWithUnrelatedGetterAndSetter deserialised = serialiseAndDeserialise(serialised);
+        final TypeWithUnrelatedSetter deserialised = serialiseAndDeserialise(serialised);
 
         // Then:
         assertThat(deserialised.setterCalled, is(false));
+    }
+
+    @Test
+    public void shouldIgnoreGetterWithUnrelatedType() throws Exception {
+        // Given:
+        final TypeWithUnrelatedGetter serialised = new TypeWithUnrelatedGetter(1);
+
+        // When:
+        final TypeWithUnrelatedGetter deserialised = serialiseAndDeserialise(serialised);
+
+        // Then:
+        assertThat(deserialised.getterCalled, is(false));
     }
 
     @Test
@@ -97,17 +110,31 @@ public class JaxbAssumptionsTest {
     @Test
     public void shouldIgnoresSetterWithDerivedOrSuperTypes() throws Exception {
         // Given:
-        final TypeWithSubTypeParameters serialised = new TypeWithSubTypeParameters(1);
-        final TestMarshaller<TypeWithSubTypeParameters> marshaller = new TestMarshaller<>(TypeWithSubTypeParameters.class);
+        final TypeWithSubAndSuperSetters serialised = new TypeWithSubAndSuperSetters(1);
+        final TestMarshaller<TypeWithSubAndSuperSetters> marshaller = new TestMarshaller<>(TypeWithSubAndSuperSetters.class);
 
         // When:
         final String xml = marshaller.marshall(serialised);
-        final TypeWithSubTypeParameters deserialised = marshaller.unmarshall(xml);
+        final TypeWithSubAndSuperSetters deserialised = marshaller.unmarshall(xml);
 
         // Then:
-        assertThat("Property with derived setter should be exposed", xml, containsString("oneWay"));
-        assertThat("Property with derived getter should be exposed", xml, containsString("theOther"));
+        assertThat("Property with derived setter should be exposed", xml, containsString("derivedSetter"));
+        assertThat("Property with super setter should be exposed", xml, containsString("superSetter"));
         assertThat("Neither setter should not of been called", deserialised.setterCalled, is(false));
+    }
+
+    @Test
+    public void shouldIgnoresGetterWithDerivedOrSuperTypes() throws Exception {
+        // Given:
+        final TypeWithSubAndSuperGetters serialised = new TypeWithSubAndSuperGetters(1);
+        final TestMarshaller<TypeWithSubAndSuperGetters> marshaller = new TestMarshaller<>(TypeWithSubAndSuperGetters.class);
+
+        // When:
+        final String xml = marshaller.marshall(serialised);
+        final TypeWithSubAndSuperGetters deserialised = marshaller.unmarshall(xml);
+
+        // Then:
+        assertThat("Neither setter should not of been called", deserialised.getterCalled, is(false));
     }
 
     @Test(expectedExceptions = JAXBException.class)
@@ -167,6 +194,27 @@ public class JaxbAssumptionsTest {
 
         // Then:
         assertThat(deserialised.setterCalled, is(false));
+    }
+
+    @Test(expectedExceptions = JAXBException.class)
+    public void shouldThrowOnIndexedProperties() throws Exception {
+        // Given:
+        final TypeWithIndexedAccessors serialised = new TypeWithIndexedAccessors(1);
+
+        // When:
+        serialiseAndDeserialise(serialised);
+    }
+
+    @Test
+    public void shouldWorkWithArrayFields() throws Exception {
+        // Given:
+        final TypeWithArrayField serialised = new TypeWithArrayField(1);
+
+        // When:
+        final TypeWithArrayField deserialisied = serialiseAndDeserialise(serialised);
+
+        // Then:
+        assertThat(deserialisied.arrayField, is(serialised.arrayField));
     }
 
     private static class TestMarshaller<T> {
@@ -294,34 +342,69 @@ public class JaxbAssumptionsTest {
     @SuppressWarnings("UnusedDeclaration")
     @XmlRootElement
     @XmlAccessorType(XmlAccessType.NONE)
-    public static class TypeWithSubTypeParameters {
+    public static class TypeWithSubAndSuperSetters {
         public boolean setterCalled;
         private Base value;
 
-        public TypeWithSubTypeParameters() {
+        public TypeWithSubAndSuperSetters() {
         }
 
-        public TypeWithSubTypeParameters(int x) {
+        public TypeWithSubAndSuperSetters(int x) {
             value = new Derived();
         }
 
         @XmlElement
-        public Base getOneWay() {
+        public Base getDerivedSetter() {
             return value;
         }
 
-        public void setOneWay(Derived value) {
+        public void setDerivedSetter(Derived value) {
             setterCalled = true;
             this.value = value;
         }
 
         @XmlElement
-        public Derived getTheOther() {
+        public Derived getSuperSetter() {
             return (Derived) value;
         }
 
-        public void setTheOther(Base value) {
+        public void setSuperSetter(Base value) {
             setterCalled = true;
+            this.value = value;
+        }
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    @XmlRootElement
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static class TypeWithSubAndSuperGetters {
+        public boolean getterCalled;
+        private Base value;
+
+        public TypeWithSubAndSuperGetters() {
+        }
+
+        public TypeWithSubAndSuperGetters(int x) {
+            value = new Derived();
+        }
+
+        public Derived getDerivedGetter() {
+            getterCalled = true;
+            return (Derived) value;
+        }
+
+        @XmlElement
+        public void setDerivedGetter(Base value) {
+            this.value = value;
+        }
+
+        public Base getSuperGetter() {
+            getterCalled = true;
+            return value;
+        }
+
+        @XmlElement
+        public void setSuperGetter(Derived value) {
             this.value = value;
         }
     }
@@ -370,14 +453,14 @@ public class JaxbAssumptionsTest {
     @SuppressWarnings("UnusedDeclaration")
     @XmlRootElement
     @XmlAccessorType(XmlAccessType.NONE)
-    public static class TypeWithUnrelatedGetterAndSetter {
+    public static class TypeWithUnrelatedSetter {
         public boolean setterCalled;
         private String field;
 
-        public TypeWithUnrelatedGetterAndSetter() {
+        public TypeWithUnrelatedSetter() {
         }
 
-        public TypeWithUnrelatedGetterAndSetter(int i) {
+        public TypeWithUnrelatedSetter(int i) {
             field = "hello";
         }
 
@@ -389,6 +472,30 @@ public class JaxbAssumptionsTest {
         public void setField(final Long field) {
             this.setterCalled = true;
             this.field = "" + field;
+        }
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    @XmlRootElement
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static class TypeWithUnrelatedGetter {
+        public boolean getterCalled;
+        private String field;
+
+        public TypeWithUnrelatedGetter() {
+        }
+
+        public TypeWithUnrelatedGetter(int i) {
+            field = "hello";
+        }
+
+        public long getField() {
+            getterCalled = true;
+            return 1;
+        }
+
+        @XmlElement
+        public void setField(final String field) {
         }
     }
 
@@ -459,6 +566,52 @@ public class JaxbAssumptionsTest {
 
         public void setField(String one, String two) {
             this.setterCalled = true;
+        }
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    @XmlRootElement
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static class TypeWithIndexedAccessors {
+        public String[] values;
+
+        public TypeWithIndexedAccessors() {
+        }
+
+        public TypeWithIndexedAccessors(final int i) {
+            values = new String[]{"four", "candles"};
+        }
+
+        @XmlElement
+        public String getValue(int index) {
+            return values[index];
+        }
+
+        public void setValue(int index, String value) {
+            values[index] = value;
+        }
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    @XmlRootElement
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static class TypeWithArrayField {
+        public String[] arrayField;
+
+        public TypeWithArrayField() {
+        }
+
+        public TypeWithArrayField(final int i) {
+            arrayField = new String[]{"folk", "handles"};
+        }
+
+        @XmlElement
+        public String[] getField() {
+            return arrayField;
+        }
+
+        public void setField(final String[] value) {
+            arrayField = value;
         }
     }
 }

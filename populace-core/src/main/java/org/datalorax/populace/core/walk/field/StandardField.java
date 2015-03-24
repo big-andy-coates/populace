@@ -17,6 +17,7 @@
 package org.datalorax.populace.core.walk.field;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -28,10 +29,13 @@ import java.lang.reflect.Type;
  */
 public class StandardField implements RawField {
     private final Field field;
+    private final transient AnnotationInspector annotationInspector;
 
-    public StandardField(final Field field) {
+    public StandardField(final Field field, final AnnotationInspector annotationInspector) {
         Validate.notNull(field, "field null");
+        Validate.notNull(annotationInspector, "annotationInspector null");
         this.field = field;
+        this.annotationInspector = annotationInspector;
     }
 
     @Override
@@ -66,7 +70,7 @@ public class StandardField implements RawField {
 
     @Override
     public <T extends Annotation> T getAnnotation(final Class<T> type) {
-        return field.getAnnotation(type);
+        return annotationInspector.getAnnotation(field, type);
     }
 
     @Override

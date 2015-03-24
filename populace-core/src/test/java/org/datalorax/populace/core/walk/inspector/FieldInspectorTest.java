@@ -17,6 +17,7 @@
 package org.datalorax.populace.core.walk.inspector;
 
 import org.datalorax.populace.core.walk.field.RawField;
+import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -35,6 +36,9 @@ public class FieldInspectorTest {
     public void setUp() throws Exception {
         inspectors = mock(Inspectors.class);
         inspector = FieldInspector.INSTANCE;
+
+        final AnnotationInspector annotationInspector = mock(AnnotationInspector.class);
+        when(inspectors.getAnnotationInspector()).thenReturn(annotationInspector);
     }
 
     @Test

@@ -19,7 +19,7 @@ package org.datalorax.populace.jaxb.inspector;
 import org.datalorax.populace.core.walk.field.RawField;
 import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
-import org.datalorax.populace.jaxb.field.JaxbFieldElement;
+import org.datalorax.populace.jaxb.field.JaxbField;
 import org.datalorax.populace.jaxb.field.JaxbPropertyElement;
 import org.datalorax.populace.jaxb.util.JaxbUtils;
 
@@ -37,8 +37,8 @@ import java.util.Set;
  *
  * @author Andrew Coates - 09/03/2015.
  */
-public class JaxBAnnotationsInspector implements Inspector {
-    public static final JaxBAnnotationsInspector INSTANCE = new JaxBAnnotationsInspector();
+public class JaxBInspector implements Inspector {
+    public static final JaxBInspector INSTANCE = new JaxBInspector();
 
     @Override
     public Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
@@ -72,7 +72,7 @@ public class JaxBAnnotationsInspector implements Inspector {
                 continue;
             }
 
-            final JaxbFieldElement element = new JaxbFieldElement(field);
+            final JaxbField element = new JaxbField(field);
             if (found.put(element.getName(), element) != null) {
                 throw new DuplicateJaxbElementException(field.getName(), field.getDeclaringClass(), found.get(element.getName()));
             }

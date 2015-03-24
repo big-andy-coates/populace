@@ -16,7 +16,10 @@
 
 package org.datalorax.populace.core.walk.inspector;
 
+import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.util.ImmutableTypeMap;
+import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;
+import org.datalorax.populace.core.walk.inspector.annotation.PopulaceAnnotationInspector;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -31,13 +34,16 @@ final class InspectorsBuilder implements Inspectors.Builder {
     private static final Inspectors DEFAULT;
 
     private final ImmutableTypeMap.Builder<Inspector> inspectorsBuilder;
+    private AnnotationInspector annotationInspector;
 
-    InspectorsBuilder(ImmutableTypeMap<Inspector> inspectors) {
+    InspectorsBuilder(final ImmutableTypeMap<Inspector> inspectors, final AnnotationInspector annotationInspector) {
         this.inspectorsBuilder = ImmutableTypeMap.asBuilder(inspectors);
+        this.annotationInspector = annotationInspector;
     }
 
     private InspectorsBuilder() {
         this.inspectorsBuilder = ImmutableTypeMap.newBuilder(FieldInspector.INSTANCE);
+        this.annotationInspector = PopulaceAnnotationInspector.INSTANCE;
     }
 
     static {
@@ -88,7 +94,19 @@ final class InspectorsBuilder implements Inspectors.Builder {
     }
 
     @Override
+    public Inspectors.Builder withAnnotationInspector(final AnnotationInspector annotationInspector) {
+        Validate.notNull(annotationInspector);
+        this.annotationInspector = annotationInspector;
+        return this;
+    }
+
+    @Override
+    public AnnotationInspector getAnnotationInspector() {
+        return annotationInspector;
+    }
+
+    @Override
     public Inspectors build() {
-        return new Inspectors(inspectorsBuilder.build());
+        return new Inspectors(inspectorsBuilder.build(), annotationInspector);
     }
 }

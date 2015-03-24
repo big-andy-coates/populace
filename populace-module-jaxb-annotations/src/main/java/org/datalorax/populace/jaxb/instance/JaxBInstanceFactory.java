@@ -79,7 +79,6 @@ public class JaxBInstanceFactory implements InstanceFactory {
         return factory.createInstance(valueType, parent, instanceFactories);
     }
 
-    // Todo(ac): Maybe the way to handle this is to have the annotation inspector provide a 'converter' that wraps the instance factory?
     private Object convert(final Class<? extends XmlAdapter> adapterType, final Object value, final InstanceFactories instanceFactories) {
         final XmlAdapter adapter = instanceFactories.get(adapterType).createInstance(adapterType, null, instanceFactories);
 
@@ -93,4 +92,7 @@ public class JaxBInstanceFactory implements InstanceFactory {
                 "bound: " + boundType + ", value: " + valueType, e);
         }
     }
+
+    // Todo(ac): @XmlTypeAdapter can also be present on field, or getter or setter, or in package-info.java.
+    // Todo(ac): @XmlTransient can also be on getter or setter, or class
 }

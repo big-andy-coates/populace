@@ -20,22 +20,22 @@ import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.walk.field.RawField;
 import org.datalorax.populace.jaxb.util.JaxbUtils;
 
-import javax.xml.bind.annotation.XmlTransient;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
- * Field representing a property, as defined by the JaxB standard. // Todo(ac): clarify
+ * Field wrapping a raw field and, optionally, a getter and/or setter method.
  *
  * @author Andrew Coates - 13/03/2015.
  */
-public class JaxbFieldElement implements RawField {
+public class JaxbField implements RawField {    // Todo(ac): being replace with annotation inspector?
     private final Field field;
 
-    public JaxbFieldElement(final Field field) {
+    public JaxbField(final Field field) {
         Validate.notNull(field, "field null");
+        Validate.isTrue(!Modifier.isStatic(field.getModifiers()), "static fields not supported");
         JaxbUtils.validateField(field);
         this.field = field;
     }
@@ -71,7 +71,9 @@ public class JaxbFieldElement implements RawField {
     }
 
     /**
-     * Retrieve the requested {@link java.lang.annotation.Annotation annotation} {@code type} for this {@link JaxbFieldElement}
+     * Retrieve the requested {@link java.lang.annotation.Annotation annotation} {@code type} for this {@link JaxbField}
+     *
+     * The annotation is first sort on the field itself. If not present, any getter and then any setter is checked.
      *
      * @param type the {@link java.lang.annotation.Annotation} type requested.
      * @param <T>  the type of the annotation requested
@@ -84,7 +86,7 @@ public class JaxbFieldElement implements RawField {
 
     @Override
     public boolean isTransient() {
-        return getAnnotation(XmlTransient.class) != null;
+        return Modifier.isTransient(field.getModifiers());
     }
 
     @Override
@@ -102,7 +104,7 @@ public class JaxbFieldElement implements RawField {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final JaxbFieldElement that = (JaxbFieldElement) o;
+        final JaxbField that = (JaxbField) o;
         return field.equals(that.field);
     }
 

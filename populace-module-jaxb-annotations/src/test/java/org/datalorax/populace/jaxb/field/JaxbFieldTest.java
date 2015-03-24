@@ -28,22 +28,28 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class JaxbFieldElementTest {
-    private JaxbFieldElement field;
+public class JaxbFieldTest {
+    public static String staticField;
+    private JaxbField field;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        field = new JaxbFieldElement(Bean.class.getDeclaredField("someField"));
+        field = new JaxbField(Bean.class.getDeclaredField("someField"));
     }
 
     @Test(expectedExceptions = NullPointerException.class)
     public void shouldThrowOnNullField() throws Exception {
-        new JaxbFieldElement(null);
+        new JaxbField(null);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldThrowOnStaticField() throws Exception {
+        new JaxbField(getClass().getDeclaredField("staticField"));
     }
 
     @Test
     public void shouldThrowIfInvalidJaxBField() throws Exception {
-        new JaxbFieldElement(Bean.class.getDeclaredField("invalidField"));
+        new JaxbField(Bean.class.getDeclaredField("invalidField"));
     }
 
     @Test
@@ -64,7 +70,7 @@ public class JaxbFieldElementTest {
     @Test
     public void shouldEnsureAccessible() throws Exception {
         // Given:
-        field = new JaxbFieldElement(Bean.class.getDeclaredField("privateField"));
+        field = new JaxbField(Bean.class.getDeclaredField("privateField"));
         assertThat("pre-condition", Bean.class.getDeclaredField("privateField").isAccessible(), is(false));
 
         // When:
@@ -109,18 +115,46 @@ public class JaxbFieldElementTest {
     }
 
     @Test
-    public void shouldReturnTransientIfMarkedXmlTransient() throws Exception {
+    public void shouldReturnTransientIfFieldTransient() throws Exception {
         // Given:
-        field = new JaxbFieldElement(Bean.class.getDeclaredField("someField"));
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithTransient {
+            public transient String transientField;
+        }
+
+        // When:
+        field = new JaxbField(TypeWithTransient.class.getDeclaredField("transientField"));
 
         // Then:
         assertThat(field.isTransient(), is(true));
     }
 
     @Test
-    public void shouldReturnNotTransientIfNoXmlTransient() throws Exception {
+    public void shouldNotReturnTransientIfFieldNotTransient() throws Exception {
         // Given:
-        field = new JaxbFieldElement(Bean.class.getDeclaredField("privateField"));
+        @SuppressWarnings("UnusedDeclaration")
+        class SomeType {
+            public String notTransient;
+        }
+
+        // When:
+        field = new JaxbField(SomeType.class.getDeclaredField("notTransient"));
+
+        // Then:
+        assertThat(field.isTransient(), is(false));
+    }
+
+    @Test
+    public void shouldNotReturnTransientForXmlTransient() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithXmlTransient {
+            @XmlTransient
+            public String xmlTransientField;
+        }
+
+        // When:
+        field = new JaxbField(TypeWithXmlTransient.class.getDeclaredField("xmlTransientField"));
 
         // Then:
         assertThat(field.isTransient(), is(false));
@@ -134,7 +168,7 @@ public class JaxbFieldElementTest {
     @Test
     public void shouldReturnFinalIfFinal() throws Exception {
         // Given:
-        field = new JaxbFieldElement(Bean.class.getDeclaredField("finalField"));
+        field = new JaxbField(Bean.class.getDeclaredField("finalField"));
 
         // Then:
         assertThat(field.isFinal(), is(true));
@@ -143,7 +177,7 @@ public class JaxbFieldElementTest {
     @Test
     public void shouldReturnNotFinalIfNotFinal() throws Exception {
         // Given:
-        field = new JaxbFieldElement(Bean.class.getDeclaredField("someField"));
+        field = new JaxbField(Bean.class.getDeclaredField("someField"));
         ;
 
         // Then:

@@ -30,7 +30,7 @@ import java.lang.reflect.Type;
  *
  * @author Andrew Coates - 13/03/2015.
  */
-public class JaxbPropertyElement implements RawField {
+public class JaxbPropertyElement implements RawField { // Todo(ac): being replace with annotation inspector?
     private final Method getter;
     private final Method setter;
 

@@ -32,14 +32,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
-public class JaxBAnnotationsInspectorTest {
-    private JaxBAnnotationsInspector inspector;
+public class JaxBInspectorTest {
+    private JaxBInspector inspector;
     private Inspectors inspectors;
 
     @BeforeMethod
     public void setUp() throws Exception {
         inspectors = mock(Inspectors.class);
-        inspector = JaxBAnnotationsInspector.INSTANCE;
+        inspector = JaxBInspector.INSTANCE;
     }
 
     @Test

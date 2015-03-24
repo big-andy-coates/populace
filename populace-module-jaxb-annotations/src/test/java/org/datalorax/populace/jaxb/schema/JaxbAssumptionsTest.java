@@ -39,9 +39,9 @@ import static org.hamcrest.Matchers.is;
  * @author Andrew Coates - 13/03/2015.
  */
 public class JaxbAssumptionsTest {
+    @SuppressWarnings("unchecked")
     private static <T> T serialiseAndDeserialise(final T value) throws JAXBException {
-        //noinspection unchecked
-        return new TestMarshaller<T>((Class<T>) value.getClass()).marshallAndUnmarshall(value);
+        return new TestMarshaller<>((Class<T>) value.getClass()).marshallAndUnmarshall(value);
     }
 
     @Test
@@ -248,10 +248,10 @@ public class JaxbAssumptionsTest {
             return baos;
         }
 
+        @SuppressWarnings("unchecked")
         public T _unmarshall(final byte[] bytes) throws JAXBException {
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
             final Object result = unmarshaller.unmarshal(bais);
-            //noinspection unchecked
             return (T) result;
         }
     }

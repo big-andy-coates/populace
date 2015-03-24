@@ -44,14 +44,11 @@ public class ChangeCollectionElementsMutator implements Mutator {
 
     @Override
     public Collection<?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
-        Validate.isAssignableFrom(Collection.class, TypeUtils.getRawType(type, null), "Unsupported type %s", type);
-
-        if (currentValue == null) {
+        final Collection<Object> collection = ensureCollection(type, currentValue);
+        if (collection == null) {
             return null;
         }
 
-        //noinspection unchecked
-        final Collection<Object> collection = (Collection)currentValue;
         final Type defaultComponentType = getComponentType(type);
         final Object element = findNonNullElement(collection);
         final Type componentType = element == null ? defaultComponentType : element.getClass();
@@ -62,11 +59,16 @@ public class ChangeCollectionElementsMutator implements Mutator {
         do {
             newItem = componentMutator.mutate(componentType, newItem, null, config);
 
-            //noinspection unchecked
             added = collection.add(newItem);
         } while (!added);
 
         return collection;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Collection<Object> ensureCollection(final Type type, final Object currentValue) {
+        Validate.isAssignableFrom(Collection.class, TypeUtils.getRawType(type, null), "Unsupported type %s", type);
+        return (Collection<Object>) currentValue;
     }
 
     @Override

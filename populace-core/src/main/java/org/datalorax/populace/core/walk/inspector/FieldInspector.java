@@ -18,7 +18,6 @@ package org.datalorax.populace.core.walk.inspector;
 
 import com.google.common.collect.ImmutableSet;
 import org.datalorax.populace.core.walk.field.RawField;
-import org.datalorax.populace.core.walk.field.StandardField;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public class FieldInspector implements Inspector {
                 continue;
             }
 
-            collected.add(new StandardField(field, inspectors.getAnnotationInspector()));
+            collected.add(new RawField(field, inspectors.getAnnotationInspector()));
         }
     }
 

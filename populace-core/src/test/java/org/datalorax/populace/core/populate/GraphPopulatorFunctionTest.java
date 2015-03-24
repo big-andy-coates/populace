@@ -494,8 +494,8 @@ public class GraphPopulatorFunctionTest {
     }
 
     private static class WithRawGenericType {
+        @SuppressWarnings("unchecked")
         public List _rawList = new ArrayList() {{
-            //noinspection unchecked
             add("something");
         }};
     }

@@ -39,13 +39,13 @@ public class JaxBInstanceFactory implements InstanceFactory {
         try {
             final Class<? extends XmlAdapter> adapterType = annotation.value();
             final Method marshalMethod = adapterType.getMethod("marshal", rawType);
-            //noinspection unchecked
             return marshalMethod.getReturnType();
         } catch (NoSuchMethodException e) {
             throw new InstanceCreationException("Failed to determine value to for type marked with @XmlJavaTypeAdapter", rawType, e);
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T createInstance(Class<? extends T> rawType, Object parent, final InstanceFactories instanceFactories) {
         final XmlJavaTypeAdapter annotation = rawType.getAnnotation(XmlJavaTypeAdapter.class);
@@ -54,7 +54,6 @@ public class JaxBInstanceFactory implements InstanceFactory {
         }
 
         final Object value = createValueInstance(rawType, parent, instanceFactories, annotation);
-        //noinspection unchecked
         return (T) convert(annotation.value(), value, instanceFactories);
     }
 
@@ -79,11 +78,11 @@ public class JaxBInstanceFactory implements InstanceFactory {
         return factory.createInstance(valueType, parent, instanceFactories);
     }
 
+    @SuppressWarnings("unchecked")
     private Object convert(final Class<? extends XmlAdapter> adapterType, final Object value, final InstanceFactories instanceFactories) {
         final XmlAdapter adapter = instanceFactories.get(adapterType).createInstance(adapterType, null, instanceFactories);
 
         try {
-            //noinspection unchecked
             return adapter.unmarshal(value);
         } catch (Exception e) {
             final Type valueType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class, XmlAdapter.class.getTypeParameters()[0]);

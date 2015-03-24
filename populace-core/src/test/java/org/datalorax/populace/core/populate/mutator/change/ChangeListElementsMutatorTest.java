@@ -69,7 +69,6 @@ public class ChangeListElementsMutatorTest {
         // Given:
         givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final List<String> currentValue = new ArrayList<String>() {{
-            //noinspection unchecked
             add(null);
         }};
 
@@ -82,7 +81,6 @@ public class ChangeListElementsMutatorTest {
         // Given:
         givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
         final List<String> currentValue = new ArrayList<String>() {{
-            //noinspection unchecked
             add(null);
         }};
 

@@ -69,8 +69,7 @@ public class DefaultTypeInstanceFactory implements InstanceFactory {
             return null;
         }
 
-        //noinspection unchecked
-        return (T) concreteFactory.createInstance(defaultType, parent, instanceFactories);
+        return createDefaultType(parent, instanceFactories);
     }
 
     @Override
@@ -107,5 +106,10 @@ public class DefaultTypeInstanceFactory implements InstanceFactory {
 
     private boolean notCompatibleWithDefaultType(final Class<?> rawType) {
         return !rawType.isAssignableFrom(defaultType);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T createDefaultType(final Object parent, final InstanceFactories instanceFactories) {
+        return (T) concreteFactory.createInstance(defaultType, parent, instanceFactories);
     }
 }

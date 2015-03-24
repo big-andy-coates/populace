@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.*;
 /**
  * @author Andrew Coates - 09/03/2015.
  */
-public class JaxBFunctionalTest {
+public class _JaxBFunctionalTest {
     private GraphPopulator populator;
 
     @BeforeMethod

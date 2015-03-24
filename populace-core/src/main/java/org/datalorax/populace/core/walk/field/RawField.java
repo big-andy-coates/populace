@@ -17,6 +17,7 @@
 package org.datalorax.populace.core.walk.field;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -28,10 +29,13 @@ import java.lang.reflect.Type;
  */
 public class RawField {
     private final Field field;
+    private final transient AnnotationInspector annotationInspector;
 
-    public RawField(final Field field) {
+    public RawField(final Field field, final AnnotationInspector annotationInspector) {
         Validate.notNull(field, "field null");
+        Validate.notNull(annotationInspector, "annotationInspector null");
         this.field = field;
+        this.annotationInspector = annotationInspector;
     }
 
     /**
@@ -42,8 +46,8 @@ public class RawField {
     }
 
     /**
-     * @return the {@code Class} object representing the class or interface
-     * that declares the field represented by this {@code Field} object.
+     * @return the {@code Class} object representing the class or interface that declares the field represented by this
+     * {@code Field} object.
      */
     public Class<?> getDeclaringClass() {
         return field.getDeclaringClass();
@@ -69,26 +73,17 @@ public class RawField {
     }
 
     /**
-     * Ensure the field represented by this {@code RawField} is accessible i.e that calls to {@link #getValue(Object)}
-     * and {@link #setValue(Object, Object)} won't through {@link java.lang.IllegalAccessException}
-     */
-    public void ensureAccessible() {
-        field.setAccessible(true);
-    }
-
-    /**
-     * Returns the value of the field represented by this {@code RawField}, on the specified {@code instance}. The
+     * Returns the value of the field represented by this {@code RawField}, on the specified {@code owningInstance}. The
      * value is automatically wrapped in an object if it has a primitive type.
      * <p>
      * The implementation of this method must follow the contract given for {@link java.lang.reflect.Field#get(Object)}
      *
      * @param owningInstance object from which the represented field's value is
      *                       to be extracted
-     * @return the value of the represented field in object
-     * {@code owningInstance}. primitive values are wrapped in an appropriate
+     * @return the value of the represented field in {@code owningInstance}. primitive values are wrapped in an appropriate
      * object before being returned
-     * @throws java.lang.IllegalAccessException if this {@code Field} object is enforcing Java language access control
-     *                                          and the underlying field is inaccessible.
+     * @throws java.lang.IllegalAccessException if this {@code RawField} object is enforcing Java language access
+     *                                          control and the underlying field is inaccessible.
      * @see java.lang.reflect.Field#get(Object)
      */
     public Object getValue(final Object owningInstance) throws IllegalAccessException {
@@ -104,8 +99,8 @@ public class RawField {
      * @param owningInstance the object whose field should be modified
      * @param value          the new value for the field of {@code owningInstance}
      *                       being modified
-     * @throws java.lang.IllegalAccessException if this {@code Field} object is enforcing Java language access control
-     *                                          and the underlying field is inaccessible.
+     * @throws java.lang.IllegalAccessException if this {@code RawField} object is enforcing Java language access
+     *                                          control and the underlying field is inaccessible.
      * @see java.lang.reflect.Field#set(Object, Object)
      */
     public void setValue(final Object owningInstance, Object value) throws IllegalAccessException {
@@ -113,13 +108,23 @@ public class RawField {
     }
 
     /**
-     * @param type the type of the annotation to query the field for
-     * @param <T>  the type of the annotation to query the field for
-     * @return the instance of the annotation if it is present on the field represented by this {@code RawField} object,
+     * return the instance of the annotation if it is present on the field represented by this {@code RawField} object,
      * or otherwise null.
+     *
+     * @param type the type of the {@link java.lang.annotation.Annotation Annotation} to retrieve.
+     * @param <T>  the type of the {@link java.lang.annotation.Annotation Annotation} to retrieve.
+     * @return the {@link java.lang.annotation.Annotation Annotation} if found, else {@code null}
      */
     public <T extends Annotation> T getAnnotation(final Class<T> type) {
-        return field.getAnnotation(type);
+        return annotationInspector.getAnnotation(field, type);
+    }
+
+    /**
+     * Ensure the field represented by this {@code RawField} is accessible i.e that calls to {@link #getValue(Object)}
+     * and {@link #setValue(Object, Object)} won't through {@link java.lang.IllegalAccessException}
+     */
+    public void ensureAccessible() {
+        field.setAccessible(true);
     }
 
     /**

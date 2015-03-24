@@ -28,10 +28,10 @@ import java.util.Collection;
 public class CollectionInspector implements Inspector {
     public static final Inspector INSTANCE = new CollectionInspector();
 
+    @SuppressWarnings("unchecked")
     @Override
     public Iterable<?> getChildren(final Object instance) {
         Validate.isInstanceOf(Collection.class, instance);
-        //noinspection unchecked
         return (Collection<Object>) instance;
     }
 

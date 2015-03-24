@@ -70,7 +70,6 @@ public class GraphPopulatorBuilderTest {
     @Test
     public void shouldCreatePopulatorWithSpecificMutators() throws Exception {
         // Given:
-        //noinspection unchecked
         final Mutators mutators = mock(Mutators.class);
         builder.withMutators(mutators);
 
@@ -84,7 +83,6 @@ public class GraphPopulatorBuilderTest {
     @Test
     public void shouldCreatePopulatorWithSpecificInstanceFactories() throws Exception {
         // Given:
-        //noinspection unchecked
         final InstanceFactories factories = mock(InstanceFactories.class);
         builder.withInstanceFactories(factories);
 
@@ -98,7 +96,6 @@ public class GraphPopulatorBuilderTest {
     @Test
     public void shouldCreatePopulatorWithSpecificInspectors() throws Exception {
         // Given:
-        //noinspection unchecked
         final Inspectors inspectors = mock(Inspectors.class);
         builder.withInspectors(inspectors);
 

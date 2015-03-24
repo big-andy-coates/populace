@@ -31,7 +31,6 @@ public class MapValueInspector implements Inspector {
     @Override
     public Iterable<?> getChildren(final Object instance) {
         Validate.isInstanceOf(Map.class, instance);
-        //noinspection unchecked
         return ((Map<?, ?>) instance).values();
     }
 

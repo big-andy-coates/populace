@@ -43,14 +43,11 @@ public class ChangeMapValuesMutator implements Mutator {
 
     @Override
     public Map<?, ?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
-        Validate.isAssignableFrom(Map.class, TypeUtils.getRawType(type, Map.class), "Mutator only supports map types");
-
-        if (currentValue == null) {
+        final Map<Object, Object> map = ensureMap(type, currentValue);
+        if (map == null) {
             return null;
         }
 
-        //noinspection unchecked
-        final Map<Object, Object> map = (Map) currentValue;
         final Type defaultValueType = getValueType(type);
         final Mutator defaultValueMutator = config.getMutator(defaultValueType);
 
@@ -77,6 +74,12 @@ public class ChangeMapValuesMutator implements Mutator {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<Object, Object> ensureMap(final Type type, final Object currentValue) {
+        Validate.isAssignableFrom(Map.class, TypeUtils.getRawType(type, Map.class), "Mutator only supports map types");
+        return (Map<Object, Object>) currentValue;
     }
 
     private Type getValueType(Type type) {

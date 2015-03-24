@@ -17,8 +17,8 @@
 package org.datalorax.populace.jaxb.field;
 
 import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.jaxb.util.JaxbUtils;
 import org.datalorax.populace.core.walk.field.RawField;
+import org.datalorax.populace.jaxb.util.JaxbUtils;
 
 import javax.xml.bind.annotation.XmlTransient;
 import java.lang.annotation.Annotation;

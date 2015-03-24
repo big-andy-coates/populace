@@ -18,6 +18,7 @@ package org.datalorax.populace.jaxb.inspector;
 
 import org.datalorax.populace.core.walk.field.RawField;
 import org.datalorax.populace.core.walk.inspector.InspectionException;
+import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -29,12 +30,15 @@ import java.util.Map;
 import static org.datalorax.populace.core.walk.field.filter.RawFieldMatcher.rawField;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.mock;
 
 public class JaxBAnnotationsInspectorTest {
     private JaxBAnnotationsInspector inspector;
+    private Inspectors inspectors;
 
     @BeforeMethod
     public void setUp() throws Exception {
+        inspectors = mock(Inspectors.class);
         inspector = JaxBAnnotationsInspector.INSTANCE;
     }
 
@@ -48,7 +52,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new TypeWithFieldElement());
+        final Iterable<RawField> fields = inspector.getFields(TypeWithFieldElement.class, inspectors);
 
         // Then:
         assertThat(fields, contains(rawField(TypeWithFieldElement.class, "elementField")));
@@ -63,7 +67,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new TypeWithNonElementField());
+        final Iterable<RawField> fields = inspector.getFields(TypeWithNonElementField.class, inspectors);
 
         // Then:
         assertThat(fields, not(hasItem(rawField(TypeWithNonElementField.class, "nonElementField"))));
@@ -82,7 +86,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new SomeSubType());
+        final Iterable<RawField> fields = inspector.getFields(SomeSubType.class, inspectors);
 
         // Then:
         assertThat(fields, contains(rawField(SomeSuperType.class, "superElementField")));
@@ -98,7 +102,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new TypeWithPrivateField());
+        final Iterable<RawField> fields = inspector.getFields(TypeWithPrivateField.class, inspectors);
 
         // Then:
         assertThat(fields, hasItem(rawField(TypeWithPrivateField.class, "privateField")));
@@ -129,7 +133,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new SomeType());
+        final Iterable<RawField> fields = inspector.getFields(SomeType.class, inspectors);
 
         // Then:
         assertThat(fields, containsInAnyOrder(
@@ -152,7 +156,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new SomeType());
+        final Iterable<RawField> fields = inspector.getFields(SomeType.class, inspectors);
 
         // Then:
         assertThat(fields, not(hasItem(rawField(SomeType.class, "nonElement"))));
@@ -173,8 +177,9 @@ public class JaxBAnnotationsInspectorTest {
             public void setIgnoredSetter() {
             }
         }
+
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new SomeType());
+        final Iterable<RawField> fields = inspector.getFields(SomeType.class, inspectors);
 
         // Then:
         assertThat(fields, not(hasItem(rawField(SomeType.class, "ignoredGetter"))));
@@ -207,7 +212,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new SomeType());
+        final Iterable<RawField> fields = inspector.getFields(SomeType.class, inspectors);
 
         // Then:
         assertThat(fields, containsInAnyOrder(
@@ -239,7 +244,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new SomeType());
+        final Iterable<RawField> fields = inspector.getFields(SomeType.class, inspectors);
 
         // Then:
         assertThat(fields, containsInAnyOrder(
@@ -262,7 +267,6 @@ public class JaxBAnnotationsInspectorTest {
             }
         }
 
-
         @SuppressWarnings("UnusedDeclaration")
         class SomeSubType extends SomeSuperType {
             @XmlElement
@@ -272,12 +276,10 @@ public class JaxBAnnotationsInspectorTest {
 
             public void setSubSetterSuperGetter(long v) {
             }
-
-
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new SomeSubType());
+        final Iterable<RawField> fields = inspector.getFields(SomeSubType.class, inspectors);
 
         // Then:
         assertThat(fields, containsInAnyOrder(
@@ -302,7 +304,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        inspector.getFields(new TypeWithInvalidAnnotations());
+        inspector.getFields(TypeWithInvalidAnnotations.class, inspectors);
     }
 
     @Test(expectedExceptions = InspectionException.class)
@@ -324,7 +326,7 @@ public class JaxBAnnotationsInspectorTest {
         }
 
         // When:
-        inspector.getFields(new TypeWithDuplicateAnnotations());
+        inspector.getFields(TypeWithDuplicateAnnotations.class, inspectors);
     }
 
     @Test
@@ -333,17 +335,21 @@ public class JaxBAnnotationsInspectorTest {
         @XmlAccessorType(XmlAccessType.NONE)
         @SuppressWarnings("UnusedDeclaration")
         class SomeType {
+            public String notAnElement;
 
+            public String getNotAnElement() {
+                return "";
+            }
+
+            public void setNotAnElement(String v) {
+            }
         }
 
         // When:
-        final Iterable<RawField> fields = inspector.getFields(new SomeType());
+        final Iterable<RawField> fields = inspector.getFields(SomeType.class, inspectors);
 
         // Then:
-        assertThat(fields, containsInAnyOrder(
-            rawField(SomeType.class, "subGetterSuperSetter"),
-            rawField(SomeType.class, "subSetterSuperGetter")
-        ));
+        assertThat(fields, not(hasItem(rawField(SomeType.class, "notAnElement"))));
     }
 
 

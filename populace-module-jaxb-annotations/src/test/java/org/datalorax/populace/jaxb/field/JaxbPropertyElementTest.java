@@ -17,7 +17,6 @@
 package org.datalorax.populace.jaxb.field;
 
 import org.datalorax.populace.core.util.TypeUtils;
-import org.datalorax.populace.jaxb.field.JaxbPropertyElement;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

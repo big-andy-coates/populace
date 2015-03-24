@@ -16,11 +16,12 @@
 
 package org.datalorax.populace.jaxb.inspector;
 
-import org.datalorax.populace.core.jaxb.field.JaxbFieldElement;
-import org.datalorax.populace.core.jaxb.field.JaxbPropertyElement;
-import org.datalorax.populace.core.jaxb.util.JaxbUtils;
 import org.datalorax.populace.core.walk.field.RawField;
 import org.datalorax.populace.core.walk.inspector.Inspector;
+import org.datalorax.populace.core.walk.inspector.Inspectors;
+import org.datalorax.populace.jaxb.field.JaxbFieldElement;
+import org.datalorax.populace.jaxb.field.JaxbPropertyElement;
+import org.datalorax.populace.jaxb.util.JaxbUtils;
 
 import javax.xml.bind.annotation.XmlElement;
 import java.lang.reflect.Field;
@@ -40,13 +41,13 @@ public class JaxBAnnotationsInspector implements Inspector {
     public static final JaxBAnnotationsInspector INSTANCE = new JaxBAnnotationsInspector();
 
     @Override
-    public Iterable<RawField> getFields(final Object instance) {
+    public Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
         final Map<String, RawField> found = new HashMap<>();
 
-        handleFields(instance.getClass(), found);
-        handleMethods(instance.getClass(), found);
+        handleFields(type, found);
+        handleMethods(type, found);
 
-        return found.values();   // Todo(ac): also remember to get fields on implemented on base types.
+        return found.values();
     }
 
     @Override

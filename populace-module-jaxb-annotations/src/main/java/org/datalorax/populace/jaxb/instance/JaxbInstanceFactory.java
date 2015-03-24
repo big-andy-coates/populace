@@ -32,8 +32,8 @@ import java.lang.reflect.Type;
  *
  * @author Andrew Coates - 09/03/2015.
  */
-public class _JaxBInstanceFactory implements InstanceFactory {
-    public static final _JaxBInstanceFactory INSTANCE = new _JaxBInstanceFactory();
+public class JaxbInstanceFactory implements InstanceFactory {
+    public static final JaxbInstanceFactory INSTANCE = new JaxbInstanceFactory();
 
     private static Class<?> getValueType(final Class<?> rawType, final XmlJavaTypeAdapter annotation) {
         try {

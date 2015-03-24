@@ -56,8 +56,7 @@ public final class GraphPopulator {
     }
 
     public <T> T populate(final Class<T> type) {
-        //noinspection unchecked
-        final T instance = (T) config.createInstance(type, null);
+        final T instance = createInstance(type);
         return populate(instance);
     }
 
@@ -87,6 +86,11 @@ public final class GraphPopulator {
             "walker=" + walker +
             ", config=" + config +
             '}';
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T createInstance(final Class<T> type) {
+        return (T) config.createInstance(type, null);
     }
 
     public interface Builder {

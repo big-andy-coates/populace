@@ -32,20 +32,20 @@ import java.lang.reflect.Type;
  *
  * @author Andrew Coates - 09/03/2015.
  */
-public class JaxBInstanceFactory implements InstanceFactory {
-    public static final JaxBInstanceFactory INSTANCE = new JaxBInstanceFactory();
+public class JaxbInstanceFactory implements InstanceFactory {
+    public static final JaxbInstanceFactory INSTANCE = new JaxbInstanceFactory();
 
     private static Class<?> getValueType(final Class<?> rawType, final XmlJavaTypeAdapter annotation) {
         try {
             final Class<? extends XmlAdapter> adapterType = annotation.value();
             final Method marshalMethod = adapterType.getMethod("marshal", rawType);
-            //noinspection unchecked
             return marshalMethod.getReturnType();
         } catch (NoSuchMethodException e) {
             throw new InstanceCreationException("Failed to determine value to for type marked with @XmlJavaTypeAdapter", rawType, e);
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T createInstance(Class<? extends T> rawType, Object parent, final InstanceFactories instanceFactories) {
         final XmlJavaTypeAdapter annotation = rawType.getAnnotation(XmlJavaTypeAdapter.class);
@@ -54,7 +54,6 @@ public class JaxBInstanceFactory implements InstanceFactory {
         }
 
         final Object value = createValueInstance(rawType, parent, instanceFactories, annotation);
-        //noinspection unchecked
         return (T) convert(annotation.value(), value, instanceFactories);
     }
 
@@ -79,12 +78,11 @@ public class JaxBInstanceFactory implements InstanceFactory {
         return factory.createInstance(valueType, parent, instanceFactories);
     }
 
-    // Todo(ac): Maybe the way to handle this is to have the annotation inspector provide a 'converter' that wraps the instance factory?
+    @SuppressWarnings("unchecked")
     private Object convert(final Class<? extends XmlAdapter> adapterType, final Object value, final InstanceFactories instanceFactories) {
         final XmlAdapter adapter = instanceFactories.get(adapterType).createInstance(adapterType, null, instanceFactories);
 
         try {
-            //noinspection unchecked
             return adapter.unmarshal(value);
         } catch (Exception e) {
             final Type valueType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class, XmlAdapter.class.getTypeParameters()[0]);
@@ -93,4 +91,7 @@ public class JaxBInstanceFactory implements InstanceFactory {
                 "bound: " + boundType + ", value: " + valueType, e);
         }
     }
+
+    // Todo(ac): @XmlTransient can also be on getter or setter, or class
+    // Todo(ac): @XmlTypeAdapter can also be present on field, or getter or setter, or in package-info.java.
 }

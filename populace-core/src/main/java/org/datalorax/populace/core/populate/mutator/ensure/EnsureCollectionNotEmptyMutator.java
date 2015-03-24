@@ -40,14 +40,8 @@ public class EnsureCollectionNotEmptyMutator implements Mutator {
 
     @Override
     public Collection<?> mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config) {
-        Validate.isAssignableFrom(Collection.class, TypeUtils.getRawType(type, Collection.class), "Mutator only supports Collection types");
-        if (currentValue == null) {
-            return null;
-        }
-
-        //noinspection unchecked
-        final Collection<Object> collection = (Collection) currentValue;
-        if (!collection.isEmpty()) {
+        final Collection<Object> collection = ensureCollection(type, currentValue);
+        if (currentValue == null || !collection.isEmpty()) {
             return collection;
         }
 
@@ -69,6 +63,12 @@ public class EnsureCollectionNotEmptyMutator implements Mutator {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Collection<Object> ensureCollection(final Type type, final Object currentValue) {
+        Validate.isAssignableFrom(Collection.class, TypeUtils.getRawType(type, Collection.class), "Mutator only supports Collection types");
+        return (Collection<Object>) currentValue;
     }
 
     private Object createEntry(Type collectionType, final Object parent, PopulatorContext config) {

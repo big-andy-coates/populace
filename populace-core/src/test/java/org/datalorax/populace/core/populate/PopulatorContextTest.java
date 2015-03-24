@@ -58,6 +58,7 @@ public class PopulatorContextTest {
         assertThat(instance, is("expected"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void shouldPassParentObjectToInstanceFactoryOnCreateInstance() throws Exception {
         // Given:
@@ -71,6 +72,7 @@ public class PopulatorContextTest {
         verify(factory).createInstance(any(Class.class), eq(parent), any(InstanceFactories.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void shouldPassInstanceFactoriesToInstanceFactoryOnCreateInstance() throws Exception {
         // Given:

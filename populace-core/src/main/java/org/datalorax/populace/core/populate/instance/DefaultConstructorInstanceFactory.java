@@ -64,18 +64,16 @@ public class DefaultConstructorInstanceFactory implements InstanceFactory {
         return getClass().getSimpleName();
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T createNewTopLevel(final Class<? extends T> rawType) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         final Constructor<?> defaultConstructor = getConstructor(rawType);
-
-        //noinspection unchecked
         return (T) defaultConstructor.newInstance();
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T createNewInnerClass(final Class<? extends T> rawType, final Object parent) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         Validate.notNull(parent, "Parent of inner class was null");
         final Constructor<?> defaultConstructor = getConstructor(rawType, parent.getClass());
-
-        //noinspection unchecked
         return (T) defaultConstructor.newInstance(parent);
     }
 

@@ -19,23 +19,30 @@ package org.datalorax.populace.jaxb;
 import org.datalorax.populace.core.populate.GraphPopulator;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
+import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.datalorax.populace.jaxb.field.filter.ExcludeXmlTransientFields;
-import org.datalorax.populace.jaxb.instance.JaxBInstanceFactory;
+import org.datalorax.populace.jaxb.instance.JaxbInstanceFactory;
+import org.datalorax.populace.jaxb.walk.inspection.annotation.JaxbAnnotationInspector;
 
 /**
  * Installer for JaxB specific handlers
  *
  * @author Andrew Coates - 12/03/2015.
  */
-public final class PopulaceJaxB {
-    private PopulaceJaxB() {
+public final class PopulaceJaxb {
+    private PopulaceJaxb() {
     }
 
     public static GraphPopulator.Builder install(final GraphPopulator.Builder builder) {
+        final Inspectors.Builder inspectorsBuilder = builder.inspectorsBuilder();
         return builder
             .withFieldFilter(FieldFilters.and(builder.getFieldFilter(), ExcludeXmlTransientFields.INSTANCE))
+            .withInspectors(inspectorsBuilder
+                    .withAnnotationInspector(Inspectors.chain(JaxbAnnotationInspector.INSTANCE, inspectorsBuilder.getAnnotationInspector()))
+                    .build()
+            )
             .withInstanceFactories(builder.instanceFactoriesBuilder()
-                    .withDefaultFactory(InstanceFactories.chain(JaxBInstanceFactory.INSTANCE, InstanceFactories.defaults().getDefault()))
+                    .withDefaultFactory(InstanceFactories.chain(JaxbInstanceFactory.INSTANCE, InstanceFactories.defaults().getDefault()))
                     .build()
             );
     }

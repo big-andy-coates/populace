@@ -34,7 +34,7 @@ public class FieldInspector implements Inspector {
     @Override
     public Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
         final List<RawField> collected = new ArrayList<>();
-        collectFields(type, collected);
+        collectFields(type, inspectors, collected);
         collectSuperFields(type, inspectors, collected);
         return ImmutableSet.copyOf(collected);
     }
@@ -54,13 +54,13 @@ public class FieldInspector implements Inspector {
         return getClass().getSimpleName();
     }
 
-    private void collectFields(final Class<?> type, final List<RawField> collected) {
+    private void collectFields(final Class<?> type, final Inspectors inspectors, final List<RawField> collected) {
         for (Field field : type.getDeclaredFields()) {
             if (field.isSynthetic()) {
                 continue;
             }
 
-            collected.add(new RawField(field));
+            collected.add(new RawField(field, inspectors.getAnnotationInspector()));
         }
     }
 

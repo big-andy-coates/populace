@@ -41,14 +41,8 @@ public class EnsureMapNotEmptyMutator implements Mutator {
 
     @Override
     public Map<?, ?> mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config) {
-        Validate.isAssignableFrom(Map.class, TypeUtils.getRawType(type, Map.class), "Mutator only supports map types");
-        if (currentValue == null) {
-            return null;
-        }
-
-        //noinspection unchecked
-        final Map<Object, Object> map = (Map) currentValue;
-        if (!map.isEmpty()) {
+        final Map<Object, Object> map = ensureMap(type, currentValue);
+        if (map == null || !map.isEmpty()) {
             return map;
         }
 
@@ -71,6 +65,12 @@ public class EnsureMapNotEmptyMutator implements Mutator {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<Object, Object> ensureMap(final Type type, final Object currentValue) {
+        Validate.isAssignableFrom(Map.class, TypeUtils.getRawType(type, Map.class), "Mutator only supports map types");
+        return (Map<Object, Object>) currentValue;
     }
 
     private Object createNewKey(Type mapType, final Object parent, PopulatorContext config) {

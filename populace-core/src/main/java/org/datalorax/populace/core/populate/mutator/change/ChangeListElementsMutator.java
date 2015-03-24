@@ -46,14 +46,11 @@ public class ChangeListElementsMutator implements Mutator {
 
     @Override
     public List<?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
-        Validate.isAssignableFrom(List.class, TypeUtils.getRawType(type, null), "Unsupported type %s", type);
-
-        if (currentValue == null) {
+        final List<Object> list = ensureList(type, currentValue);
+        if (list == null) {
             return null;
         }
 
-        //noinspection unchecked
-        final List<Object> list = (List)currentValue;
         final Type defaultComponentType = getComponentType(type);
         final Mutator defaultMutator = config.getMutator(defaultComponentType);
 
@@ -81,6 +78,12 @@ public class ChangeListElementsMutator implements Mutator {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Object> ensureList(final Type type, final Object currentValue) {
+        Validate.isAssignableFrom(List.class, TypeUtils.getRawType(type, null), "Unsupported type %s", type);
+        return (List<Object>) currentValue;
     }
 
     private Type getComponentType(Type type) {

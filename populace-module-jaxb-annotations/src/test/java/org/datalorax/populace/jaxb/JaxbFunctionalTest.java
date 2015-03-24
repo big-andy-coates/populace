@@ -30,12 +30,12 @@ import static org.hamcrest.Matchers.*;
 /**
  * @author Andrew Coates - 09/03/2015.
  */
-public class JaxBFunctionalTest {
+public class JaxbFunctionalTest {
     private GraphPopulator populator;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        populator = PopulaceJaxB.install(GraphPopulator.newBuilder()).build();
+        populator = PopulaceJaxb.install(GraphPopulator.newBuilder()).build();
     }
 
     @Test

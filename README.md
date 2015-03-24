@@ -7,9 +7,6 @@ instantiated, and how existing fields are mutated. This allows Populace to be fu
 model and the needs of your project.
 
 ## Usage
-Populace will soon be available on Maven Central. For now you can download the latest release from the
-[releases page](https://github.com/datalorax/populace/releases).
-
 Populace is comprised of two core features:
 
 1. *Graph walking* - `GraphWalker` allows a user supplied `visitor` to visit all of the fields on an object, and all of
@@ -113,6 +110,38 @@ Or you can populate an existing instance of `Contacts` with the following code:
 ```java
 GraphPopulator populator = GraphPopulator.newBuilder().build();
 Contacts contacts = populator.populate(new Contacts());
+```
+
+## Download
+
+Populace is available from maven central.
+
+### Maven
+If you're using [Maven](http://maven.apache.org/), then add the following to your `pom.xml`:
+```
+<dependencies>
+  <dependency>
+      <groupId>com.github.datalorax.populace</groupId>
+      <artifactId>populace-core</artifactId>
+      <version>0.3.1</version>
+  </dependency>
+</dependencies>
+```
+
+### Gradle
+If you're using [Gradle](http://www.gradle.org/), then add the following to your `build.gradle`:
+
+```
+dependencies {
+    compile 'com.github.datalorax.populace:populace-core:0.3.1'
+}
+```
+
+# SBT
+If you're using [SBT](http://code.google.com/p/simple-build-tool/), then add the following to your project:
+
+```
+libraryDependencies += "com.github.datalorax.populace" % "populace-core" % "0.3.1"
 ```
 
 ## License

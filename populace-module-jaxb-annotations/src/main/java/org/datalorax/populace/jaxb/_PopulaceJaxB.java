@@ -21,7 +21,7 @@ import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.datalorax.populace.jaxb.field.filter.ExcludeXmlTransientFields;
-import org.datalorax.populace.jaxb.instance.JaxBInstanceFactory;
+import org.datalorax.populace.jaxb.instance._JaxBInstanceFactory;
 import org.datalorax.populace.jaxb.walk.inspection.annotation.JaxbAnnotationInspector;
 
 /**
@@ -29,8 +29,8 @@ import org.datalorax.populace.jaxb.walk.inspection.annotation.JaxbAnnotationInsp
  *
  * @author Andrew Coates - 12/03/2015.
  */
-public final class PopulaceJaxB {
-    private PopulaceJaxB() {
+public final class _PopulaceJaxB {
+    private _PopulaceJaxB() {
     }
 
     public static GraphPopulator.Builder install(final GraphPopulator.Builder builder) {
@@ -42,7 +42,7 @@ public final class PopulaceJaxB {
                     .build()
             )
             .withInstanceFactories(builder.instanceFactoriesBuilder()
-                    .withDefaultFactory(InstanceFactories.chain(JaxBInstanceFactory.INSTANCE, InstanceFactories.defaults().getDefault()))
+                    .withDefaultFactory(InstanceFactories.chain(_JaxBInstanceFactory.INSTANCE, InstanceFactories.defaults().getDefault()))
                     .build()
             );
     }

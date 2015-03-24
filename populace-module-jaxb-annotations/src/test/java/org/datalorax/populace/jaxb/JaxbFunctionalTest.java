@@ -35,7 +35,7 @@ public class JaxbFunctionalTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        populator = PopulaceJaxB.install(GraphPopulator.newBuilder()).build();
+        populator = _PopulaceJaxB.install(GraphPopulator.newBuilder()).build();
     }
 
     @Test

@@ -17,7 +17,7 @@
 package org.datalorax.populace.jaxb.example;
 
 import org.datalorax.populace.core.populate.GraphPopulator;
-import org.datalorax.populace.jaxb.PopulaceJaxB;
+import org.datalorax.populace.jaxb._PopulaceJaxB;
 import org.datalorax.populace.jaxb.example.domain.Contacts;
 import org.testng.annotations.Test;
 
@@ -27,11 +27,11 @@ import static org.hamcrest.Matchers.*;
 /**
  * @author Andrew Coates - 20/03/2015.
  */
-public class JaxBPopulateExample {
+public class _JaxBPopulateExample {
     @Test
     public void shouldPopulateContacts() throws Exception {
         // Example used in JaxB README.md
-        GraphPopulator populator = PopulaceJaxB.install(GraphPopulator.newBuilder()).build();
+        GraphPopulator populator = _PopulaceJaxB.install(GraphPopulator.newBuilder()).build();
         Contacts contacts = populator.populate(Contacts.class);
 
         assertThat(contacts.getPeople(), is(not(empty())));

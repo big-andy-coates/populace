@@ -93,6 +93,6 @@ public class JaxBInstanceFactory implements InstanceFactory {
         }
     }
 
-    // Todo(ac): @XmlTypeAdapter can also be present on field, or getter or setter, or in package-info.java.
     // Todo(ac): @XmlTransient can also be on getter or setter, or class
+    // Todo(ac): @XmlTypeAdapter can also be present on field, or getter or setter, or in package-info.java.
 }

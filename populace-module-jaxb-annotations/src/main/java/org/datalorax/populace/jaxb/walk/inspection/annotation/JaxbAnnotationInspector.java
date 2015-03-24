@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.jaxb.walk.annotation;
+package org.datalorax.populace.jaxb.walk.inspection.annotation;
 
 import com.google.common.collect.ImmutableSet;
 import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;

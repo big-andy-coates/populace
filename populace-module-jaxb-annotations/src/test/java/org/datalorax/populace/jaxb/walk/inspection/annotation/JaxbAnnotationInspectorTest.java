@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.jaxb.walk.annotation;
+package org.datalorax.populace.jaxb.walk.inspection.annotation;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

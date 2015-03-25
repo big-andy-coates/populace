@@ -147,7 +147,7 @@ public class JaxbAnnotationInspectorTest {
         assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterThree.class)));
     }
 
-    @Test(enabled = false)  // Todo(ac):
+    @Test
     public void shouldPickRightOverloadedSetter() throws Exception {
         // Given:
         class Super {

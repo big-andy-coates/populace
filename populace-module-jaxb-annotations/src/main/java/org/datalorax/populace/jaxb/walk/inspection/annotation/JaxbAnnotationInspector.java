@@ -114,7 +114,7 @@ public class JaxbAnnotationInspector implements AnnotationInspector {
             }
 
             if (!genericParameterTypes[0].equals(field.getGenericType())) {
-                return null;
+                continue;
             }
 
             return method;

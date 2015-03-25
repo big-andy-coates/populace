@@ -17,7 +17,6 @@
 package org.datalorax.populace.jaxb.field.filter;
 
 import org.datalorax.populace.core.walk.field.FieldInfo;
-import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -30,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 public class ExcludeXmlTransientFieldsTest {
     private FieldInfo field;
-    private FieldFilter filter;
+    private ExcludeXmlTransientFields filter;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -42,19 +41,61 @@ public class ExcludeXmlTransientFieldsTest {
     @Test
     public void shouldExcludeIfFieldIsMarkedXmlTransient() throws Exception {
         // Given:
-        when(field.getAnnotation(XmlTransient.class)).thenReturn(mock(XmlTransient.class));
+        givenFieldMarkedTransient();
+        givenClassNotMarkedTransient();
 
         // Then:
         assertThat(filter.include(field), is(false));
     }
 
     @Test
-    public void shouldIncludeIfFieldNotMarkedWithXmlTransient() throws Exception {
+    public void shouldExcludeIfFieldTypeIsMarkedXmlTransient() throws Exception {
         // Given:
-        when(field.getAnnotation(XmlTransient.class)).thenReturn(null);
+        givenFieldNotMarkedTransient();
+        givenClassMarkedTransient();
+
+        // Then:
+        assertThat(filter.include(field), is(false));
+    }
+
+    @Test
+    public void shouldExcludeIfBothFieldClassAndTypeAreMarkedXmlTransient() throws Exception {
+        // Given:
+        givenFieldMarkedTransient();
+        givenClassMarkedTransient();
+
+        // Then:
+        assertThat(filter.include(field), is(false));
+    }
+
+    @Test
+    public void shouldIncludeIfFieldAndClassNotMarkedWithXmlTransient() throws Exception {
+        // Given:
+        givenFieldNotMarkedTransient();
+        givenClassNotMarkedTransient();
 
         // Then:
         assertThat(filter.include(field), is(true));
     }
 
+    private void givenFieldNotMarkedTransient() {
+        when(field.getAnnotation(XmlTransient.class)).thenReturn(null);
+    }
+
+    private void givenFieldMarkedTransient() {
+        when(field.getAnnotation(XmlTransient.class)).thenReturn(mock(XmlTransient.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void givenClassNotMarkedTransient() {
+        when(field.getType()).thenReturn((Class) String.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void givenClassMarkedTransient() {
+        @XmlTransient
+        class TransientType {
+        }
+        when(field.getType()).thenReturn((Class) TransientType.class);
+    }
 }

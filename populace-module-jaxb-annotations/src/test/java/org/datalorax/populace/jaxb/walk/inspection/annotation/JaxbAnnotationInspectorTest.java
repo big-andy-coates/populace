@@ -147,6 +147,48 @@ public class JaxbAnnotationInspectorTest {
         assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterThree.class)));
     }
 
+    @Test(enabled = false)  // Todo(ac):
+    public void shouldPickRightOverloadedSetter() throws Exception {
+        // Given:
+        class Super {
+        }
+
+        class Sub extends Super {
+        }
+
+        class SubSub extends Sub {
+        }
+
+        class TypeWithOverloadedAccessors {
+            public Sub field;
+
+            public Sub getField() {
+                return null;
+            }
+
+            @XmlJavaTypeAdapter(TypeAdapterOne.class)
+            public void setField(final Super v) {
+            }
+
+            @XmlJavaTypeAdapter(TypeAdapterTwo.class)
+            public void setField(final Sub v) {
+            }
+
+            @XmlJavaTypeAdapter(TypeAdapterThree.class)
+            public void setField(final SubSub v) {
+            }
+
+            @XmlJavaTypeAdapter(TypeAdapterThree.class)
+            public void setField(final long unrelated) {
+            }
+        }
+        final Field field = TypeWithOverloadedAccessors.class.getDeclaredField("field");
+
+        // Then:
+        assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class), is(instanceOf(XmlJavaTypeAdapter.class)));
+        assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterTwo.class)));
+    }
+
     @Test
     public void shouldIgnoreAccessorsIfFieldIsMarkedAsXmlElement() throws Exception {
         // Given:
@@ -222,6 +264,7 @@ public class JaxbAnnotationInspectorTest {
         assertThat(inspector.getAnnotation(smallField, XmlJavaTypeAdapter.class), is(notNullValue()));
         assertThat(inspector.getAnnotation(smallField, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterTwo.class)));
     }
+
 
     private class TypeAdapterOne extends XmlAdapter {
         @Override

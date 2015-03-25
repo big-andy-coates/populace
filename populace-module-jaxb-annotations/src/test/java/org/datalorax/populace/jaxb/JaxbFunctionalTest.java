@@ -40,6 +40,11 @@ public class JaxbFunctionalTest {
 
     @Test
     public void shouldHandleInterfaceToConcreteTypeAdapters() throws Exception {
+        // Given:
+        class TypeWithFieldUsingRelatedTypeAdapter {
+            public RelatedBoundInterface type;
+        }
+
         // When:
         final TypeWithFieldUsingRelatedTypeAdapter populated = populator.populate(new TypeWithFieldUsingRelatedTypeAdapter());
 
@@ -49,6 +54,11 @@ public class JaxbFunctionalTest {
 
     @Test
     public void shouldHandleUnrelatedTypeAdapters() throws Exception {
+        // Given:
+        class TypeWithFieldUsingUnrelatedTypeAdapter {
+            public UnrelatedBoundType type;
+        }
+
         // When:
         final TypeWithFieldUsingUnrelatedTypeAdapter populated = populator.populate(new TypeWithFieldUsingUnrelatedTypeAdapter());
 
@@ -56,10 +66,15 @@ public class JaxbFunctionalTest {
         assertThat(populated.type, is(instanceOf(UnrelatedBoundType.class)));
     }
 
-    // Todo(ac): Field level @XmlJavaTypeAdapter support
-
     @Test
-    public void shouldIgnoreXmlTransient() throws Exception {
+    public void shouldIgnoreXmlTransientFields() throws Exception {
+        // Given:
+        class TypeWithXmlTransientField {
+            @XmlTransient
+            public String _transient;
+            public String _nonTransient;
+        }
+
         // When:
         final TypeWithXmlTransientField populated = populator.populate(new TypeWithXmlTransientField());
 
@@ -68,15 +83,61 @@ public class JaxbFunctionalTest {
         assertThat(populated._nonTransient, is(notNullValue()));
     }
 
-    // Todo(ac): Getter/Setter level @XmlTransient support
+    @Test
+    public void shouldIgnoreXmlTransientAccessors() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithXmlTransientAccessors {
+            private String transientGetter;
+            private String transientSetter;
+
+            @XmlTransient
+            public String getTransientGetter() {
+                return "";
+            }
+
+            public void setTransientGetter(final String v) {
+            }
+
+            public String getTransientSetter() {
+                return "";
+            }
+
+            @XmlTransient
+            public void setTransientSetter(final String v) {
+            }
+        }
+
+        // When:
+        final TypeWithXmlTransientAccessors populated = populator.populate(new TypeWithXmlTransientAccessors());
+
+        // Then:
+        assertThat(populated.transientGetter, is(nullValue()));
+        assertThat(populated.transientSetter, is(nullValue()));
+    }
+
+    @Test
+    public void shouldIgnoreXmlTransientTypes() throws Exception {
+        // Given:
+        @XmlTransient
+        class TransientType {
+        }
+
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithXmlTransientTypeField {
+            private TransientType field;
+        }
+
+        // When:
+        final TypeWithXmlTransientTypeField populated = populator.populate(new TypeWithXmlTransientTypeField());
+
+        // Then:
+        assertThat(populated.field, is(nullValue()));
+    }
 
     @XmlJavaTypeAdapter(AdapterForInterfaceWithTypeAdapter.class)
     public static interface RelatedBoundInterface {
 
-    }
-
-    public static class TypeWithFieldUsingRelatedTypeAdapter {
-        public RelatedBoundInterface type;
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -94,10 +155,6 @@ public class JaxbFunctionalTest {
         public RelatedValueType marshal(final RelatedBoundInterface bound) throws Exception {
             return (RelatedValueType) bound;
         }
-    }
-
-    public static class TypeWithFieldUsingUnrelatedTypeAdapter {
-        public UnrelatedBoundType type;
     }
 
     @XmlJavaTypeAdapter(AdapterBetweenUnrelated.class)
@@ -124,12 +181,4 @@ public class JaxbFunctionalTest {
             return valueType;
         }
     }
-
-    public static class TypeWithXmlTransientField {
-        @XmlTransient
-        public String _transient;
-        public String _nonTransient;
-    }
-
-    // Todo(ac): XmlFieldAccess, + XmlElement on field or get/setter, XmlValue, XmlAnyElement
 }

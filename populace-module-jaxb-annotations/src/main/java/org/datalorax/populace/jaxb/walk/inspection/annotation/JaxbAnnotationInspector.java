@@ -48,6 +48,21 @@ public class JaxbAnnotationInspector implements AnnotationInspector {
         return annotation;
     }
 
+    @Override
+    public boolean equals(final Object that) {
+        return this == that || (that != null && getClass() == that.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
+
     private <T extends Annotation> T getFromField(final Field field, final Class<T> type) {
         return field.getAnnotation(type);
     }

@@ -54,6 +54,16 @@ public class RawField {
     }
 
     /**
+     * Returns a {@code Class} object that represents the declared type for the field represented by this {@code
+     * RawField}.
+     *
+     * @return the type of the field.
+     */
+    public Class<?> getType() {
+        return field.getType();
+    }
+
+    /**
      * Returns a {@code Type} object that represents the declared type for the field represented by this {@code RawField}
      * object.
      * <p>

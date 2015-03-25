@@ -32,7 +32,29 @@ public class ExcludeXmlTransientFields implements FieldFilter {
 
     @Override
     public boolean include(final FieldInfo field) {
-        // Todo(ac): needs to work with getter / setter too. But need to switch to FieldInfo first.
+        return fieldNotXmlTransient(field) && fieldTypeNotXmlTransient(field);
+    }
+
+    @Override
+    public boolean equals(final Object that) {
+        return this == that || (that != null && getClass() == that.getClass());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
+
+    private boolean fieldNotXmlTransient(final FieldInfo field) {
         return field.getAnnotation(XmlTransient.class) == null;
+    }
+
+    private boolean fieldTypeNotXmlTransient(final FieldInfo field) {
+        return field.getType().getAnnotation(XmlTransient.class) == null;
     }
 }

@@ -27,6 +27,7 @@ import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitors;
 import org.datalorax.populace.core.walk.visitor.SetAccessibleFieldVisitor;
 
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
@@ -49,6 +50,10 @@ public final class GraphPopulator {
         return new GraphPopulatorBuilder();
     }
 
+    private static boolean isNotInnerClass(final Class<?> type) {
+        return type.getEnclosingClass() == null || Modifier.isStatic(type.getModifiers());
+    }
+
     // Todo(ac): needs a TypeReference<T> parameter...
     public <T> T populate(final T instance) {
         walker.walk(instance, FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, new Visitor()));
@@ -56,6 +61,7 @@ public final class GraphPopulator {
     }
 
     public <T> T populate(final Class<T> type) {
+        Validate.isTrue(isNotInnerClass(type), "Non-static inner classes are not supported");
         final T instance = createInstance(type);
         return populate(instance);
     }

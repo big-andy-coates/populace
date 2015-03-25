@@ -59,6 +59,16 @@ public class GraphPopulatorTest {
         verify(walker).walk(eq(instance), any(FieldVisitor.class));
     }
 
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldThrowOnInnerClassType() throws Exception {
+        // Given:
+        class InnerClass {
+        }
+
+        // When:
+        populator.populate(InnerClass.class);
+    }
+
     // Todo(ac): how about some tests?
 
     private Mutator givenMutatorRegistered(Type... types) {

@@ -48,6 +48,17 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandlePrimitivesByDefault() throws Exception {
         // Given:
+        class WithPrimitives {
+            private boolean _boolean = false;
+            private byte _byte = 9;
+            private char _char = 'a';
+            private short _short = 1;
+            private int _int = 2;
+            private long _long = 3L;
+            private float _float = 1.2f;
+            private double _double = 1.2;
+        }
+
         final WithPrimitives original = new WithPrimitives();
 
         // When:
@@ -67,6 +78,18 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldNullHandleBoxedPrimitivesByDefault() throws Exception {
         // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithBoxedPrimitives {
+            private Boolean _boolean;
+            private Byte _byte;
+            private Character _char;
+            private Short _short;
+            private Integer _int;
+            private Long _long;
+            private Float _float;
+            private Double _double;
+        }
+
         final WithBoxedPrimitives original = new WithBoxedPrimitives();
 
         // When:
@@ -87,10 +110,21 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleNullBoxedPrimitivesByDefault() throws Exception {
         // Given:
-        final WithBoxedPrimitives original = new WithBoxedPrimitives().givenPopulated();
+        class WithBoxedPrimitives {
+            private Boolean _boolean = false;
+            private Byte _byte = 9;
+            private Character _char = 'a';
+            private Short _short = 1;
+            private Integer _int = 2;
+            private Long _long = 3L;
+            private Float _float = 1.2f;
+            private Double _double = 1.2;
+        }
+
+        final WithBoxedPrimitives original = new WithBoxedPrimitives();
 
         // When:
-        final WithBoxedPrimitives populated = populator.populate(new WithBoxedPrimitives().givenPopulated());
+        final WithBoxedPrimitives populated = populator.populate(new WithBoxedPrimitives());
 
         // Then:
         assertThat(populated._boolean, is(not(nullValue())));
@@ -107,6 +141,10 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleStringByDefault() throws Exception {
         // Given:
+        class WithString {
+            public String _string = "someString";
+        }
+
         final WithString original = new WithString();
 
         // When:
@@ -120,6 +158,10 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleDatesByDefault() throws Exception {
         // Given:
+        class WithDate {
+            public Date _date = new Date();
+        }
+
         final WithDate original = new WithDate();
 
         // When:
@@ -133,6 +175,10 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleArraysByDefault() throws Exception {
         // Given:
+        class WithArray {
+            public int[] _array = new int[]{1, 2, 3};
+        }
+
         final WithArray original = new WithArray();
 
         // When:
@@ -146,6 +192,21 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleCollectionsByDefault() throws Exception {
         // Given:
+        class WithCollections {
+            public List<String> _nullList = null;
+            public List<String> _list = new ArrayList<String>() {{
+                add("this");
+            }};
+            public Set<Long> _nullSet = null;
+            public Set<Long> _set = new HashSet<Long>() {{
+                add(42L);
+            }};
+            public Collection<Long> _nullCollection = null;
+            public Collection<Long> _collection = new ArrayList<Long>() {{
+                add(42L);
+            }};
+        }
+
         final WithCollections original = new WithCollections();
 
         // When:
@@ -169,6 +230,13 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleMapsByDefault() throws Exception {
         // Given:
+        class TypeWithMapField {
+            public Map<String, Integer> _nullMap = null;
+            public Map<String, Integer> _map = new HashMap<String, Integer>() {{
+                put("this", 42);
+            }};
+        }
+
         final TypeWithMapField original = new TypeWithMapField();
 
         // When:
@@ -183,6 +251,10 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleEnumsByDefault() throws Exception {
         // Given:
+        class TypeWithEnumField {
+            public SomeEnum _enum;
+        }
+
         final TypeWithEnumField original = new TypeWithEnumField();
 
         // When:
@@ -196,10 +268,19 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleContainersOfCustomTypes() throws Exception {
         // Given:
-        final WithMapOfCustomType original = new WithMapOfCustomType();
+        class CustomType {
+        }
+
+        class TpeWithMapOfCustomType {
+            public Map<String, CustomType> _map = new HashMap<String, CustomType>() {{
+                put("this", new CustomType());
+            }};
+        }
+
+        final TpeWithMapOfCustomType original = new TpeWithMapOfCustomType();
 
         // When:
-        final WithMapOfCustomType populated = populator.populate(new WithMapOfCustomType());
+        final TpeWithMapOfCustomType populated = populator.populate(new TpeWithMapOfCustomType());
 
         // Then:
         assertThat(populated._map, is(not(nullValue())));
@@ -209,6 +290,13 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleNestedObjects() throws Exception {
         // Given:
+        class TypeWithNestedObject {
+            public Nested _nestedType = new Nested();
+
+            class Nested {
+                private int _int = 42;
+            }
+        }
         final TypeWithNestedObject original = new TypeWithNestedObject();
 
         // When:
@@ -221,8 +309,16 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleNullNestedObjects() throws Exception {
         // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithNestedObject {
+            public Nested _nestedType = null;
+
+            class Nested {
+                private int field;
+            }
+        }
+
         final TypeWithNestedObject currentValue = new TypeWithNestedObject();
-        currentValue._nestedType = null;
 
         // When:
         final TypeWithNestedObject populated = populator.populate(currentValue);
@@ -232,8 +328,40 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
+    public void shouldWorkWithPrivateConstructors() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class SomeType {
+            private TypeWithPrivateConstructor field;
+
+            class TypeWithPrivateConstructor {
+                private TypeWithPrivateConstructor() {
+                }
+            }
+        }
+
+        // When:
+        final SomeType populated = populator.populate(new SomeType());
+
+        // Then:
+        assertThat(populated.field, is(not(nullValue())));
+    }
+
+    @Test
     public void shouldHandleTypeVariables() throws Exception {
         // Given:
+        class TypeWithTypeVariables<K, V> {
+            public Map<K, V> _map = new HashMap<>();
+        }
+
+        class TypeWrappingTypeWithTypeVariables {
+            public TypeWithTypeVariables<String, Integer> _type = new TypeWithTypeVariables<>();
+
+            public TypeWrappingTypeWithTypeVariables() {
+                _type._map.put("key", null);
+            }
+        }
+
         final TypeWrappingTypeWithTypeVariables currentValue = new TypeWrappingTypeWithTypeVariables();
 
         // When:
@@ -246,6 +374,9 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleNullObjectFieldsByDefault() throws Exception {
         // Given:
+        class TypeWithObjectField {
+            public Object _null;
+        }
         final TypeWithObjectField currentValue = new TypeWithObjectField();
 
         // When:
@@ -258,6 +389,10 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldAllowCustomNullObjectHandling() throws Exception {
         // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithObjectField {
+            public Object _null;
+        }
         final NullObjectStrategy nullHandler = mock(NullObjectStrategy.class);
         final TypeWithObjectField currentValue = new TypeWithObjectField();
         final GraphPopulator.Builder builder = GraphPopulator.newBuilder();
@@ -276,15 +411,19 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandlePopulateCallWithJustTheType() throws Exception {
         // When:
-        final TypeWithNestedObject populated = populator.populate(TypeWithNestedObject.class);
+        final SimpleType populated = populator.populate(SimpleType.class);
 
         // Then:
-        assertThat(populated._nestedType, is(not(nullValue())));
+        assertThat(populated.field, is(not(nullValue())));
     }
 
     @Test
     public void shouldWorkWithFinalFields() throws Exception {
         // Given:
+        class TypeWithFinalField {
+            public final long _final = 9L;
+        }
+
         final TypeWithFinalField original = new TypeWithFinalField();
 
         // When:
@@ -298,6 +437,10 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldIgnoreTransientFieldsByDefault() throws Exception {
         // Given:
+        class TypeWithTransientField {
+            public transient long _transient = 9L;
+        }
+
         final TypeWithTransientField original = new TypeWithTransientField();
 
         // When:
@@ -322,10 +465,15 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldUseCustomMutators() throws Exception {
         // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class SomeType {
+            private int _int = 2;
+        }
+
         final Mutator mutator = givenMutatorRegistered(int.class);
 
         // When:
-        populator.populate(new WithPrimitives());
+        populator.populate(new SomeType());
 
         // Then:
         verify(mutator).mutate(eq(int.class), eq(2), anyObject(), isA(PopulatorContext.class));
@@ -334,23 +482,31 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHonourFieldFilterList() throws Exception {
         // Given:
-        final WithPrimitives original = new WithPrimitives();
-        populator = GraphPopulator.newBuilder().withFieldFilter(field -> {
-            final String name = field.getName();
-            return !(name.equals("_char") || name.equals("_int"));
-        }).build();
+        @SuppressWarnings("UnusedDeclaration")
+        class SomeType {
+            private double excludeMe;
+        }
+
+        final SomeType original = new SomeType();
+        populator = GraphPopulator.newBuilder().withFieldFilter(field -> !field.getName().equals("excludeMe")).build();
 
         // When:
-        final WithPrimitives populated = populator.populate(new WithPrimitives());
+        final SomeType populated = populator.populate(new SomeType());
 
         // Then:
-        assertThat(populated._char, is(original._char));
-        assertThat(populated._int, is(original._int));
+        assertThat(populated.excludeMe, is(original.excludeMe));
     }
 
     @Test
     public void shouldWorkWithRawGenericTypes() throws Exception {
         // Given:
+        class WithRawGenericType {
+            @SuppressWarnings("unchecked")
+            public List _rawList = new ArrayList() {{
+                add("something");
+            }};
+        }
+
         final WithRawGenericType original = new WithRawGenericType();
 
         // When:
@@ -364,6 +520,10 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldWorkWithBigDecimals() throws Exception {
         // Given:
+        class TypeWithBigDecimalField {
+            public BigDecimal _bigDecimal;
+        }
+
         final TypeWithBigDecimalField original = new TypeWithBigDecimalField();
 
         // When:
@@ -376,6 +536,7 @@ public class GraphPopulatorFunctionTest {
 
     // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
     // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
+    // Todo(Ac): Add test for Map<String, List<Integer>>
 
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(NoOpMutator.class);
@@ -387,138 +548,17 @@ public class GraphPopulatorFunctionTest {
         return mutator;
     }
 
-    private static class WithPrimitives {
-        private boolean _boolean = false;
-        private byte _byte = 9;
-        private char _char = 'a';
-        private short _short = 1;
-        private int _int = 2;
-        private long _long = 3L;
-        private float _float = 1.2f;
-        private double _double = 1.2;
+    @SuppressWarnings("UnusedDeclaration")
+    public enum SomeEnum {
+        forkHandles, fourCandles
     }
 
-    private static class WithBoxedPrimitives {
-        private Boolean _boolean;
-        private Byte _byte;
-        private Character _char;
-        private Short _short;
-        private Integer _int;
-        private Long _long;
-        private Float _float;
-        private Double _double;
-
-        public WithBoxedPrimitives givenPopulated() {
-            _boolean = false;
-            _byte = 9;
-            _char = 'a';
-            _short = 1;
-            _int = 2;
-            _long = 3L;
-            _float = 1.2f;
-            _double = 1.2;
-            return this;
-        }
-    }
-
-    private static class WithString {
-        public String _string = "someString";
-    }
-
-    private static class WithDate {
-        public Date _date = new Date();
-    }
-
-    private static class WithArray {
-        public int[] _array = new int[]{1, 2, 3};
-    }
-
-    private static class WithPrivateConstructor {
-        private int _int = 42;
-
-        private WithPrivateConstructor() {
-        }
-    }
-
-    private static class TypeWithNestedObject {
-        public WithPrivateConstructor _nestedType = new WithPrivateConstructor();
-    }
-
-    private static class TypeWithFinalField {
-        public final long _final = 9L;
-    }
-
-    private static class TypeWithTransientField {
-        public transient long _transient = 9L;
+    @SuppressWarnings("UnusedDeclaration")
+    private static class SimpleType {
+        private int field;
     }
 
     private static class TypeWithStaticField {
         public static long _static = 9L;
     }
-
-    private static class WithCollections {
-        public List<String> _nullList = null;
-        public List<String> _list = new ArrayList<String>() {{
-            add("this");
-        }};
-        public Set<Long> _nullSet = null;
-        public Set<Long> _set = new HashSet<Long>() {{
-            add(42L);
-        }};
-        public Collection<Long> _nullCollection = null;
-        public Collection<Long> _collection = new ArrayList<Long>() {{
-            add(42L);
-        }};
-    }
-
-    private static class TypeWithMapField {
-        public Map<String, Integer> _nullMap = null;
-        public Map<String, Integer> _map = new HashMap<String, Integer>() {{
-            put("this", 42);
-        }};
-    }
-
-    private static class TypeWithEnumField {
-        public SomeEnum _enum;
-
-        @SuppressWarnings("UnusedDeclaration")
-        public enum SomeEnum {
-            forkHandles, fourCandles
-        }
-    }
-
-    private static class WithMapOfCustomType {
-        public Map<String, WithString> _map = new HashMap<String, WithString>() {{
-            put("this", new WithString());
-        }};
-    }
-
-    private static class WithRawGenericType {
-        @SuppressWarnings("unchecked")
-        public List _rawList = new ArrayList() {{
-            add("something");
-        }};
-    }
-
-    public static class TypeWrappingTypeWithTypeVariables {
-        public TypeWithTypeVariables<String, Integer> _type = new TypeWithTypeVariables<>();
-
-        public TypeWrappingTypeWithTypeVariables() {
-            _type._map.put("key", null);
-        }
-    }
-
-    public static class TypeWithTypeVariables<K, V> {
-        public Map<K, V> _map = new HashMap<>();
-    }
-
-    public static class TypeWithObjectField {
-        public Object _null;
-    }
-
-    public static class TypeWithBigDecimalField {
-        public BigDecimal _bigDecimal;
-    }
 }
-
-// Todo(Ac): Add test for Map<String, List<Integer>>

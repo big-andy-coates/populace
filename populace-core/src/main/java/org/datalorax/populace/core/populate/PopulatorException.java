@@ -20,6 +20,10 @@ package org.datalorax.populace.core.populate;
  * @author Andrew Coates - 02/03/2015.
  */
 public class PopulatorException extends RuntimeException {
+    public PopulatorException(final String message) {
+        super(message);
+    }
+
     public PopulatorException(final String message, final Throwable cause) {
         super(message, cause);
     }

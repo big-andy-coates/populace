@@ -19,8 +19,7 @@ package org.datalorax.populace.core.populate.mutator.change;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.core.populate.Mutator;
 import org.datalorax.populace.core.populate.PopulatorContext;
-import org.datalorax.populace.core.populate.mutator.NoOpMutator;
-import org.datalorax.populace.core.populate.mutator.ensure.EnsureMutator;
+import org.datalorax.populace.core.populate.PopulatorException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -35,10 +34,12 @@ import static org.mockito.Mockito.*;
 public class ChangeCollectionElementsMutatorTest {
     private Mutator mutator;
     private PopulatorContext config;
+    private Mutator componentMutator;
 
     @BeforeMethod
     public void setUp() throws Exception {
         config = mock(PopulatorContext.class);
+        componentMutator = mock(Mutator.class);
 
         mutator = new ChangeCollectionElementsMutator();
     }
@@ -60,7 +61,8 @@ public class ChangeCollectionElementsMutatorTest {
     @Test
     public void shouldNotBlowUpOnRawBaseType() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
+        givenCreateInstanceWillReturn("new Instance");
+        givenComponentMutatorWillReturnSomethingDifferent();
         final Set currentValue = new HashSet();
 
         // When:
@@ -70,8 +72,9 @@ public class ChangeCollectionElementsMutatorTest {
     @Test
     public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
-        final Set currentValue = new HashSet();
+        givenCreateInstanceWillReturn("new Instance");
+        givenComponentMutatorWillReturnSomethingDifferent();
+        final Set<String> currentValue = new HashSet<>();
 
         // When:
         mutator.mutate(Set.class, currentValue, null, config);
@@ -80,10 +83,9 @@ public class ChangeCollectionElementsMutatorTest {
     @Test
     public void shouldKeepTryingMutateAndAddElementToTheSetUntilItSucceeds() throws Exception {
         // Given:
-        final Mutator componentMutator = mock(Mutator.class);
+        givenCreateInstanceWillReturn("new");
+        givenMutatorRegistered();
         final Type setType = TypeUtils.parameterize(Set.class, String.class);
-        givenCreateInstanceWillReturn(String.class, "new");
-        givenMutatorRegistered(String.class, componentMutator);
         final Set<String> currentValue = new HashSet<String>() {{
             add("value_1");
             add("value_2");
@@ -103,10 +105,10 @@ public class ChangeCollectionElementsMutatorTest {
     @Test
     public void shouldNotPassParentObjectToComponentMutatorAsItsNotTheParentOfTheComponent() throws Exception {
         // Given:
+        givenCreateInstanceWillReturn("new Instance");
+        givenComponentMutatorWillReturnSomethingDifferent();
         final Object parent = new Object();
-        final Mutator componentMutator = mock(Mutator.class);
         final Type setType = TypeUtils.parameterize(Collection.class, String.class);
-        givenMutatorRegistered(String.class, componentMutator);
         final Collection currentValue = new ArrayList<String>() {{
             add("value1");
         }};
@@ -119,12 +121,12 @@ public class ChangeCollectionElementsMutatorTest {
     }
 
     @Test
-    public void shouldGetComponentMutatorUsingTypeFromFirstNonNullElement() throws Exception {
+    public void shouldGetComponentTypeUsingTypeFromFirstNonNullElement() throws Exception {
         // Given:
-        givenCreateInstanceWillReturn(Long.class, 4L);
-        givenMutatorRegistered(Long.class, EnsureMutator.INSTANCE);
+        givenCreateInstanceWillReturn(4L);
+        givenComponentMutatorWillReturnSomethingDifferent();
         final Type baseSetType = TypeUtils.parameterize(Collection.class, Number.class);
-        final Set<Long> currentValue = new HashSet<Long>() {{
+        final Set<Number> currentValue = new HashSet<Number>() {{
             add(null);
             add(1L);
         }};
@@ -133,13 +135,16 @@ public class ChangeCollectionElementsMutatorTest {
         mutator.mutate(baseSetType, currentValue, null, config);
 
         // Then:
+        verify(config).createInstance(eq(Long.class), anyObject());
         verify(config).getMutator(Long.class);
+        verify(componentMutator).mutate(eq(Long.class), anyObject(), anyObject(), any(PopulatorContext.class));
     }
 
-    @Test(enabled = false)  // Enable once InstanceFactory can handle Long
-    public void shouldGetComponentMutatorUsingFieldTypeIfNoNonNullElements() throws Exception {
+    @Test
+    public void shouldGetComponentTypeUsingFieldTypeIfNoNonNullElements() throws Exception {
         // Given:
-        givenMutatorRegistered(Number.class, EnsureMutator.INSTANCE);
+        givenCreateInstanceWillReturn(4L);
+        givenComponentMutatorWillReturnSomethingDifferent();
         final Type baseSetType = TypeUtils.parameterize(Set.class, Number.class);
         final Set<Long> currentValue = new HashSet<Long>() {{
             add(null);
@@ -149,46 +154,92 @@ public class ChangeCollectionElementsMutatorTest {
         mutator.mutate(baseSetType, currentValue, null, config);
 
         // Then:
+        verify(config).createInstance(eq(Number.class), anyObject());
         verify(config).getMutator(Number.class);
+        verify(componentMutator).mutate(eq(Number.class), anyObject(), anyObject(), any(PopulatorContext.class));
     }
 
     @Test
-    public void shouldPassActualValueTypeToMutatorWhenSetContainsNonNullElement() throws Exception {
+    public void shouldNotThrowIfComponentMutatorDoesNotMutateButCollectionUpdated() throws Exception {
         // Given:
-        final Mutator componentMutator = mock(Mutator.class);
-        givenMutatorRegistered(Long.class, componentMutator);
-        final Type baseType = TypeUtils.parameterize(Set.class, Number.class);
-        final Set<Long> currentValue = new HashSet<Long>() {{
-            add(1L);
-        }};
-
-        // When:
-        mutator.mutate(baseType, currentValue, null, config);
-
-        // Then:
-        verify(componentMutator).mutate(eq(Long.class), anyObject(), anyObject(), any(PopulatorContext.class));
-    }
-
-    @Test
-    public void shouldPassFieldValueTypeToMutatorIfMapHasNoNonNullElements() throws Exception {
-        // Given:
-        final Mutator componentMutator = mock(Mutator.class);
-        givenMutatorRegistered(Number.class, componentMutator);
-        final Type baseType = TypeUtils.parameterize(Collection.class, Number.class);
+        givenCreateInstanceWillReturn(1L);
+        givenComponentMutatorDoesNotMutate();
+        final Type baseType = TypeUtils.parameterize(Set.class, Long.class);
         final Set<Long> currentValue = new HashSet<>();
 
         // When:
         mutator.mutate(baseType, currentValue, null, config);
-
-        // Then:
-        verify(componentMutator).mutate(eq(Number.class), anyObject(), anyObject(), any(PopulatorContext.class));
     }
 
-    private void givenMutatorRegistered(Class<?> type, Mutator mutator) {
-        when(config.getMutator(type)).thenReturn(mutator);
+    @Test(expectedExceptions = PopulatorException.class)
+    public void shouldThrowIfComponentMutatorDoesNotMutateAndCollectionNotUpdated() throws Exception {
+        // Given:
+        givenCreateInstanceWillReturn(1L);
+        givenComponentMutatorDoesNotMutate();
+        final Type baseType = TypeUtils.parameterize(Set.class, Long.class);
+        final Set<Long> currentValue = new HashSet<>();
+        currentValue.add(1L);
+
+        // When:
+        mutator.mutate(baseType, currentValue, null, config);
     }
 
-    private <T> void givenCreateInstanceWillReturn(final Class<T> type, final T instance) {
-        when(config.createInstance(type, null)).thenReturn(instance);
+    @Test
+    public void shouldNotThrowIfMutatorReturnsNullAndCollectionUpdated() throws Exception {
+        // Given:
+        givenCreateInstanceWillReturn(1L);
+        givenComponentMutatorWillReturnNull();
+        final Type baseType = TypeUtils.parameterize(Set.class, Long.class);
+        final Set<Long> currentValue = new HashSet<>();
+
+        // When:
+        mutator.mutate(baseType, currentValue, null, config);
+    }
+
+    @Test(expectedExceptions = PopulatorException.class)
+    public void shouldThrowIfMutatorReturnsNullAndCollectionNotUpdated() throws Exception {
+        // Given:
+        givenCreateInstanceWillReturn(1L);
+        givenComponentMutatorWillReturnNull();
+        final Type baseType = TypeUtils.parameterize(Set.class, Long.class);
+        final Set<Long> currentValue = new HashSet<>();
+        currentValue.add(null);
+
+        // When:
+        mutator.mutate(baseType, currentValue, null, config);
+    }
+
+    private void givenMutatorRegistered() {
+        when(config.getMutator(any(Class.class))).thenReturn(componentMutator);
+    }
+
+    private void givenComponentMutatorDoesNotMutate() {
+        givenMutatorRegistered();
+        when(componentMutator.mutate(any(Type.class), anyObject(), anyObject(), any(PopulatorContext.class)))
+            .thenAnswer(invocation -> invocation.getArguments()[1]);
+    }
+
+    private void givenComponentMutatorWillReturnSomethingDifferent() {
+        givenMutatorRegistered();
+        when(componentMutator.mutate(any(Type.class), anyObject(), anyObject(), any(PopulatorContext.class)))
+            .thenAnswer(invocation -> {
+                final Object current = invocation.getArguments()[1];
+                if (current instanceof String) {
+                    return current + " changed";
+                }
+                if (current instanceof Long) {
+                    return 1L + (Long) current;
+                }
+                throw new UnsupportedOperationException("Test needs extending to support: " + current.getClass());
+            });
+    }
+
+    private void givenComponentMutatorWillReturnNull() {
+        givenMutatorRegistered();
+        when(componentMutator.mutate(any(Type.class), anyObject(), anyObject(), any(PopulatorContext.class))).thenReturn(null);
+    }
+
+    private <T> void givenCreateInstanceWillReturn(final T instance) {
+        when(config.createInstance(any(Type.class), anyObject())).thenReturn(instance);
     }
 }

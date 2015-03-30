@@ -47,13 +47,13 @@ public class JaxbInstanceFactory implements InstanceFactory {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T createInstance(Class<? extends T> rawType, Object parent, final InstanceFactories instanceFactories) {
-        final XmlJavaTypeAdapter annotation = rawType.getAnnotation(XmlJavaTypeAdapter.class);
+    public <T> T createInstance(Class<? extends T> type, Object parent, final InstanceFactories instanceFactories) {
+        final XmlJavaTypeAdapter annotation = type.getAnnotation(XmlJavaTypeAdapter.class);
         if (annotation == null) {
             return null;
         }
 
-        final Object value = createValueInstance(rawType, parent, instanceFactories, annotation);
+        final Object value = createValueInstance(type, parent, instanceFactories, annotation);
         return (T) convert(annotation.value(), value, instanceFactories);
     }
 

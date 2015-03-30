@@ -33,7 +33,7 @@ import java.util.Collection;
  * {@link org.datalorax.populace.core.populate.mutator.ensure.EnsureMutator} to first ensure the current value is not null,
  * if the required behaviour is to always ensure a non-null, populated collection instance.
  * <p>
- * Non null values are modified by adding an additional instance to the collection of the required type.
+ * Non null values are modified by adding an additional entry to the collection of the required type.
  * This is done as mutating entries of some collection implementations, e.g. {@link java.util.Set}, can invalidate the
  * collection and lead to undefined behaviour.
  *

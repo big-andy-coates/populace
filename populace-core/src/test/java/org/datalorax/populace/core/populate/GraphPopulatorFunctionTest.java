@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.populate;
 
+import org.datalorax.populace.core.CustomCollection;
 import org.datalorax.populace.core.populate.instance.NullObjectStrategy;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.populate.mutator.NoOpMutator;
@@ -26,6 +27,7 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -39,6 +41,13 @@ import static org.mockito.Mockito.*;
  */
 public class GraphPopulatorFunctionTest {
     private GraphPopulator populator;
+
+    private static <T> void assertSetValid(final HashSet<T> original) {
+        // Check set hasn't been made invalid by values being mutated after they've been inserted into the set:
+        final HashSet<T> copy = new HashSet<>(original);
+        assertThat(original, is(equalTo(copy)));
+        assertThat(copy, is(equalTo(original)));
+    }
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -173,10 +182,14 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldHandleArraysByDefault() throws Exception {
+    public void shouldHandleArraysOfMutableTypes() throws Exception {
         // Given:
         class WithArray {
-            public int[] _array = new int[]{1, 2, 3};
+            public TypeThatCanBeMutated[] _array = new TypeThatCanBeMutated[]{
+                new TypeThatCanBeMutated("1"),
+                new TypeThatCanBeMutated("2"),
+                new TypeThatCanBeMutated("3")
+            };
         }
 
         final WithArray original = new WithArray();
@@ -190,20 +203,60 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldHandleCollectionsByDefault() throws Exception {
+    public void shouldHandleArraysOfImmutableTypes() throws Exception {
+        // Given:
+        class WithArray {
+            public String[] _arrayOfTerminal = new String[]{"1", "2", "3"};
+        }
+
+        final WithArray original = new WithArray();
+
+        // When:
+        final WithArray populated = populator.populate(new WithArray());
+
+        // Then:
+        assertThat(populated._arrayOfTerminal, is(not(nullValue())));
+        assertThat(populated._arrayOfTerminal, is(not(original._arrayOfTerminal)));
+    }
+
+    @Test
+    public void shouldHandleNullArrays() throws Exception {
+        // Given:
+        class WithArray {
+            public String[] _nullArray;
+        }
+
+        // When:
+        final WithArray populated = populator.populate(new WithArray());
+
+        // Then:
+        assertThat(populated._nullArray, is(not(nullValue())));
+        assertThat(populated._nullArray.length, is(not(0)));
+    }
+
+    @Test
+    public void shouldHandleArraysWithNulls() throws Exception {
+        // Given:
+        class WithArray {
+            public TypeThatCanBeMutated[] _arrayWithNull = new TypeThatCanBeMutated[]{null};
+        }
+
+        final WithArray original = new WithArray();
+
+        // When:
+        final WithArray populated = populator.populate(new WithArray());
+
+        // Then:
+        assertThat(populated._arrayWithNull, is(not(nullValue())));
+        assertThat(populated._arrayWithNull, is(not(original._arrayWithNull)));
+    }
+
+    @Test
+    public void shouldHandleCollectionsOfMutableTypes() throws Exception {
         // Given:
         class WithCollections {
-            public List<String> _nullList = null;
-            public List<String> _list = new ArrayList<String>() {{
-                add("this");
-            }};
-            public Set<Long> _nullSet = null;
-            public Set<Long> _set = new HashSet<Long>() {{
-                add(42L);
-            }};
-            public Collection<Long> _nullCollection = null;
-            public Collection<Long> _collection = new ArrayList<Long>() {{
-                add(42L);
+            public Collection<TypeThatCanBeMutated> _collection = new ArrayList<TypeThatCanBeMutated>() {{
+                add(new TypeThatCanBeMutated());
             }};
         }
 
@@ -213,27 +266,288 @@ public class GraphPopulatorFunctionTest {
         final WithCollections populated = populator.populate(new WithCollections());
 
         // Then:
-        assertThat(populated._list, is(not(nullValue())));
-        assertThat(populated._set, is(not(nullValue())));
         assertThat(populated._collection, is(not(nullValue())));
-        assertThat(populated._list, is(not(original._list)));
-        assertThat(populated._set, is(not(original._set)));
         assertThat(populated._collection, is(not(original._collection)));
-        assertThat(populated._nullList, is(not(nullValue())));
-        assertThat(populated._nullSet, is(not(nullValue())));
-        assertThat(populated._nullCollection, is(not(empty())));
-        assertThat(populated._nullList, is(not(empty())));
-        assertThat(populated._nullSet, is(not(empty())));
+    }
+
+    @Test
+    public void shouldNotBlowUpOnCollectionsOfImmutableTypes() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithCollections {
+            public Collection<String> _collectionTerminalType = new CustomCollection<String>() {{
+                add("value");
+            }};
+        }
+
+        // When:
+        populator.populate(new WithCollections());
+
+        // Then:
+        // Don't blow Up!
+    }
+
+    @Test
+    public void shouldHandleNullCollections() throws Exception {
+        // Given:
+        class WithCollections {
+            public Collection<TypeThatCanBeMutated> _nullCollection = null;
+        }
+
+        // When:
+        final WithCollections populated = populator.populate(new WithCollections());
+
+        // Then:
         assertThat(populated._nullCollection, is(not(empty())));
     }
 
     @Test
-    public void shouldHandleMapsByDefault() throws Exception {
+    public void shouldHandleEmptyCollectionsOfMutableTypes() throws Exception {
+        // Given:
+        class WithCollections {
+            public Collection<TypeThatCanBeMutated> _collectionWithNull = new CustomCollection<>();
+        }
+
+        final WithCollections original = new WithCollections();
+
+        // When:
+        final WithCollections populated = populator.populate(new WithCollections());
+
+        // Then:
+        assertThat(populated._collectionWithNull, is(not(nullValue())));
+        assertThat(populated._collectionWithNull, is(not(original._collectionWithNull)));
+    }
+
+    @Test
+    public void shouldHandleEmptyCollectionsOfImmutableTypes() throws Exception {
+        // Given:
+        class WithCollections {
+            public Collection<TypeThatCanBeMutated> _collectionWithNull = new CustomCollection<>();
+        }
+
+        final WithCollections original = new WithCollections();
+
+        // When:
+        final WithCollections populated = populator.populate(new WithCollections());
+
+        // Then:
+        assertThat(populated._collectionWithNull, is(not(nullValue())));
+        assertThat(populated._collectionWithNull, is(not(original._collectionWithNull)));
+    }
+
+    @Test
+    public void shouldHandleListsOfMutableTypes() throws Exception {
+        // Given:
+        class WithLists {
+            public List<TypeThatCanBeMutated> _list = new ArrayList<TypeThatCanBeMutated>() {{
+                add(new TypeThatCanBeMutated());
+            }};
+        }
+
+        final WithLists original = new WithLists();
+
+        // When:
+        final WithLists populated = populator.populate(new WithLists());
+
+        // Then:
+        assertThat(populated._list, is(not(nullValue())));
+        assertThat(populated._list, is(not(original._list)));
+    }
+
+    @Test
+    public void shouldHandleListsWithNulls() throws Exception {
+        // Given:
+        class WithLists {
+            public List<TypeThatCanBeMutated> _listWithNull = new ArrayList<TypeThatCanBeMutated>() {{
+                add(null);
+            }};
+        }
+
+        final WithLists original = new WithLists();
+
+        // When:
+        final WithLists populated = populator.populate(new WithLists());
+
+        // Then:
+        assertThat(populated._listWithNull, is(not(nullValue())));
+        assertThat(populated._listWithNull, is(not(original._listWithNull)));
+    }
+
+    @Test
+    public void shouldHandleNullLists() throws Exception {
+        // Given:
+        class WithLists {
+            public List<TypeThatCanBeMutated> _nullList = null;
+        }
+
+        // When:
+        final WithLists populated = populator.populate(new WithLists());
+
+        // Then:
+        assertThat(populated._nullList, is(not(nullValue())));
+        assertThat(populated._nullList, is(not(empty())));
+    }
+
+    @Test
+    public void shouldHandleListsOfImmutableTypes() throws Exception {
+        // Given:
+        class WithLists {
+            public List<String> _listTerminalType = new ArrayList<String>() {{
+                add("1");
+            }};
+        }
+
+        final WithLists original = new WithLists();
+
+        // When:
+        final WithLists populated = populator.populate(new WithLists());
+
+        // Then:
+        assertThat(populated._listTerminalType, is(not(nullValue())));
+        assertThat(populated._listTerminalType, is(not(original._listTerminalType)));
+    }
+
+    @Test
+    public void shouldHandleListsInCollectionFields() throws Exception {
+        // Given:
+        class WithLists {
+            public Collection<TypeThatCanBeMutated> _listWithNull = new ArrayList<>();
+        }
+
+        final WithLists original = new WithLists();
+
+        // When:
+        final WithLists populated = populator.populate(new WithLists());
+
+        // Then:
+        assertThat(populated._listWithNull, is(not(nullValue())));
+        assertThat(populated._listWithNull, is(not(original._listWithNull)));
+    }
+
+    @Test
+    public void shouldHandleSetsOfMutableTypes() throws Exception {
+        // Given:
+        class WithSets {
+            public Set<TypeThatCanBeMutated> _set = new HashSet<TypeThatCanBeMutated>() {{
+                add(new TypeThatCanBeMutated());
+            }};
+        }
+
+        final WithSets original = new WithSets();
+
+        // When:
+        final WithSets populated = populator.populate(new WithSets());
+
+        // Then:
+        assertThat(populated._set, is(not(nullValue())));
+        assertThat(populated._set, is(not(original._set)));
+    }
+
+    @Test
+    public void shouldHandleSetsOfImmutableTypes() throws Exception {
+        // Given:
+        class WithSets {
+            public Set<String> _setTerminalType = new HashSet<String>() {{
+                add("1");
+            }};
+        }
+
+        final WithSets original = new WithSets();
+
+        // When:
+        final WithSets populated = populator.populate(new WithSets());
+
+        // Then:
+        assertThat(populated._setTerminalType, is(not(nullValue())));
+        assertThat(populated._setTerminalType, is(not(original._setTerminalType)));
+    }
+
+    @Test
+    public void shouldHandleNullSets() throws Exception {
+        // Given:
+        class WithSets {
+            public Set<TypeThatCanBeMutated> _nullSet = null;
+        }
+
+        // When:
+        final WithSets populated = populator.populate(new WithSets());
+
+        // Then:
+        assertThat(populated._nullSet, is(not(nullValue())));
+        assertThat(populated._nullSet, is(not(empty())));
+    }
+
+    @Test
+    public void shouldHandleSetsWithNulls() throws Exception {
+        // Given:
+        class WithSets {
+            public Set<TypeThatCanBeMutated> _setWithNull = new HashSet<TypeThatCanBeMutated>() {{
+                add(null);
+            }};
+        }
+
+        final WithSets original = new WithSets();
+
+        // When:
+        final WithSets populated = populator.populate(new WithSets());
+
+        // Then:
+        assertThat(populated._setWithNull, is(not(nullValue())));
+        assertThat(populated._setWithNull, is(not(original._setWithNull)));
+    }
+
+    @Test
+    public void shouldHandleSetsInCollectionField() throws Exception {
+        // Given:
+        class WithSets {
+            public Collection<TypeThatCanBeMutated> _collection = new HashSet<TypeThatCanBeMutated>() {{
+                add(new TypeThatCanBeMutated());
+            }};
+        }
+
+        final WithSets original = new WithSets();
+
+        // When:
+        final WithSets populated = populator.populate(new WithSets());
+
+        // Then:
+        assertThat(populated._collection, is(not(nullValue())));
+        assertThat(populated._collection, is(not(original._collection)));
+    }
+
+    @Test
+    public void shouldNotInvalidateHashSets() throws Exception {
+        // Given:
+        class WithSets {
+            public HashSet<TypeThatCanBeMutated> _nullSet = null;
+            public HashSet<TypeThatCanBeMutated> _set = new HashSet<TypeThatCanBeMutated>() {{
+                add(new TypeThatCanBeMutated());
+            }};
+            public HashSet<TypeThatCanBeMutated> _setWithNull = new HashSet<TypeThatCanBeMutated>() {{
+                add(null);
+            }};
+
+            public Collection<TypeThatCanBeMutated> _collection = new HashSet<TypeThatCanBeMutated>() {{
+                add(new TypeThatCanBeMutated());
+            }};
+        }
+
+        // When:
+        final WithSets populated = populator.populate(new WithSets());
+
+        // Then:
+        assertSetValid(populated._nullSet);
+        assertSetValid(populated._set);
+        assertSetValid(populated._setWithNull);
+        assertSetValid((HashSet<TypeThatCanBeMutated>) populated._collection);
+    }
+
+    @Test
+    public void shouldHandleMapsOfNonTerminalValues() throws Exception {
         // Given:
         class TypeWithMapField {
-            public Map<String, Integer> _nullMap = null;
-            public Map<String, Integer> _map = new HashMap<String, Integer>() {{
-                put("this", 42);
+            public Map<String, TypeThatCanBeMutated> _map = new HashMap<String, TypeThatCanBeMutated>() {{
+                put("this", new TypeThatCanBeMutated());
             }};
         }
 
@@ -245,11 +559,62 @@ public class GraphPopulatorFunctionTest {
         // Then:
         assertThat(populated._map, is(not(nullValue())));
         assertThat(populated._map, is(not(original._map)));
+    }
+
+    @Test
+    public void shouldHandleMapsOfTerminalValues() throws Exception {
+        // Given:
+        class TypeWithMapField {
+            public Map<String, String> _mapTerminalType = new HashMap<String, String>() {{
+                put("this", "1");
+            }};
+        }
+
+        final TypeWithMapField original = new TypeWithMapField();
+
+        // When:
+        final TypeWithMapField populated = populator.populate(new TypeWithMapField());
+
+        // Then:
+        assertThat(populated._mapTerminalType, is(not(nullValue())));
+        assertThat(populated._mapTerminalType, is(not(original._mapTerminalType)));
+    }
+
+    @Test
+    public void shouldHandleNullMaps() throws Exception {
+        // Given:
+        class TypeWithMapField {
+            public Map<String, TypeThatCanBeMutated> _nullMap = null;
+        }
+
+        // When:
+        final TypeWithMapField populated = populator.populate(new TypeWithMapField());
+
+        // Then:
         assertThat(populated._nullMap, is(not(nullValue())));
     }
 
     @Test
-    public void shouldHandleEnumsByDefault() throws Exception {
+    public void shouldHandleMapsWithNullValues() throws Exception {
+        // Given:
+        class TypeWithMapField {
+            public Map<String, TypeThatCanBeMutated> _mapWithNull = new HashMap<String, TypeThatCanBeMutated>() {{
+                put("this", null);
+            }};
+        }
+
+        final TypeWithMapField original = new TypeWithMapField();
+
+        // When:
+        final TypeWithMapField populated = populator.populate(new TypeWithMapField());
+
+        // Then:
+        assertThat(populated._mapWithNull, is(not(nullValue())));
+        assertThat(populated._mapWithNull, is(not(original._mapWithNull)));
+    }
+
+    @Test
+    public void shouldHandleEnums() throws Exception {
         // Given:
         class TypeWithEnumField {
             public SomeEnum _enum;
@@ -263,28 +628,6 @@ public class GraphPopulatorFunctionTest {
         // Then:
         assertThat(populated._enum, is(not(nullValue())));
         assertThat(populated._enum, is(not(original._enum)));
-    }
-
-    @Test
-    public void shouldHandleContainersOfCustomTypes() throws Exception {
-        // Given:
-        class CustomType {
-        }
-
-        class TpeWithMapOfCustomType {
-            public Map<String, CustomType> _map = new HashMap<String, CustomType>() {{
-                put("this", new CustomType());
-            }};
-        }
-
-        final TpeWithMapOfCustomType original = new TpeWithMapOfCustomType();
-
-        // When:
-        final TpeWithMapOfCustomType populated = populator.populate(new TpeWithMapOfCustomType());
-
-        // Then:
-        assertThat(populated._map, is(not(nullValue())));
-        assertThat(populated._map, is(not(original._map)));
     }
 
     @Test
@@ -356,10 +699,6 @@ public class GraphPopulatorFunctionTest {
 
         class TypeWrappingTypeWithTypeVariables {
             public TypeWithTypeVariables<String, Integer> _type = new TypeWithTypeVariables<>();
-
-            public TypeWrappingTypeWithTypeVariables() {
-                _type._map.put("key", null);
-            }
         }
 
         final TypeWrappingTypeWithTypeVariables currentValue = new TypeWrappingTypeWithTypeVariables();
@@ -368,7 +707,10 @@ public class GraphPopulatorFunctionTest {
         final TypeWrappingTypeWithTypeVariables populated = populator.populate(currentValue);
 
         // Then:
-        assertThat(populated._type._map.values(), not(hasItem(nullValue())));
+        assertThat(populated._type._map.keySet(), is(not(empty())));
+        assertThat(populated._type._map.keySet().iterator().next(), is(instanceOf(String.class)));
+        assertThat(populated._type._map.keySet().iterator().next(), is(not("")));
+        assertThat(populated._type._map.values().iterator().next(), is(instanceOf(Integer.class)));
     }
 
     @Test
@@ -502,9 +844,7 @@ public class GraphPopulatorFunctionTest {
         // Given:
         class WithRawGenericType {
             @SuppressWarnings("unchecked")
-            public List _rawList = new ArrayList() {{
-                add("something");
-            }};
+            public List _rawList = new ArrayList();
         }
 
         final WithRawGenericType original = new WithRawGenericType();
@@ -516,6 +856,10 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._rawList, is(notNullValue()));
         assertThat(populated._rawList, is(not(original._rawList)));
     }
+
+    // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
+    // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
+    // Todo(Ac): Add test for Map<String, List<Integer>>
 
     @Test
     public void shouldWorkWithBigDecimals() throws Exception {
@@ -533,10 +877,6 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._bigDecimal, is(notNullValue()));
         assertThat(populated._bigDecimal, is(not(original._bigDecimal)));
     }
-
-    // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
-    // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
-    // Todo(Ac): Add test for Map<String, List<Integer>>
 
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(NoOpMutator.class);
@@ -561,4 +901,32 @@ public class GraphPopulatorFunctionTest {
     private static class TypeWithStaticField {
         public static long _static = 9L;
     }
+
+    private static class TypeThatCanBeMutated {
+        public String field = "initial";
+
+        public TypeThatCanBeMutated() {
+        }
+
+        public TypeThatCanBeMutated(final String initial) {
+            field = initial;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final TypeThatCanBeMutated that = (TypeThatCanBeMutated) o;
+            return field.equals(that.field);
+        }
+
+        @Override
+        public int hashCode() {
+            return field.hashCode();
+        }
+    }
+
 }
+
+// Todo(ac): Add 'strict' Populator#strict() that returns a populator built with types that throw on error i.e. throw on null object, throw on immutable colleciton element, etc.

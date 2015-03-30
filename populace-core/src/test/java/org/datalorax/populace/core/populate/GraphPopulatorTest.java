@@ -17,6 +17,7 @@
 package org.datalorax.populace.core.populate;
 
 import org.datalorax.populace.core.walk.GraphWalker;
+import org.datalorax.populace.core.walk.visitor.ElementVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -56,7 +57,7 @@ public class GraphPopulatorTest {
         populator.populate(instance);
 
         // Then:
-        verify(walker).walk(eq(instance), any(FieldVisitor.class));
+        verify(walker).walk(eq(instance), any(FieldVisitor.class), any(ElementVisitor.class));
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)

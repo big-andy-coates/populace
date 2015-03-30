@@ -113,7 +113,7 @@ public class RawField {
      *                                          control and the underlying field is inaccessible.
      * @see java.lang.reflect.Field#set(Object, Object)
      */
-    public void setValue(final Object owningInstance, Object value) throws IllegalAccessException {
+    public void setValue(final Object owningInstance, final Object value) throws IllegalAccessException {
         field.set(owningInstance, value);
     }
 

@@ -22,28 +22,30 @@ import org.datalorax.populace.core.walk.element.RawElement;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
- * An inspector that exposes collections as having no fields, just a collection of child elements
+ * An inspector that exposes {@link java.util.List} as having no fields, just a collection of child elements
  *
  * @author Andrew Coates - 01/03/2015.
  */
-public class CollectionInspector implements Inspector {
-    public static final Inspector INSTANCE = new CollectionInspector();
+public class ListInspector implements Inspector {
+    public static final Inspector INSTANCE = new ListInspector();
+    private static final TypeVariable<Class<List>> LIST_TYPE_VARIABLE = List.class.getTypeParameters()[0];
     private static final TypeVariable<Class<Collection>> COLLECTION_TYPE_VARIABLE = Collection.class.getTypeParameters()[0];
 
     @SuppressWarnings("unchecked")
-    private static Collection<?> ensureCollection(final Object instance) {
-        Validate.isInstanceOf(Collection.class, instance);
-        return (Collection<?>) instance;
+    private static List<Object> ensureList(final Object instance) {
+        Validate.isInstanceOf(List.class, instance);
+        return (List<Object>) instance;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Stream<RawElement> getElements(final Object instance) {
-        final Collection<?> collection = ensureCollection(instance);
+        final List<Object> collection = ensureList(instance);
         return toRawElements(collection);
     }
 
@@ -62,34 +64,52 @@ public class CollectionInspector implements Inspector {
         return getClass().getSimpleName();
     }
 
-    private Stream<RawElement> toRawElements(final Collection<?> collection) {
-        return collection.stream().map(CollectionElement::new);
+    private Stream<RawElement> toRawElements(final List<Object> list) {
+        final int size = list.size();
+
+        final Spliterator<RawElement> spliterator = Spliterators.spliterator(new Iterator<RawElement>() {
+            int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < size;
+            }
+
+            @Override
+            public RawElement next() {
+                return new ListElement(index++, list);
+            }
+        }, size, Spliterator.ORDERED);
+
+        return StreamSupport.stream(spliterator, false);
     }
 
-    private static class CollectionElement implements RawElement {
-        private final Object element;
+    private static class ListElement implements RawElement {
+        private final List<Object> list;
+        private final int index;
 
-        public CollectionElement(final Object element) {
-            this.element = element;
+        public ListElement(final int index, final List<Object> list) {
+            this.index = index;
+            this.list = list;
         }
 
         @Override
         public Type getGenericType(final Type containerType) {
+            final Class<?> rawType = TypeUtils.getRawType(containerType, null);
+            if (List.class.isAssignableFrom(rawType)) {
+                return TypeUtils.getTypeArgument(containerType, List.class, LIST_TYPE_VARIABLE);
+            }
             return TypeUtils.getTypeArgument(containerType, Collection.class, COLLECTION_TYPE_VARIABLE);
         }
 
         @Override
         public Object getValue() {
-            return element;
+            return list.get(index);
         }
 
         @Override
         public void setValue(final Object value) {
-            throw new UnsupportedOperationException("Collection API is not wide enough to support replacing individual elements.\n" +
-                "Likely cause of this exception is an unsupported collection type containing an immutable object.\n" +
-                "Consider adding a custom inspector that knows how to replace entries within the custom collection type\n" +
-                "Or switch to a logging or terminal inspector for the collection type.");
-            // Todo(ac): error message is populate-centric, not walk-centric...
+            list.set(index, value);
         }
     }
 }

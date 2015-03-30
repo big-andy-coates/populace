@@ -19,6 +19,7 @@ package org.datalorax.populace.core.example;
 import org.datalorax.populace.core.example.domain.Contacts;
 import org.datalorax.populace.core.populate.GraphPopulator;
 import org.datalorax.populace.core.walk.GraphWalker;
+import org.datalorax.populace.core.walk.visitor.ElementVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitors;
 import org.datalorax.populace.core.walk.visitor.SetAccessibleFieldVisitor;
@@ -38,10 +39,12 @@ public class WalkExample {
         Contacts contacts = createPopulatedContacts();
         GraphWalker walker = GraphWalker.newBuilder().build();
 
-        FieldVisitor visitor = FieldVisitors.chain(
+        FieldVisitor fieldVisitor = FieldVisitors.chain(
             SetAccessibleFieldVisitor.INSTANCE,
             field -> System.out.println(field.getName() + "=" + field.getValue()));
 
-        walker.walk(contacts, visitor);
+        ElementVisitor elementVisitor = e -> System.out.println("element = " + e.getValue());
+
+        walker.walk(contacts, fieldVisitor, elementVisitor);
     }
 }

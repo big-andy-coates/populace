@@ -17,8 +17,14 @@
 package org.datalorax.populace.core.walk.inspector;
 
 import org.datalorax.populace.core.walk.WalkerContext;
+import org.datalorax.populace.core.walk.element.RawElement;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.stream.Stream;
 
 import static org.mockito.Mockito.mock;
 
@@ -33,6 +39,17 @@ public class CollectionInspectorTest {
         config = mock(WalkerContext.class);
 
         inspector = CollectionInspector.INSTANCE;
+    }
+
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void shouldThrowOnSetElement() throws Exception {
+        // Given:
+        final Collection<String> collection = new HashSet<>();
+        collection.add("bob");
+        final Stream<RawElement> elements = inspector.getElements(collection);
+
+        // When:
+        elements.forEach(e -> e.setValue("hello"));
     }
 
     // Todo(ac): how about some tests?

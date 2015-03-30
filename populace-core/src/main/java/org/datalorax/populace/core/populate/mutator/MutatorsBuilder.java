@@ -18,9 +18,7 @@ package org.datalorax.populace.core.populate.mutator;
 
 import org.datalorax.populace.core.populate.Mutator;
 import org.datalorax.populace.core.populate.mutator.change.*;
-import org.datalorax.populace.core.populate.mutator.ensure.EnsureCollectionNotEmptyMutator;
-import org.datalorax.populace.core.populate.mutator.ensure.EnsureMapNotEmptyMutator;
-import org.datalorax.populace.core.populate.mutator.ensure.EnsureMutator;
+import org.datalorax.populace.core.populate.mutator.ensure.*;
 import org.datalorax.populace.core.util.ImmutableTypeMap;
 import org.datalorax.populace.core.util.TypeUtils;
 
@@ -62,13 +60,13 @@ final class MutatorsBuilder implements  Mutators.Builder {
         builder.withSpecificMutator(Date.class, DateMutator.INSTANCE);
 
         builder.withSuperMutator(Collection.class, chain(EnsureMutator.INSTANCE, ChangeCollectionElementsMutator.INSTANCE));
-        builder.withSuperMutator(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE, ChangeListElementsMutator.INSTANCE));
-        builder.withSuperMutator(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE, ChangeMapValuesMutator.INSTANCE));
+        builder.withSuperMutator(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE, EnsureListElementsNotNullMutator.INSTANCE));
+        builder.withSuperMutator(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE, EnsureMapValuesNotNullMutator.INSTANCE));
         builder.withSuperMutator(Enum.class, chain(EnsureMutator.INSTANCE, ChangeEnumMutator.INSTANCE));
 
-        DEFAULT = builder
-            .withArrayDefaultMutator(ArrayMutator.INSTANCE)
-            .build();
+        builder.withArrayDefaultMutator(chain(EnsureMutator.INSTANCE, EnsureArrayElementsNotNullMutator.INSTANCE));
+
+        DEFAULT = builder.build();
     }
 
     public static Mutators defaults() {

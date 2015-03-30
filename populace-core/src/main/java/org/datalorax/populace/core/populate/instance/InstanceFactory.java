@@ -27,14 +27,12 @@ public interface InstanceFactory {
      * occurred while attempting to create an instance it will through a
      * {@link org.datalorax.populace.core.populate.PopulatorException}. Otherwise the call will return a new instance.
      *
-     * @param <T> the type to create
-     * @param rawType the type to create
-     * @param parent the parent instance, which is needed to create inner class instances. Can be null.
-     * @param instanceFactories the set of instance factories defined in the sytem
+     * @param <T>               the type to create
+     * @param type              the type to create
+     * @param parent            the parent instance, which is needed to create inner class instances. Can be null.
+     * @param instanceFactories the set of instance factories defined in the system
      * @return a new instance or null if the type is not supported by the factory.
      * @throws org.datalorax.populace.core.populate.PopulatorException on failure to instantiate new instance
      */
-    <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories);
-
-    // Todo(ac): do the generics work / add anything to this class?
+    <T> T createInstance(Class<? extends T> type, final Object parent, final InstanceFactories instanceFactories);
 }

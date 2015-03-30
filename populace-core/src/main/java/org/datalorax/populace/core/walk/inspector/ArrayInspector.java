@@ -17,10 +17,17 @@
 package org.datalorax.populace.core.walk.inspector;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.util.TypeUtils;
+import org.datalorax.populace.core.walk.element.RawElement;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * An inspector that exposes arrays as having no fields, just a collection of child elements
@@ -31,28 +38,28 @@ public class ArrayInspector implements Inspector {
     public static final Inspector INSTANCE = new ArrayInspector();
 
     @Override
-    public Iterable<?> getChildren(final Object array) {
-        Validate.isTrue(array.getClass().isArray(), "Expected array type, got: " + array.getClass());
+    public Stream<RawElement> getElements(final Object instance) {
+        Validate.isTrue(instance.getClass().isArray(), "Expected array type, got: " + instance.getClass());
+        final int length = Array.getLength(instance);
 
-        return () -> {
-            final int length = Array.getLength(array);
-            return new Iterator<Object>() {
-                int index = 0;
+        final Spliterator<RawElement> spliterator = Spliterators.spliterator(new Iterator<RawElement>() {
+            int index = 0;
 
-                @Override
-                public boolean hasNext() {
-                    return index != length;
+            @Override
+            public boolean hasNext() {
+                return index != length;
+            }
+
+            @Override
+            public RawElement next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
                 }
+                return new ArrayElement(index++, instance);
+            }
+        }, length, Spliterator.ORDERED);
 
-                @Override
-                public Object next() {
-                    if (!hasNext()) {
-                        throw new NoSuchElementException();
-                    }
-                    return Array.get(array, index++);
-                }
-            };
-        };
+        return StreamSupport.stream(spliterator, false);
     }
 
     @Override
@@ -68,5 +75,31 @@ public class ArrayInspector implements Inspector {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    private class ArrayElement implements RawElement {
+        private final int index;
+        private final Object array;
+
+        public ArrayElement(final int index, final Object array) {
+            Validate.isTrue(index >= 0, "negative index");
+            this.index = index;
+            this.array = array;
+        }
+
+        @Override
+        public Type getGenericType(final Type containerType) {
+            return TypeUtils.getArrayComponentType(containerType);
+        }
+
+        @Override
+        public Object getValue() {
+            return Array.get(array, index);
+        }
+
+        @Override
+        public void setValue(final Object value) {
+            Array.set(array, index, value);
+        }
     }
 }

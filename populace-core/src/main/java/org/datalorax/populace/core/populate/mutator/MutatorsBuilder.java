@@ -21,7 +21,6 @@ import org.datalorax.populace.core.populate.mutator.change.ChangeBigDecimalMutat
 import org.datalorax.populace.core.populate.mutator.change.ChangeEnumMutator;
 import org.datalorax.populace.core.populate.mutator.change.ChangePrimitiveMutator;
 import org.datalorax.populace.core.populate.mutator.change.ChangeStringMutator;
-import org.datalorax.populace.core.populate.mutator.ensure.EnsureArrayElementsNotNullMutator;
 import org.datalorax.populace.core.populate.mutator.ensure.EnsureCollectionNotEmptyMutator;
 import org.datalorax.populace.core.populate.mutator.ensure.EnsureMapNotEmptyMutator;
 import org.datalorax.populace.core.populate.mutator.ensure.EnsureMutator;
@@ -39,7 +38,7 @@ import static org.datalorax.populace.core.populate.mutator.Mutators.chain;
  *
  * @author Andrew Coates - 01/03/2015.
  */
-final class MutatorsBuilder implements  Mutators.Builder {
+final class MutatorsBuilder implements Mutators.Builder {
     private static final Mutators DEFAULT;
 
     private final ImmutableTypeMap.Builder<Mutator> mutatorsBuilder;
@@ -62,14 +61,13 @@ final class MutatorsBuilder implements  Mutators.Builder {
         builder.withSpecificMutator(BigDecimal.class, chain(EnsureMutator.INSTANCE, ChangeBigDecimalMutator.INSTANCE));
         builder.withSpecificMutator(Date.class, DateMutator.INSTANCE);
 
-        // Todo(ac): Just a throught... but can't Collection work similar to set.  Copy contents into array, return RawElements using this. Have #set() call clear collection & add all again
-        builder.withSuperMutator(Collection.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE)); // Todo(ac):, ChangeCollectionElementsMutator.INSTANCE));
-        builder.withSuperMutator(Set.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE)); // todo(ac):, EnsureSetElementsNotNullMutator.INSTANCE));
-        builder.withSuperMutator(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE)); /// , EnsureListElementsNotNullMutator.INSTANCE));
-        builder.withSuperMutator(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE)); //, EnsureMapValuesNotNullMutator.INSTANCE));
+        builder.withSuperMutator(Collection.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE));
+        builder.withSuperMutator(Set.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE));
+        builder.withSuperMutator(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE));
+        builder.withSuperMutator(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE));
         builder.withSuperMutator(Enum.class, chain(EnsureMutator.INSTANCE, ChangeEnumMutator.INSTANCE));
 
-        builder.withArrayDefaultMutator(chain(EnsureMutator.INSTANCE, EnsureArrayElementsNotNullMutator.INSTANCE));
+        builder.withArrayDefaultMutator(EnsureMutator.INSTANCE);
 
         DEFAULT = builder.build();
     }

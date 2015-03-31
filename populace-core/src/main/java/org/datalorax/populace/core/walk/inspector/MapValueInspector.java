@@ -22,8 +22,10 @@ import org.datalorax.populace.core.walk.element.RawElement;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 /**
  * The walker walks each value in the collection, depth first. Keys are not walked.
@@ -41,7 +43,7 @@ public class MapValueInspector implements Inspector {
     }
 
     @Override
-    public Stream<RawElement> getElements(final Object instance) {
+    public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
         final Map<?, Object> map = ensureMap(instance);
         return toRawElements(map);
     }
@@ -61,8 +63,11 @@ public class MapValueInspector implements Inspector {
         return getClass().getSimpleName();
     }
 
-    private Stream<RawElement> toRawElements(final Map<?, Object> map) {
-        return map.entrySet().stream().map(MapElement::new);
+    private Iterator<RawElement> toRawElements(final Map<?, Object> map) {
+        final List<RawElement> elements = map.entrySet().stream()
+            .map(MapElement::new)
+            .collect(Collectors.toList());
+        return elements.iterator();
     }
 
     private class MapElement implements RawElement {

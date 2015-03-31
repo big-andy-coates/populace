@@ -17,17 +17,20 @@
 package org.datalorax.populace.core.populate.mutator;
 
 import org.datalorax.populace.core.populate.Mutator;
-import org.datalorax.populace.core.populate.mutator.change.*;
-import org.datalorax.populace.core.populate.mutator.ensure.*;
+import org.datalorax.populace.core.populate.mutator.change.ChangeBigDecimalMutator;
+import org.datalorax.populace.core.populate.mutator.change.ChangeEnumMutator;
+import org.datalorax.populace.core.populate.mutator.change.ChangePrimitiveMutator;
+import org.datalorax.populace.core.populate.mutator.change.ChangeStringMutator;
+import org.datalorax.populace.core.populate.mutator.ensure.EnsureArrayElementsNotNullMutator;
+import org.datalorax.populace.core.populate.mutator.ensure.EnsureCollectionNotEmptyMutator;
+import org.datalorax.populace.core.populate.mutator.ensure.EnsureMapNotEmptyMutator;
+import org.datalorax.populace.core.populate.mutator.ensure.EnsureMutator;
 import org.datalorax.populace.core.util.ImmutableTypeMap;
 import org.datalorax.populace.core.util.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.datalorax.populace.core.populate.mutator.Mutators.chain;
 
@@ -59,9 +62,11 @@ final class MutatorsBuilder implements  Mutators.Builder {
         builder.withSpecificMutator(BigDecimal.class, chain(EnsureMutator.INSTANCE, ChangeBigDecimalMutator.INSTANCE));
         builder.withSpecificMutator(Date.class, DateMutator.INSTANCE);
 
-        builder.withSuperMutator(Collection.class, chain(EnsureMutator.INSTANCE, ChangeCollectionElementsMutator.INSTANCE));
-        builder.withSuperMutator(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE, EnsureListElementsNotNullMutator.INSTANCE));
-        builder.withSuperMutator(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE, EnsureMapValuesNotNullMutator.INSTANCE));
+        // Todo(ac): Just a throught... but can't Collection work similar to set.  Copy contents into array, return RawElements using this. Have #set() call clear collection & add all again
+        builder.withSuperMutator(Collection.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE)); // Todo(ac):, ChangeCollectionElementsMutator.INSTANCE));
+        builder.withSuperMutator(Set.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE)); // todo(ac):, EnsureSetElementsNotNullMutator.INSTANCE));
+        builder.withSuperMutator(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE)); /// , EnsureListElementsNotNullMutator.INSTANCE));
+        builder.withSuperMutator(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE)); //, EnsureMapValuesNotNullMutator.INSTANCE));
         builder.withSuperMutator(Enum.class, chain(EnsureMutator.INSTANCE, ChangeEnumMutator.INSTANCE));
 
         builder.withArrayDefaultMutator(chain(EnsureMutator.INSTANCE, EnsureArrayElementsNotNullMutator.INSTANCE));

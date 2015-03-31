@@ -39,6 +39,7 @@ import java.util.Collection;
  *
  * @author Andrew Coates - 27/02/2015.
  */
+// Todo(aC): Needed?
 public class ChangeCollectionElementsMutator implements Mutator {
     public static final ChangeCollectionElementsMutator INSTANCE = new ChangeCollectionElementsMutator();
     private static final TypeVariable<Class<Collection>> COLLECTION_TYPE_VARIABLE = Collection.class.getTypeParameters()[0];

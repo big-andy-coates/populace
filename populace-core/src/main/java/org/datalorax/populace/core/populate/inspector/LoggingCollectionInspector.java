@@ -21,9 +21,10 @@ import org.apache.commons.logging.LogFactory;
 import org.datalorax.populace.core.walk.element.RawElement;
 import org.datalorax.populace.core.walk.inspector.CollectionInspector;
 import org.datalorax.populace.core.walk.inspector.Inspector;
+import org.datalorax.populace.core.walk.inspector.Inspectors;
 
 import java.lang.reflect.Type;
-import java.util.stream.Stream;
+import java.util.Iterator;
 
 /**
  * An inspector of collections that logs should any mutator attempt to mutate the collection by setting an element.
@@ -40,8 +41,19 @@ public class LoggingCollectionInspector implements Inspector {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Stream<RawElement> getElements(final Object instance) {
-        return CollectionInspector.INSTANCE.getElements(instance).map(LoggingCollectionElement::new);
+    public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
+        final Iterator<RawElement> elements = CollectionInspector.INSTANCE.getElements(instance, inspectors);
+        return new Iterator<RawElement>() {
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public RawElement next() {
+                return new LoggingCollectionElement(elements.next());
+            }
+        };
     }
 
     @Override

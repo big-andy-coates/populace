@@ -55,4 +55,20 @@ public interface RawElement {
      * @param value the new value for the element of {@code owningInstance} being modified
      */
     void setValue(Object value);
+
+    /**
+     * Called before the {@code element} is walked. Allowing implementations to perform any initialisation needed
+     * <p>
+     * Other methods on this interface will not be called on an instance before this method has been called.
+     */
+    default void preWalk() {
+    }
+
+    /**
+     * Called after the {@code element} is walked. Allowing implementations to perform any post-processing.
+     * <p>
+     * Other methods on this interface will not be called on an instance once this method has been called.
+     */
+    default void postWalk() {
+    }
 }

@@ -31,7 +31,7 @@ import org.datalorax.populace.core.walk.visitor.ElementVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 
 import java.lang.reflect.Type;
-import java.util.stream.Stream;
+import java.util.Iterator;
 
 import static org.datalorax.populace.core.util.TypeUtils.abbreviatedName;
 
@@ -82,9 +82,9 @@ public class GraphWalker {
      * Recursively walk the fields on {@code instance} and any objects it links too, calling back on {@code fieldVisitor}
      * for each field as it is discovered and {@code elementVisitor} for each child element of each collection field.
      *
-     * @param instance the instance to walk
-     * @param fieldVisitor  the visitor to call back on for each discovered field.
-     * @param elementVisitor  the visitor to call back on for each element of a collection field.
+     * @param instance       the instance to walk
+     * @param fieldVisitor   the visitor to call back on for each discovered field.
+     * @param elementVisitor the visitor to call back on for each element of a collection field.
      */
     public void walk(final Object instance, final FieldVisitor fieldVisitor, final ElementVisitor elementVisitor) {
         final Visitors visitors = new Visitors(fieldVisitor, elementVisitor);
@@ -155,14 +155,17 @@ public class GraphWalker {
     }
 
     private void walkElements(final Type containerType, final Object instance, final Visitors visitors, final Inspector inspector, final WalkerStack stack) {
-        // Todo(ac): Streams probably aren't a good fit here as we're mutating elements...
-        final Stream<RawElement> elements = inspector.getElements(instance);
+        // Todo(ac): Figure out best return type and standardise...
+        final Iterator<RawElement> elements = inspector.getElements(instance, context.getInspectors());
 
-        elements.forEach(element -> {
+        while (elements.hasNext()) {
+            final RawElement element = elements.next();
             final WalkerStack elementStack = stack.push(element);
             final ElementInfo elementInfo = new ElementInfo(element, containerType, elementStack, elementStack);
 
             logInfo("Visiting element: " + elementInfo, elementStack);
+
+            element.preWalk();
 
             try {
                 visitors.visitElement(elementInfo);
@@ -176,7 +179,9 @@ public class GraphWalker {
             } else {
                 walk(value.getClass(), value, visitors, elementStack);
             }
-        });
+
+            element.postWalk();
+        }
     }
 
     public interface Builder {

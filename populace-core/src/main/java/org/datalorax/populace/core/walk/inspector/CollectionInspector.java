@@ -23,7 +23,10 @@ import org.datalorax.populace.core.walk.element.RawElement;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Collection;
-import java.util.stream.Stream;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * An inspector that exposes collections as having no fields, just a collection of child elements
@@ -31,18 +34,26 @@ import java.util.stream.Stream;
  * @author Andrew Coates - 01/03/2015.
  */
 public class CollectionInspector implements Inspector {
-    public static final Inspector INSTANCE = new CollectionInspector();
+    public static final CollectionInspector INSTANCE = new CollectionInspector();
     private static final TypeVariable<Class<Collection>> COLLECTION_TYPE_VARIABLE = Collection.class.getTypeParameters()[0];
 
     @SuppressWarnings("unchecked")
     private static Collection<?> ensureCollection(final Object instance) {
         Validate.isInstanceOf(Collection.class, instance);
+        Validate.isTrue(!Set.class.isAssignableFrom(instance.getClass()), "Set types are not supported");
         return (Collection<?>) instance;
+    }
+
+    private static Iterator<RawElement> toRawElements(final Collection<?> collection) {
+        final List<RawElement> elements = collection.stream()
+            .map(CollectionElement::new)
+            .collect(Collectors.toList());
+        return elements.iterator();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Stream<RawElement> getElements(final Object instance) {
+    public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
         final Collection<?> collection = ensureCollection(instance);
         return toRawElements(collection);
     }
@@ -60,10 +71,6 @@ public class CollectionInspector implements Inspector {
     @Override
     public String toString() {
         return getClass().getSimpleName();
-    }
-
-    private Stream<RawElement> toRawElements(final Collection<?> collection) {
-        return collection.stream().map(CollectionElement::new);
     }
 
     private static class CollectionElement implements RawElement {

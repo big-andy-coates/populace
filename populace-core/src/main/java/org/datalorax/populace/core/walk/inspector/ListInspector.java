@@ -22,9 +22,9 @@ import org.datalorax.populace.core.walk.element.RawElement;
 
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.*;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * An inspector that exposes {@link java.util.List} as having no fields, just a collection of child elements
@@ -44,7 +44,7 @@ public class ListInspector implements Inspector {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Stream<RawElement> getElements(final Object instance) {
+    public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
         final List<Object> collection = ensureList(instance);
         return toRawElements(collection);
     }
@@ -64,10 +64,10 @@ public class ListInspector implements Inspector {
         return getClass().getSimpleName();
     }
 
-    private Stream<RawElement> toRawElements(final List<Object> list) {
+    private Iterator<RawElement> toRawElements(final List<Object> list) {
         final int size = list.size();
 
-        final Spliterator<RawElement> spliterator = Spliterators.spliterator(new Iterator<RawElement>() {
+        return new Iterator<RawElement>() {
             int index = 0;
 
             @Override
@@ -79,9 +79,7 @@ public class ListInspector implements Inspector {
             public RawElement next() {
                 return new ListElement(index++, list);
             }
-        }, size, Spliterator.ORDERED);
-
-        return StreamSupport.stream(spliterator, false);
+        };
     }
 
     private static class ListElement implements RawElement {

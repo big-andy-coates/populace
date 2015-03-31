@@ -26,10 +26,8 @@ import org.datalorax.populace.core.walk.field.filter.ExcludeTransientFieldsFilte
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
-import org.datalorax.populace.core.walk.inspector.TerminalInspector;
 
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * Builder implementation for the GraphPopulator
@@ -44,8 +42,7 @@ final class GraphPopulatorBuilder implements GraphPopulator.Builder {
     private GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder()
         .withFieldFilter(DEFAULT_FIELD_FILTER)
         .withInspectors(Inspectors.newBuilder()
-            .withSuperInspector(Set.class, TerminalInspector.INSTANCE)                  // Can't mutate Set elements, this would invalidate the set.
-            .withSuperInspector(Collection.class, LoggingCollectionInspector.INSTANCE)  // Log on immutable elements
+            .withSuperInspector(Collection.class, LoggingCollectionInspector.INSTANCE)  // Log on immutable elements // Todo(ac): Still needed?
             .build());
 
     @Override

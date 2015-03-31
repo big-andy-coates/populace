@@ -24,10 +24,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * An inspector that exposes arrays as having no fields, just a collection of child elements
@@ -38,11 +34,11 @@ public class ArrayInspector implements Inspector {
     public static final Inspector INSTANCE = new ArrayInspector();
 
     @Override
-    public Stream<RawElement> getElements(final Object instance) {
+    public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
         Validate.isTrue(instance.getClass().isArray(), "Expected array type, got: " + instance.getClass());
         final int length = Array.getLength(instance);
 
-        final Spliterator<RawElement> spliterator = Spliterators.spliterator(new Iterator<RawElement>() {
+        return new Iterator<RawElement>() {
             int index = 0;
 
             @Override
@@ -57,9 +53,7 @@ public class ArrayInspector implements Inspector {
                 }
                 return new ArrayElement(index++, instance);
             }
-        }, length, Spliterator.ORDERED);
-
-        return StreamSupport.stream(spliterator, false);
+        };
     }
 
     @Override

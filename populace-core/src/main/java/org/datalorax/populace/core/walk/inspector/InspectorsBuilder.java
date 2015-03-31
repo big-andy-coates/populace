@@ -25,6 +25,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Builder for Inspectors collection
@@ -51,6 +52,7 @@ final class InspectorsBuilder implements Inspectors.Builder {
         final InspectorsBuilder builder = new InspectorsBuilder();
 
         builder.withSuperInspector(Collection.class, CollectionInspector.INSTANCE);
+        builder.withSuperInspector(Set.class, SetInspector.INSTANCE);
         builder.withSuperInspector(List.class, ListInspector.INSTANCE);
         builder.withSuperInspector(Map.class, MapValueInspector.INSTANCE);
 

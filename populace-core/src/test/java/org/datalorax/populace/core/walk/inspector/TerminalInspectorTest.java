@@ -29,7 +29,7 @@ public class TerminalInspectorTest {
 
     @Test
     public void shouldReturnNoChildren() throws Exception {
-        assertThat(TerminalInspector.INSTANCE.getElements(new SomeType()).iterator().hasNext(), is(false));
+        assertThat(TerminalInspector.INSTANCE.getElements(new SomeType(), null).hasNext(), is(false));
     }
 
     @SuppressWarnings("UnusedDeclaration")

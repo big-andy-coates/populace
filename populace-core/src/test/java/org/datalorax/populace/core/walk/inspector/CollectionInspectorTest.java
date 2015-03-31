@@ -16,41 +16,92 @@
 
 package org.datalorax.populace.core.walk.inspector;
 
-import org.datalorax.populace.core.walk.WalkerContext;
+import org.datalorax.populace.core.CustomCollection;
 import org.datalorax.populace.core.walk.element.RawElement;
-import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.stream.Stream;
+import java.util.*;
 
-import static org.mockito.Mockito.mock;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 public class CollectionInspectorTest {
-    private FieldVisitor visitor;
-    private WalkerContext config;
-    private Inspector inspector;
+    private CollectionInspector inspector;
+
+    private static List<RawElement> collectAll(Iterator<RawElement> it) {
+        final List<RawElement> elements = new ArrayList<>();
+        while (it.hasNext()) {
+            elements.add(it.next());
+        }
+        return elements;
+    }
 
     @BeforeMethod
     public void setUp() throws Exception {
-        visitor = mock(FieldVisitor.class);
-        config = mock(WalkerContext.class);
-
         inspector = CollectionInspector.INSTANCE;
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldThrowOnUnsupportedType() throws Exception {
+        // When:
+        inspector.getElements("not a collection", null);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldThrowOnSetType() throws Exception {
+        // When:
+        inspector.getElements(new HashSet<>(), null);
+    }
+
+    @Test
+    public void shouldReturnElements() throws Exception {
+        // Given:
+        final Collection<String> collection = new CustomCollection<>();
+        collection.add("one");
+        collection.add("two");
+
+        // When:
+        final Iterator<RawElement> elements = inspector.getElements(collection, null);
+
+        // Then:
+        assertThat(collectAll(elements), hasSize(2));
+    }
+
+    @Test
+    public void shouldBeAbleToGetElementValue() throws Exception {
+        // Given:
+        final Collection<String> collection = new CustomCollection<>();
+        collection.add("one");
+
+        // When:
+        final Iterator<RawElement> elements = inspector.getElements(collection, null);
+
+        // Then:
+        assertThat(elements.next().getValue(), is("one"));
     }
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
     public void shouldThrowOnSetElement() throws Exception {
         // Given:
-        final Collection<String> collection = new HashSet<>();
+        final Collection<String> collection = new CustomCollection<>();
         collection.add("bob");
-        final Stream<RawElement> elements = inspector.getElements(collection);
+        final Iterator<RawElement> elements = inspector.getElements(collection, null);
 
         // When:
-        elements.forEach(e -> e.setValue("hello"));
+        elements.next().setValue("hello");
     }
 
-    // Todo(ac): how about some tests?
+    @Test
+    public void shouldHandleExistingNullElements() throws Exception {
+        // Given:
+        final Collection<String> collection = new CustomCollection<>();
+        collection.add(null);
+
+        // When:
+        final List<RawElement> elements = collectAll(inspector.getElements(collection, null));
+
+        // Then:
+        assertThat(elements.get(0).getValue(), is(nullValue()));
+    }
 }

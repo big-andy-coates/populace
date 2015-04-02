@@ -16,24 +16,29 @@
 
 package org.datalorax.populace.core.walk;
 
+import org.datalorax.populace.core.CustomCollection;
 import org.datalorax.populace.core.walk.field.FieldInfo;
+import org.datalorax.populace.core.walk.field.FieldInfoMatcher;
 import org.datalorax.populace.core.walk.field.filter.ExcludeStaticFieldsFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.datalorax.populace.core.walk.inspector.TerminalInspector;
+import org.datalorax.populace.core.walk.visitor.ElementVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitors;
 import org.datalorax.populace.core.walk.visitor.SetAccessibleFieldVisitor;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.datalorax.populace.core.walk.field.FieldInfoMatcher.hasField;
+import static org.datalorax.populace.core.walk.element.ElementInfoMatcher.elementOfType;
+import static org.datalorax.populace.core.walk.element.ElementInfoMatcher.elementWithValue;
+import static org.datalorax.populace.core.walk.field.FieldInfoMatcher.fieldInfo;
+import static org.datalorax.populace.core.walk.field.FieldInfoMatcher.fieldWithValue;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Matchers.any;
@@ -43,15 +48,19 @@ import static org.testng.Assert.fail;
 public class GraphWalkerFunctionalTest {
     private GraphWalker walker;
     private FieldFilter filter;
-    private FieldVisitor visitor;
+    private FieldVisitor fieldVisitor;
+    private FieldVisitor accessibleFieldVisitor;
+    private ElementVisitor elementVisitor;
 
     @BeforeMethod
     public void setUp() throws Exception {
         filter = mock(FieldFilter.class);
-        visitor = mock(FieldVisitor.class);
+        fieldVisitor = mock(FieldVisitor.class);
+        elementVisitor = mock(ElementVisitor.class);
 
         when(filter.include(any(FieldInfo.class))).thenReturn(true);
 
+        accessibleFieldVisitor = FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, fieldVisitor);
         walker = GraphWalker.newBuilder().build();
     }
 
@@ -61,12 +70,12 @@ public class GraphWalkerFunctionalTest {
         final TypeWithNestedObject instance = new TypeWithNestedObject();
 
         // When:
-        walker.walk(instance, visitor);
+        walker.walk(instance, accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_nested", TypeWithNestedObject.class, instance)));
-        verify(visitor).visit(argThat(hasField("_nested", NestedType.class, instance._nested)));
-        verifyNoMoreInteractions(visitor);
+        verify(fieldVisitor).visit(argThat(FieldInfoMatcher.fieldInfo("_nested", TypeWithNestedObject.class, instance)));
+        verify(fieldVisitor).visit(argThat(FieldInfoMatcher.fieldInfo("_nested", NestedType.class, instance._nested)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
     }
 
     @Test
@@ -77,86 +86,450 @@ public class GraphWalkerFunctionalTest {
             .build();
 
         // When:
-        walker.walk(new TypeWithStaticField(), visitor);
+        walker.walk(new TypeWithStaticField(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor, never()).visit(argThat(hasField("_static", TypeWithStaticField.class)));
+        verify(fieldVisitor, never()).visit(argThat(fieldInfo("_static", TypeWithStaticField.class)));
     }
 
     @Test
     public void shouldVisitPrimitiveButNotInternals() throws Exception {
         // When:
-        walker.walk(new TypeWithPrimitiveField(), visitor);
+        walker.walk(new TypeWithPrimitiveField(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_primitive", TypeWithPrimitiveField.class)));
-        verifyNoMoreInteractions(visitor);
+        verify(fieldVisitor).visit(argThat(fieldInfo("_primitive", TypeWithPrimitiveField.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
     }
 
     @Test
     public void shouldVisitBoxedPrimitiveButNotInternals() throws Exception {
         // When:
-        walker.walk(new TypeWithBoxedPrimitiveField(), visitor);
+        walker.walk(new TypeWithBoxedPrimitiveField(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_boxed", TypeWithBoxedPrimitiveField.class)));
-        verifyNoMoreInteractions(visitor);
+        verify(fieldVisitor).visit(argThat(fieldInfo("_boxed", TypeWithBoxedPrimitiveField.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
     }
 
     @Test
     public void shouldVisitStringButNotInternals() throws Exception {
         // When:
-        walker.walk(new TypeWithStringField(), visitor);
+        walker.walk(new TypeWithStringField(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_string", TypeWithStringField.class)));
-        verifyNoMoreInteractions(visitor);
+        verify(fieldVisitor).visit(argThat(fieldInfo("_string", TypeWithStringField.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
     }
 
     @Test
     public void shouldVisitEnumsButNotInternals() throws Exception {
         // When:
-        walker.walk(new TypeWithEnumField(), visitor);
+        walker.walk(new TypeWithEnumField(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_enum", TypeWithEnumField.class)));
-        verifyNoMoreInteractions(visitor);
+        verify(fieldVisitor).visit(argThat(fieldInfo("_enum", TypeWithEnumField.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
     }
 
     @Test
-    public void shouldWalkElementsOfArray() throws Exception {
+    public void shouldWalkArraysOfNonTerminalTypes() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithArray {
+            public SomeType[] _array = new SomeType[]{
+                new SomeType("1"),
+                new SomeType("2")
+            };
+        }
+
         // When:
-        walker.walk(new TypeWithArrayField(), visitor);
+        walker.walk(new WithArray(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_array", TypeWithArrayField.class)));
-        verify(visitor).visit(argThat(hasField("_nested", NestedType.class)));
-        verify(visitor).visit(argThat(hasField("_nested", AnotherNestedType.class)));
-        verifyNoMoreInteractions(visitor);
+        verify(fieldVisitor).visit(argThat(fieldInfo("_array", WithArray.class)));
+        verify(elementVisitor, times(2)).visit(argThat(elementOfType(SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "1", SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "2", SomeType.class)));
     }
 
     @Test
-    public void shouldWalkElementsOfCollection() throws Exception {
+    public void shouldWalkArraysOfTerminalTypes() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithArray {
+            public String[] _arrayOfTerminal = new String[]{"1", "2", "3"};
+        }
+
         // When:
-        walker.walk(new TypeWithCollectionField(), visitor);
+        walker.walk(new WithArray(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_collection", TypeWithCollectionField.class)));
-        verify(visitor).visit(argThat(hasField("_nested", NestedType.class)));
-        verify(visitor).visit(argThat(hasField("_nested", AnotherNestedType.class)));
-        verifyNoMoreInteractions(visitor);
+        verify(fieldVisitor).visit(argThat(fieldInfo("_arrayOfTerminal", WithArray.class)));
+        verify(elementVisitor, times(3)).visit(argThat(elementOfType(String.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
     }
 
     @Test
-    public void shouldWalkValuesOfMap() throws Exception {
+    public void shouldWalkNullArray() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithArray {
+            public String[] _nullArray;
+        }
+
         // When:
-        walker.walk(new TypeWithMapField(), visitor);
+        walker.walk(new WithArray(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_map", TypeWithMapField.class)));
-        verify(visitor).visit(argThat(hasField("_nested", NestedType.class)));
-        verify(visitor).visit(argThat(hasField("_nested", AnotherNestedType.class)));
-        verifyNoMoreInteractions(visitor);
+        verify(fieldVisitor).visit(argThat(fieldInfo("_nullArray", WithArray.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkNullArrayElements() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithArray {
+            public SomeType[] _arrayWithNull = new SomeType[]{null};
+        }
+
+        // When:
+        walker.walk(new WithArray(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(elementVisitor).visit(argThat(elementWithValue(null)));
+    }
+
+    @Test
+    public void shouldWalkCollectionsOfNonTerminalTypes() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithCollections {
+            public Collection<SomeType> _collection = new ArrayList<SomeType>() {{
+                add(new SomeType("1"));
+                add(new SomeType("2"));
+            }};
+        }
+
+        // When:
+        walker.walk(new WithCollections(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_collection", WithCollections.class)));
+        verify(elementVisitor, times(2)).visit(argThat(elementOfType(SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "1", SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "2", SomeType.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkCollectionsOfTerminalTypes() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithCollections {
+            public Collection<String> _collectionTerminalType = new ArrayDeque<String>() {{
+                add("1");
+                add("2");
+            }};
+        }
+
+        // When:
+        walker.walk(new WithCollections(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_collectionTerminalType", WithCollections.class)));
+        verify(elementVisitor, times(2)).visit(argThat(elementOfType(String.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkNullCollections() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithCollections {
+            public Collection<SomeType> _nullCollection = null;
+        }
+
+        // When:
+        walker.walk(new WithCollections(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_nullCollection", WithCollections.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkNullCollectionElements() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithCollections {
+            public Collection<SomeType> _collectionWithNull = new CustomCollection<SomeType>() {{
+                add(null);
+            }};
+        }
+
+        // When:
+        walker.walk(new WithCollections(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(elementVisitor).visit(argThat(elementWithValue(nullValue())));
+    }
+
+    @Test
+    public void shouldWalkListsOfNonTerminalTypes() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithLists {
+            public List<SomeType> _list = new ArrayList<SomeType>() {{
+                add(new SomeType("1"));
+                add(new SomeType("2"));
+            }};
+        }
+
+        // When:
+        walker.walk(new WithLists(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_list", WithLists.class)));
+        verify(elementVisitor, times(2)).visit(argThat(elementOfType(SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "1", SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "2", SomeType.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkListsOfTerminalTypes() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithLists {
+            public List<String> _listTerminalType = new ArrayList<String>() {{
+                add("1");
+                add("2");
+            }};
+        }
+
+        // When:
+        walker.walk(new WithLists(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_listTerminalType", WithLists.class)));
+        verify(elementVisitor, times(2)).visit(argThat(elementOfType(String.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkListsWithNullElements() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithLists {
+            public List<SomeType> _listWithNull = new ArrayList<SomeType>() {{
+                add(null);
+            }};
+        }
+
+        // When:
+        walker.walk(new WithLists(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(elementVisitor).visit(argThat(elementWithValue(nullValue())));
+    }
+
+    @Test
+    public void shouldWalkNullLists() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithLists {
+            public List<SomeType> _nullList = null;
+        }
+
+        // When:
+        walker.walk(new WithLists(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_nullList", WithLists.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkListsInCollectionFields() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithLists {
+            public Collection<SomeType> _listWithNull = new ArrayList<>();
+        }
+
+        // When:
+        walker.walk(new WithLists(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_listWithNull", WithLists.class)));
+    }
+
+    @Test
+    public void shouldWalkSetsOfNonTerminalTypes() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithSets {
+            public Set<SomeType> _set = new HashSet<SomeType>() {{
+                add(new SomeType("1"));
+                add(new SomeType("2"));
+            }};
+        }
+
+        // When:
+        walker.walk(new WithSets(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_set", WithSets.class)));
+        verify(elementVisitor, times(2)).visit(argThat(elementOfType(SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "1", SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "2", SomeType.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkSetsOfTerminalTypes() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithSets {
+            public Set<String> _setTerminalType = new HashSet<String>() {{
+                add("1");
+                add("2");
+            }};
+        }
+
+        // When:
+        walker.walk(new WithSets(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_setTerminalType", WithSets.class)));
+        verify(elementVisitor, times(2)).visit(argThat(elementOfType(String.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkNullSetFields() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithSets {
+            public Set<SomeType> _nullSet = null;
+        }
+
+        // When:
+        walker.walk(new WithSets(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldWithValue(equalTo("_nullSet"), nullValue(), equalTo(WithSets.class))));
+    }
+
+    @Test
+    public void shouldWalkNullSetElements() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithSets {
+            public Set<SomeType> _setWithNull = new HashSet<SomeType>() {{
+                add(null);
+            }};
+        }
+
+        // When:
+        walker.walk(new WithSets(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(elementVisitor).visit(argThat(elementWithValue(nullValue())));
+    }
+
+    @Test
+    public void shouldWalkSetsInCollectionField() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithSets {
+            public Collection<SomeType> _collection = new HashSet<SomeType>() {{
+                add(new SomeType("1"));
+            }};
+        }
+
+        // When:
+        walker.walk(new WithSets(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "1", SomeType.class)));
+    }
+
+    @Test
+    public void shouldWalkMapsOfNonTerminalValues() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithMaps {
+            public Map<String, SomeType> _map = new HashMap<String, SomeType>() {{
+                put("this", new SomeType("1"));
+                put("that", new SomeType("2"));
+            }};
+        }
+
+        // When:
+        walker.walk(new WithMaps(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_map", WithMaps.class)));
+        verify(elementVisitor, times(2)).visit(argThat(elementOfType(SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "1", SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("field", "2", SomeType.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldHandleMapsOfTerminalValues() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithMaps {
+            public Map<String, String> _mapTerminalType = new HashMap<String, String>() {{
+                put("this", "1");
+                put("that", "2");
+            }};
+        }
+
+        // When:
+        walker.walk(new WithMaps(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_mapTerminalType", WithMaps.class)));
+        verify(elementVisitor, times(2)).visit(argThat(elementOfType(String.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkNullMapFields() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class WithMaps {
+            public Map<String, SomeType> _nullMap = null;
+        }
+
+        // When:
+        walker.walk(new WithMaps(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor).visit(argThat(fieldInfo("_nullMap", WithMaps.class)));
+        verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    @Test
+    public void shouldWalkNullMapValues() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithMapField {
+            public Map<String, SomeType> _mapWithNull = new HashMap<String, SomeType>() {{
+                put("this", null);
+            }};
+        }
+
+        // When:
+        walker.walk(new TypeWithMapField(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(elementVisitor).visit(argThat(elementWithValue(nullValue())));
     }
 
     @Test
@@ -169,38 +542,49 @@ public class GraphWalkerFunctionalTest {
             .build();
 
         // When:
-        walker.walk(new TypeWithNestedObject(), visitor);
+        walker.walk(new TypeWithNestedObject(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor, never()).visit(argThat(hasField("_nested", NestedType.class)));
+        verify(fieldVisitor, never()).visit(argThat(fieldInfo("_nested", NestedType.class)));
     }
 
     @Test
     public void shouldVisitPrivateFieldsIfSomethingSetsAccessible() throws Exception {
         // Given:
-        final FieldVisitor visitors = FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, visitor);
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithPrivateField {
+            private Object _private;
+        }
+
+        final FieldVisitor visitors = FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, fieldVisitor);
 
         // When:
-        walker.walk(new TypeWithPrivateField(), visitors);
+        walker.walk(new TypeWithPrivateField(), visitors, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_private", TypeWithPrivateField.class)));
+        verify(fieldVisitor).visit(argThat(fieldInfo("_private", TypeWithPrivateField.class)));
     }
 
     @Test(expectedExceptions = WalkerException.class)
     public void shouldThrowOnVisitingPrivateFieldIfNothingSetsAccessible() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithPrivateField {
+            private Object _private;
+        }
+
         // When:
-        walker.walk(new TypeWithPrivateField(), visitor);
+        walker.walk(new TypeWithPrivateField(), fieldVisitor, elementVisitor);
     }
 
     @Test
     public void shouldIncludePathInExceptions() throws Exception {
         // Given:
-        doThrow(new RuntimeException()).when(visitor).visit(any(FieldInfo.class));
+        doThrow(new RuntimeException()).when(fieldVisitor).visit(any(FieldInfo.class));
 
         // When:
         try {
-            walker.walk(new TypeWithNestedObject(), visitor);
+            walker.walk(new TypeWithNestedObject(), accessibleFieldVisitor, elementVisitor);
             fail("should of thrown exception");
         } catch (WalkerException e) {
             // Then:
@@ -212,10 +596,10 @@ public class GraphWalkerFunctionalTest {
     @Test
     public void shouldVisitFieldsOfSuperTypes() throws Exception {
         // When:
-        walker.walk(new TypeWithSuper(), visitor);
+        walker.walk(new TypeWithSuper(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(visitor).visit(argThat(hasField("_superField", SuperType.class)));
+        verify(fieldVisitor).visit(argThat(fieldInfo("_superField", SuperType.class)));
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -236,11 +620,6 @@ public class GraphWalkerFunctionalTest {
     @SuppressWarnings("UnusedDeclaration")
     public static class TypeWithStaticField {
         public static String _static = "value";
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public static class TypeWithPrivateField {
-        private Object _private;
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -295,5 +674,36 @@ public class GraphWalkerFunctionalTest {
 
     }
 
+    private static class SomeType {
+        public String field = "value";
+
+        public SomeType(final String s) {
+            field = s;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            final SomeType someType = (SomeType) o;
+            return field.equals(someType.field);
+        }
+
+        @Override
+        public int hashCode() {
+            return field.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "SomeType{" +
+                "field='" + field + '\'' +
+                '}';
+        }
+    }
+
     // Todo(ac): Add field filter types to include circular references and to not follow parent reference in inner class.
+
+
 }

@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.populate;
+package org.datalorax.populace.core.walk.visitor;
+
+import org.datalorax.populace.core.walk.element.ElementInfo;
 
 /**
- * @author Andrew Coates - 02/03/2015.
+ * Visitor pattern interface for elements
+ *
+ * @author Andrew Coates - 28/02/2015.
  */
-public class PopulatorException extends RuntimeException {
-    public PopulatorException(final String message) {
-        super(message);
-    }
-
-    public PopulatorException(final String message, final Throwable cause) {
-        super(message, cause);
-    }
+public interface ElementVisitor {
+    /**
+     * Called on visiting a element of a collection
+     *
+     * @param element the field being visited     *
+     */
+    void visit(final ElementInfo element);
 }

@@ -20,9 +20,11 @@ import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.walk.GraphWalker;
+import org.datalorax.populace.core.walk.element.ElementInfo;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
+import org.datalorax.populace.core.walk.visitor.ElementVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitors;
 import org.datalorax.populace.core.walk.visitor.SetAccessibleFieldVisitor;
@@ -56,7 +58,9 @@ public final class GraphPopulator {
 
     // Todo(ac): needs a TypeReference<T> parameter...
     public <T> T populate(final T instance) {
-        walker.walk(instance, FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, new Visitor()));
+        final Visitor visitor = new Visitor();
+        final FieldVisitor fieldVisitor = FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, visitor);
+        walker.walk(instance, fieldVisitor, visitor);
         return instance;
     }
 
@@ -100,8 +104,8 @@ public final class GraphPopulator {
     }
 
     public interface Builder {
+        // Todo(ac): these style interfaces should expose and accept builders, not built types
         Builder withFieldFilter(final FieldFilter filter);
-
         FieldFilter getFieldFilter();
 
         Builder withInspectors(final Inspectors inspectors);
@@ -119,16 +123,36 @@ public final class GraphPopulator {
         GraphPopulator build();
     }
 
-    private class Visitor implements FieldVisitor {
+    private class Visitor implements FieldVisitor, ElementVisitor {
         @Override
         public void visit(final FieldInfo field) {
-            final Type type = field.getGenericType();
-            final Object currentValue = field.getValue();
-            // Todo(ac): Add debug log line here...
-            final Mutator mutator = config.getMutator(type);
-            final Object mutated = mutator.mutate(type, currentValue, field.getOwningInstance(), config);
-            if (mutated != currentValue) {
-                field.setValue(mutated);
+            try {
+                final Type type = field.getGenericType();
+                final Object currentValue = field.getValue();
+                // Todo(ac): Get mutator based on field type or currentValue type?
+                final Mutator mutator = config.getMutator(type);
+                final Object mutated = mutator.mutate(type, currentValue, field.getOwningInstance(), config);
+                if (mutated != currentValue) {
+                    field.setValue(mutated);
+                }
+            } catch (Exception e) {
+                throw new PopulatorException("Failed to populate field: " + field, e);
+            }
+        }
+
+        @Override
+        public void visit(final ElementInfo element) {
+            try {
+                final Type type = element.getGenericType();
+                final Object currentValue = element.getValue();
+                // Todo(ac): Get mutator based on collection field type or currentValue type?
+                final Mutator mutator = config.getMutator(type);
+                final Object mutated = mutator.mutate(type, currentValue, null, config);
+                if (mutated != currentValue) {
+                    element.setValue(mutated);
+                }
+            } catch (Exception e) {
+                throw new PopulatorException("Failed to populate element: " + element, e);
             }
         }
     }

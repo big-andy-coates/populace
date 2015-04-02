@@ -17,8 +17,15 @@
 package org.datalorax.populace.core.walk.inspector;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.util.TypeUtils;
+import org.datalorax.populace.core.walk.element.RawElement;
 
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * The walker walks each value in the collection, depth first. Keys are not walked.
@@ -27,11 +34,18 @@ import java.util.Map;
  */
 public class MapValueInspector implements Inspector {
     public static final Inspector INSTANCE = new MapValueInspector();
+    private static final TypeVariable<Class<Map>> MAP_VALUE_TYPE_VARIABLE = Map.class.getTypeParameters()[1];
+
+    @SuppressWarnings("unchecked")
+    private static Map<?, Object> ensureMap(final Object instance) {
+        Validate.isInstanceOf(Map.class, instance);
+        return (Map<?, Object>) instance;
+    }
 
     @Override
-    public Iterable<?> getChildren(final Object instance) {
-        Validate.isInstanceOf(Map.class, instance);
-        return ((Map<?, ?>) instance).values();
+    public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
+        final Map<?, Object> map = ensureMap(instance);
+        return toRawElements(map);
     }
 
     @Override
@@ -47,5 +61,36 @@ public class MapValueInspector implements Inspector {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    private Iterator<RawElement> toRawElements(final Map<?, Object> map) {
+        final List<RawElement> elements = map.entrySet().stream()
+            .map(MapElement::new)
+            .collect(Collectors.toList());
+        return elements.iterator();
+    }
+
+    private class MapElement implements RawElement {
+        private final Map.Entry<?, Object> entry;
+
+        public MapElement(final Map.Entry<?, Object> entry) {
+            Validate.notNull(entry, "entry null");
+            this.entry = entry;
+        }
+
+        @Override
+        public Type getGenericType(final Type containerType) {
+            return TypeUtils.getTypeArgument(containerType, Map.class, MAP_VALUE_TYPE_VARIABLE);
+        }
+
+        @Override
+        public Object getValue() {
+            return entry.getValue();
+        }
+
+        @Override
+        public void setValue(final Object value) {
+            entry.setValue(value);
+        }
     }
 }

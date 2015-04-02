@@ -17,6 +17,7 @@
 package org.datalorax.populace.core.populate;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.populate.inspector.LoggingCollectionInspector;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.walk.GraphWalker;
@@ -25,6 +26,8 @@ import org.datalorax.populace.core.walk.field.filter.ExcludeTransientFieldsFilte
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
+
+import java.util.Collection;
 
 /**
  * Builder implementation for the GraphPopulator
@@ -36,7 +39,11 @@ final class GraphPopulatorBuilder implements GraphPopulator.Builder {
 
     private Mutators mutators = Mutators.defaults();
     private InstanceFactories instanceFactories = InstanceFactories.defaults();
-    private GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder().withFieldFilter(DEFAULT_FIELD_FILTER);
+    private GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder()
+        .withFieldFilter(DEFAULT_FIELD_FILTER)
+        .withInspectors(Inspectors.newBuilder()
+            .withSuperInspector(Collection.class, LoggingCollectionInspector.INSTANCE)  // Log on immutable elements // Todo(ac): Still needed?
+            .build());
 
     @Override
     public GraphPopulatorBuilder withFieldFilter(final FieldFilter filter) {

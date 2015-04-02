@@ -96,6 +96,26 @@ public final class TypeUtils {
     }
 
     /**
+     * Get the array component type of {@code type}.
+     * @param type the type to be checked
+     * @return component type or null if type is not an array type
+     */
+    public static Type getArrayComponentType(final Type type) {
+        return org.apache.commons.lang3.reflect.TypeUtils.getArrayComponentType(type);
+    }
+
+    /**
+     * Learn whether the specified type denotes an array type.
+     *
+     * @param type the type to be checked
+     * @return {@code true} if {@code type} is an array class or a {@link java.lang.reflect.GenericArrayType}.
+     * @see org.apache.commons.lang3.reflect.TypeUtils#isArrayType(java.lang.reflect.Type)
+     */
+    public static boolean isArrayType(final Type type) {
+        return org.apache.commons.lang3.reflect.TypeUtils.isArrayType(type);
+    }
+
+    /**
      * Create a parameterised type instance.
      *
      * @param raw the raw class to create a parameterized type instance for
@@ -109,6 +129,18 @@ public final class TypeUtils {
     }
 
     /**
+     * Create a parameterized type instance.
+     *
+     * @param raw the raw class to create a parameterized type instance for
+     * @param typeArgMappings the mapping used for parameterization
+     * @return {@link ParameterizedType}
+     * @see org.apache.commons.lang3.reflect.TypeUtils#parameterize(Class, java.util.Map)
+     */
+    public static ParameterizedType parameterise(final Class<?> raw, final Map<TypeVariable<?>, Type> typeArgMappings) {
+        return org.apache.commons.lang3.reflect.TypeUtils.parameterize(raw, typeArgMappings);
+    }
+
+    /**
      * Get the raw {@link Class} from the {@code type} provided
      *
      * @param type to resolve
@@ -119,5 +151,42 @@ public final class TypeUtils {
      */
     public static Class<?> getRawType(final Type type, final Type assigningType) {
         return org.apache.commons.lang3.reflect.TypeUtils.getRawType(type, assigningType);
+    }
+
+    /**
+     * Returns an abbreviated class name for logging purposes.  Package names are abbreviated to a single character.
+     *
+     * @param type the type whose name should be abbreviated.
+     * @return the abbreviated class name
+     */
+    public static String abbreviatedName(final Class<?> type) {
+        // Todo(ac):
+        return type.getSimpleName();
+        //return abbreviatedName(type.getName());
+    }
+
+    /**
+     * Returns an abbreviated generic name for logging purposes.  Package names are abbreviated to a single character.
+     * Generic info is included.
+     *
+     * @param type the type whose name should be abbreviated.
+     * @return the abbreviated class name
+     */
+    public static String abbreviatedName(final Type type) {
+        if (type instanceof Class) {
+            return abbreviatedName((Class<?>) type);
+        }
+
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            return abbreviatedName(parameterizedType.getTypeName());
+        }
+
+        throw new UnsupportedOperationException("Type not supported: " + type);
+    }
+
+    private static String abbreviatedName(final String typeName) {
+        // Todo(ac): make this return a.c.b.ClassName.
+        return typeName;
     }
 }

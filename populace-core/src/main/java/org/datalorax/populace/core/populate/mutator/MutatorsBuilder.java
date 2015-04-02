@@ -17,7 +17,10 @@
 package org.datalorax.populace.core.populate.mutator;
 
 import org.datalorax.populace.core.populate.Mutator;
-import org.datalorax.populace.core.populate.mutator.change.*;
+import org.datalorax.populace.core.populate.mutator.change.ChangeBigDecimalMutator;
+import org.datalorax.populace.core.populate.mutator.change.ChangeEnumMutator;
+import org.datalorax.populace.core.populate.mutator.change.ChangePrimitiveMutator;
+import org.datalorax.populace.core.populate.mutator.change.ChangeStringMutator;
 import org.datalorax.populace.core.populate.mutator.ensure.EnsureCollectionNotEmptyMutator;
 import org.datalorax.populace.core.populate.mutator.ensure.EnsureMapNotEmptyMutator;
 import org.datalorax.populace.core.populate.mutator.ensure.EnsureMutator;
@@ -26,10 +29,7 @@ import org.datalorax.populace.core.util.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.datalorax.populace.core.populate.mutator.Mutators.chain;
 
@@ -38,7 +38,7 @@ import static org.datalorax.populace.core.populate.mutator.Mutators.chain;
  *
  * @author Andrew Coates - 01/03/2015.
  */
-final class MutatorsBuilder implements  Mutators.Builder {
+final class MutatorsBuilder implements Mutators.Builder {
     private static final Mutators DEFAULT;
 
     private final ImmutableTypeMap.Builder<Mutator> mutatorsBuilder;
@@ -61,14 +61,15 @@ final class MutatorsBuilder implements  Mutators.Builder {
         builder.withSpecificMutator(BigDecimal.class, chain(EnsureMutator.INSTANCE, ChangeBigDecimalMutator.INSTANCE));
         builder.withSpecificMutator(Date.class, DateMutator.INSTANCE);
 
-        builder.withSuperMutator(Collection.class, chain(EnsureMutator.INSTANCE, ChangeCollectionElementsMutator.INSTANCE));
-        builder.withSuperMutator(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE, ChangeListElementsMutator.INSTANCE));
-        builder.withSuperMutator(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE, ChangeMapValuesMutator.INSTANCE));
+        builder.withSuperMutator(Collection.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE));
+        builder.withSuperMutator(Set.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE));
+        builder.withSuperMutator(List.class, chain(EnsureMutator.INSTANCE, EnsureCollectionNotEmptyMutator.INSTANCE));
+        builder.withSuperMutator(Map.class, chain(EnsureMutator.INSTANCE, EnsureMapNotEmptyMutator.INSTANCE));
         builder.withSuperMutator(Enum.class, chain(EnsureMutator.INSTANCE, ChangeEnumMutator.INSTANCE));
 
-        DEFAULT = builder
-            .withArrayDefaultMutator(ArrayMutator.INSTANCE)
-            .build();
+        builder.withArrayDefaultMutator(EnsureMutator.INSTANCE);
+
+        DEFAULT = builder.build();
     }
 
     public static Mutators defaults() {

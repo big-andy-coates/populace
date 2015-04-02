@@ -16,15 +16,24 @@
 
 package org.datalorax.populace.core.walk;
 
+import org.apache.commons.lang3.Validate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.datalorax.populace.core.walk.element.ElementInfo;
+import org.datalorax.populace.core.walk.element.RawElement;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.PathProvider;
 import org.datalorax.populace.core.walk.field.RawField;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
+import org.datalorax.populace.core.walk.visitor.ElementVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
+
+import java.lang.reflect.Type;
+import java.util.Iterator;
+
+import static org.datalorax.populace.core.util.TypeUtils.abbreviatedName;
 
 /**
  * Type that recursively walks an object graph, calling back to the client code on the provided
@@ -70,14 +79,17 @@ public class GraphWalker {
     }
 
     /**
-     * Recursively walk the fields on {@code instance} and any objects it links too, calling back on {@code visitor} for
-     * each field as it is discovered.
+     * Recursively walk the fields on {@code instance} and any objects it links too, calling back on {@code fieldVisitor}
+     * for each field as it is discovered and {@code elementVisitor} for each child element of each collection field.
      *
-     * @param instance the instance to walk
-     * @param visitor  the visitor to call back on.
+     * @param instance       the instance to walk
+     * @param fieldVisitor   the visitor to call back on for each discovered field.
+     * @param elementVisitor the visitor to call back on for each element of a collection field.
      */
-    public void walk(final Object instance, final FieldVisitor visitor) {
-        walk(instance, visitor, WalkerStack.newStack(instance));
+    public void walk(final Object instance, final FieldVisitor fieldVisitor, final ElementVisitor elementVisitor) {
+        final Visitors visitors = new Visitors(fieldVisitor, elementVisitor);
+        final WalkerStack walkerStack = WalkerStack.newStack(instance);
+        walk(instance.getClass(), instance, visitors, walkerStack);
     }
 
     @Override
@@ -101,21 +113,19 @@ public class GraphWalker {
             '}';
     }
 
-    private void walk(final Object instance, final FieldVisitor visitor, final WalkerStack stack) {
-        final Inspector inspector = context.getInspector(instance.getClass());
-        logInfo("Walking type: " + instance.getClass() + ", inspector: " + inspector.getClass(), stack);
+    private void walk(final Type type, final Object instance, final Visitors visitors, final WalkerStack stack) {
+        final Inspector inspector = context.getInspector(instance.getClass());  // Todo(Ac): Do inspectors support generic types or not? Should TYpedCollection take type? Or overloaded Class/ParameterisedType versions
+        logInfo("Walking type: " + abbreviatedName(type) + ", inspector: " + abbreviatedName(inspector.getClass()), stack);
 
-        walkFields(instance, visitor, inspector, stack);
-        walkChildren(instance, visitor, stack, inspector);
+        walkFields(instance, visitors, inspector, stack);
+        walkElements(type, instance, visitors, inspector, stack);
     }
 
-    private void walkFields(final Object instance, final FieldVisitor visitor, final Inspector inspector, final WalkerStack instanceStack) {
+    private void walkFields(final Object instance, final Visitors visitors, final Inspector inspector, final WalkerStack instanceStack) {
         final Iterable<RawField> fields = inspector.getFields(instance.getClass(), context.getInspectors());
         if (!fields.iterator().hasNext()) {
             return;
         }
-
-        logInfo("Walking fields of type: " + instance.getClass() + ", inspector: " + inspector.getClass(), instanceStack);
 
         for (RawField field : fields) {
             final WalkerStack fieldStack = instanceStack.push(field);
@@ -129,7 +139,7 @@ public class GraphWalker {
             logInfo("Visiting field: " + fieldInfo, fieldStack);
 
             try {
-                visitor.visit(fieldInfo);
+                visitors.visitField(fieldInfo);
             } catch (Exception e) {
                 throw new WalkerException("Visitor threw exception while visiting field.", fieldStack, e);
             }
@@ -140,25 +150,37 @@ public class GraphWalker {
                 continue;
             }
 
-            walk(value, visitor, fieldStack);
+            walk(fieldInfo.getGenericType(), value, visitors, fieldStack);
         }
     }
 
-    private void walkChildren(final Object instance, final FieldVisitor visitor, final WalkerStack stack, final Inspector inspector) {
-        final Iterable<?> children = inspector.getChildren(instance);
-        if (!children.iterator().hasNext()) {
-            return;
-        }
+    private void walkElements(final Type containerType, final Object instance, final Visitors visitors, final Inspector inspector, final WalkerStack stack) {
+        // Todo(ac): Figure out best return type and standardise...
+        final Iterator<RawElement> elements = inspector.getElements(instance, context.getInspectors());
 
-        logInfo("Walking children of type: " + instance.getClass() + ", inspector: " + inspector.getClass(), stack);
+        while (elements.hasNext()) {
+            final RawElement element = elements.next();
+            final WalkerStack elementStack = stack.push(element);
+            final ElementInfo elementInfo = new ElementInfo(element, containerType, elementStack, elementStack);
 
-        for (Object child : children) {
-            if (child == null) {
-                logDebug("Skipping null child", stack);
-                continue;
+            logInfo("Visiting element: " + elementInfo, elementStack);
+
+            element.preWalk();
+
+            try {
+                visitors.visitElement(elementInfo);
+            } catch (Exception e) {
+                throw new WalkerException("Visitor threw exception while visiting element.", elementStack, e);
             }
 
-            walk(child, visitor, stack.push(child));
+            final Object value = elementInfo.getValue();
+            if (value == null) {
+                logDebug("Skipping null child", stack);
+            } else {
+                walk(value.getClass(), value, visitors, elementStack);
+            }
+
+            element.postWalk();
         }
     }
 
@@ -211,5 +233,25 @@ public class GraphWalker {
          * @return the newly constructed {@link GraphWalker} instance.
          */
         GraphWalker build();
+    }
+
+    private static class Visitors {
+        private final FieldVisitor fieldVisitor;
+        private final ElementVisitor elementVisitor;
+
+        private Visitors(final FieldVisitor fieldVisitor, final ElementVisitor elementVisitor) {
+            Validate.notNull(fieldVisitor, "fieldVisitor null");
+            Validate.notNull(elementVisitor, "elementVisitor null");
+            this.fieldVisitor = fieldVisitor;
+            this.elementVisitor = elementVisitor;
+        }
+
+        public void visitField(final FieldInfo fieldInfo) {
+            fieldVisitor.visit(fieldInfo);
+        }
+
+        public void visitElement(final ElementInfo elementInfo) {
+            elementVisitor.visit(elementInfo);
+        }
     }
 }

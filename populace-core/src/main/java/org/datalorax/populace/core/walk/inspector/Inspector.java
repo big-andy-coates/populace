@@ -17,12 +17,16 @@
 package org.datalorax.populace.core.walk.inspector;
 
 import com.google.common.collect.ImmutableSet;
+import org.datalorax.populace.core.walk.element.RawElement;
 import org.datalorax.populace.core.walk.field.RawField;
+
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * Interface for 'pluggable' walking of fields. Inspectors for non-collection types should just implement
  * {@link Inspector#getFields}. Inspectors for collection types e.g. arrays, lists, maps, etc, should
- * provide implementation for {@link Inspector#getChildren(Object)}. Hybrid inspectors that return both
+ * provide implementation for {@link Inspector#getElements(Object, Inspectors)}. Hybrid inspectors that return both
  * fields and children are supported.
  *
  * @author Andrew Coates - 28/02/2015.
@@ -32,7 +36,7 @@ public interface Inspector {
      * Return the set of fields this instance supports
      *
      * @param type the type to inspect
-     * @param inspectors all the inspectors configured in the system.
+     * @param inspectors all the inspectors configured in the walker.
      * @return the set of fields this type supports
      */
     default Iterable<RawField> getFields(final Class<?> type, final Inspectors inspectors) {
@@ -43,9 +47,10 @@ public interface Inspector {
      * If the type the inspector supports is a collection, the this method will return the collection of its child elements.
      *
      * @param instance the instance.
+     * @param inspectors all the inspectors configured in the walker.
      * @return the set of child elements, or an empty collection for non-collection types.
      */
-    default Iterable<?> getChildren(final Object instance) {
-        return ImmutableSet.of();
+    default Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
+        return Collections.emptyIterator();
     }
 }

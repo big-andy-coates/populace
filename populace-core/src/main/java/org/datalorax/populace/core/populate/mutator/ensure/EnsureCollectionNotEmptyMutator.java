@@ -38,6 +38,24 @@ public class EnsureCollectionNotEmptyMutator implements Mutator {
     public static final EnsureCollectionNotEmptyMutator INSTANCE = new EnsureCollectionNotEmptyMutator();
     private static final TypeVariable<Class<Collection>> COLLECTION_TYPE_VARIABLE = Collection.class.getTypeParameters()[0];
 
+    @SuppressWarnings("unchecked")
+    private static Collection<Object> ensureCollection(final Type type, final Object currentValue) {
+        Validate.isAssignableFrom(Collection.class, TypeUtils.getRawType(type, Collection.class), "Mutator only supports Collection types");
+        return (Collection<Object>) currentValue;
+    }
+
+    private static Object createEntry(Type collectionType, final Object parent, PopulatorContext config) {
+        final Type componentType = getComponentType(collectionType);
+        final Object value = config.createInstance(componentType, parent);
+
+        final Mutator mutator = config.getMutator(componentType);
+        return mutator.mutate(componentType, value, parent, config);
+    }
+
+    private static Type getComponentType(Type type) {
+        return TypeUtils.getTypeArgument(type, Collection.class, COLLECTION_TYPE_VARIABLE);
+    }
+
     @Override
     public Collection<?> mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config) {
         final Collection<Object> collection = ensureCollection(type, currentValue);
@@ -63,24 +81,6 @@ public class EnsureCollectionNotEmptyMutator implements Mutator {
     @Override
     public String toString() {
         return getClass().getSimpleName();
-    }
-
-    @SuppressWarnings("unchecked")
-    private Collection<Object> ensureCollection(final Type type, final Object currentValue) {
-        Validate.isAssignableFrom(Collection.class, TypeUtils.getRawType(type, Collection.class), "Mutator only supports Collection types");
-        return (Collection<Object>) currentValue;
-    }
-
-    private Object createEntry(Type collectionType, final Object parent, PopulatorContext config) {
-        final Type componentType = getComponentType(collectionType);
-        final Object value = config.createInstance(componentType, parent);
-
-        final Mutator mutator = config.getMutator(componentType);
-        return mutator.mutate(componentType, value, parent, config);
-    }
-
-    private Type getComponentType(Type type) {
-        return TypeUtils.getTypeArgument(type, Collection.class, COLLECTION_TYPE_VARIABLE);
     }
 }
 

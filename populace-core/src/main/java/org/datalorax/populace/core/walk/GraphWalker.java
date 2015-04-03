@@ -66,18 +66,6 @@ public class GraphWalker {
         return new GraphWalkerBuilder();
     }
 
-    private static void logDebug(String message, PathProvider path) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(path.getPath() + " - " + message);
-        }
-    }
-
-    private static void logInfo(String message, PathProvider path) {
-        if (LOG.isInfoEnabled()) {
-            LOG.info(path.getPath() + " - " + message);
-        }
-    }
-
     /**
      * Recursively walk the fields on {@code instance} and any objects it links too, calling back on {@code fieldVisitor}
      * for each field as it is discovered and {@code elementVisitor} for each child element of each collection field.
@@ -114,7 +102,8 @@ public class GraphWalker {
     }
 
     private void walk(final Type type, final Object instance, final Visitors visitors, final WalkerStack stack) {
-        final Inspector inspector = context.getInspector(instance.getClass());  // Todo(Ac): Do inspectors support generic types or not? Should TYpedCollection take type? Or overloaded Class/ParameterisedType versions
+        final Type resolvedType = stack.getTypeResolver().resolve(instance.getClass());
+        final Inspector inspector = context.getInspector(resolvedType);
         logInfo("Walking type: " + abbreviatedName(type) + ", inspector: " + abbreviatedName(inspector.getClass()), stack);
 
         walkFields(instance, visitors, inspector, stack);
@@ -181,6 +170,18 @@ public class GraphWalker {
             }
 
             element.postWalk();
+        }
+    }
+
+    private static void logDebug(String message, PathProvider path) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(path.getPath() + " - " + message);
+        }
+    }
+
+    private static void logInfo(String message, PathProvider path) {
+        if (LOG.isInfoEnabled()) {
+            LOG.info(path.getPath() + " - " + message);
         }
     }
 

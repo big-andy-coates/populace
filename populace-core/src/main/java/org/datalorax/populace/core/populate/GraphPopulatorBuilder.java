@@ -42,7 +42,7 @@ final class GraphPopulatorBuilder implements GraphPopulator.Builder {
     private GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder()
         .withFieldFilter(DEFAULT_FIELD_FILTER)
         .withInspectors(Inspectors.newBuilder()
-            .withSuperInspector(Collection.class, LoggingCollectionInspector.INSTANCE)  // Log on immutable elements // Todo(ac): Still needed?
+            .withSuperInspector(Collection.class, LoggingCollectionInspector.INSTANCE)  // Log on immutable elements
             .build());
 
     @Override

@@ -71,7 +71,6 @@ public class FieldInfo {
      * @see RawField#getGenericType()
      */
     public Type getGenericType() {
-        // Todo(ac):
         final Object value = getValue();
         if (value != null) {
             final Class<?> type = field.getType().isPrimitive() ? field.getType() : value.getClass();

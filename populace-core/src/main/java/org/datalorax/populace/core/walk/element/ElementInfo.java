@@ -47,7 +47,7 @@ public class ElementInfo {
      * @see org.datalorax.populace.core.walk.element.RawElement#getGenericType(java.lang.reflect.Type)
      */
     public Type getGenericType() {
-        // Todo(ac): get from value?
+        // Todo(ac): get from value elements.
         return typeResolver.resolve(element.getGenericType(containerType));
     }
 

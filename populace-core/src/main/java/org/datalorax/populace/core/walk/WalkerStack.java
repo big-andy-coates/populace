@@ -90,13 +90,13 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
         }
 
         @Override
-        protected String getToken() {
-            return root.getClass().getSimpleName();
+        public Type resolveTypeVariable(final TypeVariable variable) {
+            return variable;    // Not enough type information to resolve
         }
 
         @Override
-        public Type resolveTypeVariable(final TypeVariable variable) {
-            return variable;    // Not enough type information to resolve
+        protected String getToken() {
+            return root.getClass().getSimpleName();
         }
     }
 
@@ -111,11 +111,6 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
         }
 
         @Override
-        protected String getToken() {
-            return '.' + field.getName();
-        }
-
-        @Override
         public Type resolveTypeVariable(final TypeVariable variable) {
             final TypeToken<?> typeToken = type.resolveType(variable);
             if (typeToken.getType().equals(variable)) {
@@ -123,21 +118,11 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
             }
 
             return typeToken.getType();
+        }
 
-            // Todo(ac):
-//            final Type genericType = field.getGenericType();
-//            if (genericType instanceof ParameterizedType) {
-//                ParameterizedType parameterizedType = (ParameterizedType)genericType;
-//                final Type[] typeArgs = parameterizedType.getActualTypeArguments();
-//                final TypeVariable<? extends Class<?>>[] typeVars = ((Class<?>) parameterizedType.getRawType()).getTypeParameters();
-//
-//                for (int i = 0; i != typeArgs.length; ++i) {
-//                    if (typeVars[i].equals(variable)) {
-//                        return resolveType(typeArgs[i]);
-//                    }
-//                }
-//            }
-//            return getParent().resolveTypeVariable(variable);
+        @Override
+        protected String getToken() {
+            return '.' + field.getName();
         }
     }
 
@@ -150,13 +135,13 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
         }
 
         @Override
-        protected String getToken() {
-            return "[" + element.getClass().getSimpleName() + "]";
+        public Type resolveTypeVariable(final TypeVariable variable) {
+            return getParent().resolveTypeVariable(variable);
         }
 
         @Override
-        public Type resolveTypeVariable(final TypeVariable variable) {
-            return getParent().resolveTypeVariable(variable);
+        protected String getToken() {
+            return "[" + element.getClass().getSimpleName() + "]";
         }
     }
 }

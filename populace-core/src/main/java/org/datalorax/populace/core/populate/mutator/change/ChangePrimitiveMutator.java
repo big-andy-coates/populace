@@ -78,5 +78,3 @@ public class ChangePrimitiveMutator implements Mutator {
         return getClass().getSimpleName();
     }
 }
-
-// Todo(ac): add generics e.g. NumberMutator<Number>

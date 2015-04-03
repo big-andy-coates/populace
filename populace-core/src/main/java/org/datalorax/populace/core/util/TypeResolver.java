@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 /**
  * @author Andrew Coates - 02/04/2015.
  */
-// Todo(ac): Needs a refactor and a test, plus extension for wild cards, bounded, generic array types.
 public class TypeResolver {
     private final TypeTable typeTable;
 
@@ -42,6 +41,127 @@ public class TypeResolver {
     public TypeResolver(final TypeTable typeTable) {
         Validate.notNull(typeTable, "typeTable null");
         this.typeTable = typeTable;
+    }
+
+    /**
+     * Resolve the provided {@code type} using the type information available
+     * <p>
+     * if {@code type} is a {@link Class} with type parameters, then it will return a {@link ParameterizedType} where the
+     * type parameters have been as resolved as much as is possible.
+     * <p>
+     * if {@code type} is a {@link Class} without type parameters, then the class is returned unchanged.
+     * <p>
+     * if {@code type} is a {@link ParameterizedType}, then it will return the parameterized type with its type parameters
+     * resolved as much as is possible.
+     *
+     * @param type the type to resolve
+     * @return the resolved type.
+     */
+    public Type resolve(final Type type) {
+        if (type instanceof Class) {
+            return resolveClass((Class<?>) type);
+        }
+        if (type instanceof ParameterizedType) {
+            return resolveParameterisedType(type);
+        }
+        if (type instanceof TypeVariable) {
+            return resolveTypeVariable(type);
+        }
+        //        if (genericType instanceof WildcardType) {
+//            final WildcardType wildcardType = (WildcardType) genericType;
+//            final Type[] lowerBounds = wildcardType.getLowerBounds();
+//            final Type[] upperBounds = wildcardType.getLowerBounds();
+//            if (lowerBounds.length == 0 && upperBounds.length == 0) {
+//                return wildcardType;
+//            }
+//
+//            // Todo(ac): Resolve all bouunds and build new wildcard.
+//            return org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
+//
+//        }
+
+
+        // Todo(ac):
+        return type;
+    }
+
+    private Type resolveClass(final Class<?> type) {
+        final TypeVariable<? extends Class<?>>[] typeParameters = type.getTypeParameters();
+        if (typeParameters.length == 0) {
+            return type;
+        }
+
+        final ParameterizedType parameterised = TypeUtils.parameterise(type, typeParameters);
+        return resolveParameterisedType(parameterised);
+    }
+
+    private Type resolveParameterisedType(final Type type) {
+        final TypeToken<?> typeToken = TypeToken.of(type);
+        final ParameterizedType pt = (ParameterizedType) typeToken.getType();
+        final Type[] typeArgs = pt.getActualTypeArguments();
+        final Type[] resolvedArgs = new Type[typeArgs.length];
+
+        for (int i = 0; i != typeArgs.length; ++i) {
+            final Type typeArg = typeArgs[i];
+            resolvedArgs[i] = typeArg;
+            if (typeArg instanceof Class) {
+                continue;
+            }
+
+            Optional<Type> resolved = resolveToNew(typeArg);
+            if (resolved.isPresent()) {
+                resolvedArgs[i] = resolved.get();
+                continue;
+            }
+
+            if (!(typeArg instanceof TypeVariable)) {
+                throw new UnsupportedOperationException();
+            }
+
+            resolved = resolveTypeVariableFromSupers((TypeVariable<?>) typeArg, typeToken);
+
+            if (resolved.isPresent()) {
+                resolvedArgs[i] = resolved.get();
+            }
+        }
+
+        return TypeUtils.parameterise(typeToken.getRawType(), resolvedArgs);
+    }
+
+    private Type resolveTypeVariable(final Type type) {
+        final Type resolved = typeTable.resolveTypeVariable((TypeVariable) type);
+        if (type.equals(resolved)) {
+            return type;
+        }
+
+        return resolve(resolved);
+    }
+
+    /**
+     * Resolve the provided {@code type} using the supplied {@code typeTable}.
+     *
+     * @param type the type to resolve
+     * @return the resolved type or Optional.empty() if the type could not be resolved.
+     */
+    private Optional<Type> resolveToNew(final Type type) {
+        final Type resolved = resolve(type);
+        return type.equals(resolved) ? Optional.empty() : Optional.of(resolved);
+    }
+
+    /**
+     * Resolved to provided {@code typeVar}, for the provided {@code type}, using the provided {@code typeTable}
+     *
+     * @param typeVar the type variable to resolve
+     * @param type    the type the variable belongs to.
+     * @return the resolved type, or Optional.empty() if the type couldn't be resolved.
+     */
+    private Optional<Type> resolveTypeVariableFromSupers(final TypeVariable<?> typeVar, final TypeToken<?> type) {
+        final Stream<TypeVariable<?>> typeArgAliases = findSuperAndInterfaceTypeArgumentAliases(typeVar, type);
+        return typeArgAliases
+            .map(this::resolveToNew)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .findFirst();
     }
 
     /**
@@ -88,127 +208,5 @@ public class TypeResolver {
             .filter(i -> sourceTypeArgs[i].equals(typeVar))  // Filter out indexes with different type argument
             .filter(i -> !sourceAliases[i].equals(typeVar))  // Filter out aliases that match existing
             .mapToObj(i -> sourceAliases[i]);                        // Return aliases
-    }
-
-    /**
-     * Resolve the provided {@code type} using the type information available
-     * <p>
-     * if {@code type} is a {@link Class} with type parameters, then it will return a {@link ParameterizedType} where the
-     * type parameters have been as resolved as much as is possible.
-     * <p>
-     * if {@code type} is a {@link Class} without type parameters, then the class is returned unchanged.
-     * <p>
-     * if {@code type} is a {@link ParameterizedType}, then it will return the parameterized type with its type parameters
-     * resolved as much as is possible.
-     *
-     * @param type the type to resolve
-     * @return the resolved type.
-     */
-    public Type resolve(final Type type) {
-        if (type instanceof Class) {
-            return resolveClass((Class<?>) type);
-        }
-        if (type instanceof ParameterizedType) {
-            return resolveParameterisedType(type);
-        }
-
-        // Todo(ac):
-        return type;
-    }
-
-    private Type resolveClass(final Class<?> type) {
-        final TypeVariable<? extends Class<?>>[] typeParameters = type.getTypeParameters();
-        if (typeParameters.length == 0) {
-            return type;
-        }
-
-        final ParameterizedType parameterised = TypeUtils.parameterise(type, typeParameters);
-        return resolveParameterisedType(parameterised);
-    }
-
-    private Type resolveParameterisedType(final Type type) {
-        final TypeToken<?> typeToken = TypeToken.of(type);
-        final ParameterizedType pt = (ParameterizedType) typeToken.getType();
-        final Type[] typeArgs = pt.getActualTypeArguments();
-        final Type[] resolvedArgs = new Type[typeArgs.length];
-
-        for (int i = 0; i != typeArgs.length; ++i) {
-            final Type typeArg = typeArgs[i];
-            resolvedArgs[i] = typeArg;
-            if (typeArg instanceof Class) {
-                continue;
-            }
-
-            Optional<Type> resolved = resolveToNew(typeArg);
-            if (resolved.isPresent()) {
-                resolvedArgs[i] = resolved.get();
-                continue;
-            }
-
-            if (!(typeArg instanceof TypeVariable)) {
-                throw new UnsupportedOperationException();
-            }
-
-            resolved = resolveTypeVariable((TypeVariable<?>) typeArg, typeToken);
-
-            if (resolved.isPresent()) {
-                resolvedArgs[i] = resolved.get();
-            }
-        }
-
-        return TypeUtils.parameterise(typeToken.getRawType(), resolvedArgs);
-    }
-
-    private Type resolveType(final Type genericType) {
-        if (genericType instanceof Class) {
-            return genericType;
-        }
-
-        if (genericType instanceof ParameterizedType) {
-            final Type[] typeArgs = ((ParameterizedType) genericType).getActualTypeArguments();
-            for (int i = 0; i != typeArgs.length; ++i) {
-                typeArgs[i] = resolveType(typeArgs[i]);
-            }
-
-            return TypeUtils.parameterise((Class) ((ParameterizedType) genericType).getRawType(), typeArgs);
-        }
-
-        if (genericType instanceof TypeVariable) {
-            final Type type = typeTable.resolveTypeVariable((TypeVariable) genericType);
-            if (type.equals(genericType)) {
-                return type;
-            }
-
-            return resolveType(type);
-        }
-
-        return null;
-    }
-
-    /**
-     * Resolve the provided {@code type} using the supplied {@code typeTable}.
-     *
-     * @param type the type to resolve
-     * @return the resolved type or Optional.empty() if the type could not be resolved.
-     */
-    private Optional<Type> resolveToNew(final Type type) {
-        final Type resolved = resolveType(type);
-        return type.equals(resolved) ? Optional.empty() : Optional.of(resolved);
-    }
-
-    /**
-     * Resolved to provided {@code typeVar}, for the provided {@code type}, using the provided {@code typeTable}
-     *
-     * @param typeVar the type variable to resolve
-     * @param type    the type the variable belongs to.
-     * @return the resolved type, or Optional.empty() if the type couldn't be resolved.
-     */
-    private Optional<Type> resolveTypeVariable(final TypeVariable<?> typeVar, final TypeToken<?> type) {
-        final Stream<TypeVariable<?>> typeArgAliases = findSuperAndInterfaceTypeArgumentAliases(typeVar, type);
-        return typeArgAliases
-            .map(this::resolveToNew)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .findFirst();
     }
 }

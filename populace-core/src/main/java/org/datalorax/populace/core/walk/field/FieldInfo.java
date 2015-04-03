@@ -17,6 +17,7 @@
 package org.datalorax.populace.core.walk.field;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.util.TypeResolver;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -27,10 +28,10 @@ import java.lang.reflect.Type;
 public class FieldInfo {
     private final RawField field;
     private final Object owningInstance;
-    private final GenericTypeResolver typeResolver;
+    private final TypeResolver typeResolver;
     private final PathProvider path;
 
-    public FieldInfo(final RawField field, final Object owningInstance, final GenericTypeResolver typeResolver, final PathProvider path) {
+    public FieldInfo(final RawField field, final Object owningInstance, final TypeResolver typeResolver, final PathProvider path) {
         Validate.notNull(field, "field null");
         Validate.notNull(owningInstance, "owningInstance null");
         Validate.notNull(typeResolver, "typeResolver null");
@@ -70,7 +71,13 @@ public class FieldInfo {
      * @see RawField#getGenericType()
      */
     public Type getGenericType() {
-        return typeResolver.resolveType(field.getGenericType());
+        // Todo(ac):
+        final Object value = getValue();
+        if (value != null) {
+            final Class<?> type = field.getType().isPrimitive() ? field.getType() : value.getClass();
+            return typeResolver.resolve(type);
+        }
+        return typeResolver.resolve(field.getGenericType());
     }
 
     /**
@@ -159,17 +166,12 @@ public class FieldInfo {
         if (o == null || getClass() != o.getClass()) return false;
 
         final FieldInfo that = (FieldInfo) o;
-        return field.equals(that.field) && owningInstance.equals(that.owningInstance)
-            && path.equals(that.path) && typeResolver.equals(that.typeResolver);
+        return path.equals(that.path);
     }
 
     @Override
     public int hashCode() {
-        int result = field.hashCode();
-        result = 31 * result + owningInstance.hashCode();
-        result = 31 * result + typeResolver.hashCode();
-        result = 31 * result + path.hashCode();
-        return result;
+        return path.hashCode();
     }
 
     @Override

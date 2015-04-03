@@ -129,7 +129,7 @@ public class GraphWalker {
 
         for (RawField field : fields) {
             final WalkerStack fieldStack = instanceStack.push(field);
-            final FieldInfo fieldInfo = new FieldInfo(field, instance, fieldStack, fieldStack);
+            final FieldInfo fieldInfo = new FieldInfo(field, instance, fieldStack.getTypeResolver(), fieldStack);
 
             if (context.isExcludedField(fieldInfo)) {
                 logDebug("Skipping excluded field: " + fieldInfo.getName(), fieldStack);
@@ -161,7 +161,7 @@ public class GraphWalker {
         while (elements.hasNext()) {
             final RawElement element = elements.next();
             final WalkerStack elementStack = stack.push(element);
-            final ElementInfo elementInfo = new ElementInfo(element, containerType, elementStack, elementStack);
+            final ElementInfo elementInfo = new ElementInfo(element, containerType, elementStack.getTypeResolver(), elementStack);
 
             logInfo("Visiting element: " + elementInfo, elementStack);
 

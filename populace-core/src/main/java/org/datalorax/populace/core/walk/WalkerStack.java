@@ -16,12 +16,12 @@
 
 package org.datalorax.populace.core.walk;
 
-import org.apache.commons.lang3.reflect.TypeUtils;
-import org.datalorax.populace.core.walk.field.GenericTypeResolver;
+import com.google.common.reflect.TypeToken;
+import org.datalorax.populace.core.util.TypeResolver;
 import org.datalorax.populace.core.walk.field.PathProvider;
 import org.datalorax.populace.core.walk.field.RawField;
+import org.datalorax.populace.core.walk.field.TypeTable;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 /**
  * @author Andrew Coates - 04/03/2015.
  */
-public abstract class WalkerStack implements PathProvider, GenericTypeResolver {
+public abstract class WalkerStack implements PathProvider, TypeTable {
     private final WalkerStack parent;
 
     private WalkerStack() {
@@ -60,32 +60,15 @@ public abstract class WalkerStack implements PathProvider, GenericTypeResolver {
         return builder.toString();
     }
 
-    public Type resolveType(final Type genericType) {
-        if (genericType instanceof Class) {
-            return genericType;
-        }
+    public abstract Type resolveTypeVariable(final TypeVariable variable);
 
-        if (genericType instanceof ParameterizedType) {
-            final Type[] typeArgs = ((ParameterizedType) genericType).getActualTypeArguments();
-            for (int i = 0; i != typeArgs.length; ++i) {
-                typeArgs[i] = resolveType(typeArgs[i]);
-            }
-
-            return TypeUtils.parameterize((Class)((ParameterizedType) genericType).getRawType(), typeArgs);
-        }
-
-        if (genericType instanceof TypeVariable) {
-            return resolveTypeVariable((TypeVariable)genericType);
-        }
-
-        return null;
+    public TypeResolver getTypeResolver() {
+        return new TypeResolver(this);
     }
 
     protected WalkerStack getParent() { return parent; }
 
     protected abstract String getToken();
-
-    protected abstract Type resolveTypeVariable(final TypeVariable variable);
 
     private List<WalkerStack> getFrames() {
         final List<WalkerStack> frames = new ArrayList<>();
@@ -112,17 +95,19 @@ public abstract class WalkerStack implements PathProvider, GenericTypeResolver {
         }
 
         @Override
-        protected Type resolveTypeVariable(final TypeVariable variable) {
-            return Object.class;    // Epic failure!
+        public Type resolveTypeVariable(final TypeVariable variable) {
+            return variable;    // Not enough type information to resolve
         }
     }
 
     private static final class FieldFrame extends WalkerStack {
         private final RawField field;
+        private TypeToken<?> type;
 
         public FieldFrame(final WalkerStack parent, final RawField field) {
             super(parent);
             this.field = field;
+            this.type = TypeToken.of(field.getGenericType());
         }
 
         @Override
@@ -131,20 +116,28 @@ public abstract class WalkerStack implements PathProvider, GenericTypeResolver {
         }
 
         @Override
-        protected Type resolveTypeVariable(final TypeVariable variable) {
-            final Type genericType = field.getGenericType();
-            if (genericType instanceof ParameterizedType) {
-                ParameterizedType parameterizedType = (ParameterizedType)genericType;
-                final Type[] typeArgs = parameterizedType.getActualTypeArguments();
-                final TypeVariable<? extends Class<?>>[] typeVars = ((Class<?>) parameterizedType.getRawType()).getTypeParameters();
-
-                for (int i = 0; i != typeArgs.length; ++i) {
-                    if (typeVars[i].equals(variable)) {
-                        return resolveType(typeArgs[i]);
-                    }
-                }
+        public Type resolveTypeVariable(final TypeVariable variable) {
+            final TypeToken<?> typeToken = type.resolveType(variable);
+            if (typeToken.getType().equals(variable)) {
+                return getParent().resolveTypeVariable(variable);
             }
-            return getParent().resolveTypeVariable(variable);
+
+            return typeToken.getType();
+
+            // Todo(ac):
+//            final Type genericType = field.getGenericType();
+//            if (genericType instanceof ParameterizedType) {
+//                ParameterizedType parameterizedType = (ParameterizedType)genericType;
+//                final Type[] typeArgs = parameterizedType.getActualTypeArguments();
+//                final TypeVariable<? extends Class<?>>[] typeVars = ((Class<?>) parameterizedType.getRawType()).getTypeParameters();
+//
+//                for (int i = 0; i != typeArgs.length; ++i) {
+//                    if (typeVars[i].equals(variable)) {
+//                        return resolveType(typeArgs[i]);
+//                    }
+//                }
+//            }
+//            return getParent().resolveTypeVariable(variable);
         }
     }
 
@@ -162,7 +155,7 @@ public abstract class WalkerStack implements PathProvider, GenericTypeResolver {
         }
 
         @Override
-        protected Type resolveTypeVariable(final TypeVariable variable) {
+        public Type resolveTypeVariable(final TypeVariable variable) {
             return getParent().resolveTypeVariable(variable);
         }
     }

@@ -41,3 +41,7 @@ This will build the archives and upload them to the staging area of Sonatype OSS
 
 ### Promoting release on maven central
 Follow these [Sonatype OSS release instructions](http://central.sonatype.org/pages/releasing-the-deployment.html)
+
+### Release on Github
+Create a release on Github. The release description should include details of all issues resolved, any breaking changes
+and anything else relevant to the release.

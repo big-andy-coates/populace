@@ -17,7 +17,7 @@
 package org.datalorax.populace.core.walk.element;
 
 import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.core.walk.field.GenericTypeResolver;
+import org.datalorax.populace.core.util.TypeResolver;
 import org.datalorax.populace.core.walk.field.PathProvider;
 
 import java.lang.reflect.Type;
@@ -27,11 +27,11 @@ import java.lang.reflect.Type;
  */
 public class ElementInfo {
     private final RawElement element;
-    private final GenericTypeResolver typeResolver;
+    private final TypeResolver typeResolver;
     private final PathProvider path;
     private final Type containerType;
 
-    public ElementInfo(final RawElement element, final Type containerType, final GenericTypeResolver typeResolver, final PathProvider path) {
+    public ElementInfo(final RawElement element, final Type containerType, final TypeResolver typeResolver, final PathProvider path) {
         Validate.notNull(element, "field null");
         Validate.notNull(containerType, "field containerType");
         Validate.notNull(typeResolver, "typeResolver null");
@@ -47,7 +47,8 @@ public class ElementInfo {
      * @see org.datalorax.populace.core.walk.element.RawElement#getGenericType(java.lang.reflect.Type)
      */
     public Type getGenericType() {
-        return typeResolver.resolveType(element.getGenericType(containerType));
+        // Todo(ac): get from value elements.
+        return typeResolver.resolve(element.getGenericType(containerType));
     }
 
     /**

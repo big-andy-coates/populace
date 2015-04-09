@@ -25,8 +25,8 @@ import java.util.List;
  * @author Andrew Coates - 30/03/2015.
  */
 @SuppressWarnings("NullableProblems")
-public class CustomCollection<E> implements Collection<E> {
-    private final List<E> elements = new ArrayList<>();
+public class CustomCollection<ET> implements Collection<ET> {
+    private final List<ET> elements = new ArrayList<>();
 
     @Override
     public int size() {
@@ -44,7 +44,7 @@ public class CustomCollection<E> implements Collection<E> {
     }
 
     @Override
-    public Iterator<E> iterator() {
+    public Iterator<ET> iterator() {
         return elements.iterator();
     }
 
@@ -53,14 +53,15 @@ public class CustomCollection<E> implements Collection<E> {
         return elements.toArray();
     }
 
+    @SuppressWarnings("SuspiciousToArrayCall")
     @Override
     public <T> T[] toArray(final T[] a) {
         return elements.toArray(a);
     }
 
     @Override
-    public boolean add(final E e) {
-        return elements.add(e);
+    public boolean add(final ET ET) {
+        return elements.add(ET);
     }
 
     @Override
@@ -74,7 +75,7 @@ public class CustomCollection<E> implements Collection<E> {
     }
 
     @Override
-    public boolean addAll(final Collection<? extends E> c) {
+    public boolean addAll(final Collection<? extends ET> c) {
         return elements.addAll(c);
     }
 

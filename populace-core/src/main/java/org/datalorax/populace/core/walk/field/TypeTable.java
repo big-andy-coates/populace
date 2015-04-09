@@ -17,10 +17,11 @@
 package org.datalorax.populace.core.walk.field;
 
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 
 /**
  * @author Andrew Coates - 12/03/2015.
  */
-public interface GenericTypeResolver {
-    Type resolveType(final Type genericType);
+public interface TypeTable {
+    Type resolveTypeVariable(final TypeVariable variable);
 }

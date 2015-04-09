@@ -38,20 +38,6 @@ public class CollectionInspector implements Inspector {
     private static final TypeVariable<Class<Collection>> COLLECTION_TYPE_VARIABLE = Collection.class.getTypeParameters()[0];
 
     @SuppressWarnings("unchecked")
-    private static Collection<?> ensureCollection(final Object instance) {
-        Validate.isInstanceOf(Collection.class, instance);
-        Validate.isTrue(!Set.class.isAssignableFrom(instance.getClass()), "Set types are not supported");
-        return (Collection<?>) instance;
-    }
-
-    private static Iterator<RawElement> toRawElements(final Collection<?> collection) {
-        final List<RawElement> elements = collection.stream()
-            .map(CollectionElement::new)
-            .collect(Collectors.toList());
-        return elements.iterator();
-    }
-
-    @SuppressWarnings("unchecked")
     @Override
     public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
         final Collection<?> collection = ensureCollection(instance);
@@ -71,6 +57,20 @@ public class CollectionInspector implements Inspector {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Collection<?> ensureCollection(final Object instance) {
+        Validate.isInstanceOf(Collection.class, instance);
+        Validate.isTrue(!Set.class.isAssignableFrom(instance.getClass()), "Set types are not supported");
+        return (Collection<?>) instance;
+    }
+
+    private static Iterator<RawElement> toRawElements(final Collection<?> collection) {
+        final List<RawElement> elements = collection.stream()
+            .map(CollectionElement::new)
+            .collect(Collectors.toList());
+        return elements.iterator();
     }
 
     private static class CollectionElement implements RawElement {
@@ -96,7 +96,6 @@ public class CollectionInspector implements Inspector {
                 "Likely cause of this exception is an unsupported collection type containing an immutable object.\n" +
                 "Consider adding a custom inspector that knows how to replace entries within the custom collection type\n" +
                 "Or switch to a logging or terminal inspector for the collection type.");
-            // Todo(ac): error message is populate-centric, not walk-centric...
         }
     }
 }

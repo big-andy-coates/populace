@@ -27,10 +27,14 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
@@ -252,6 +256,23 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
+    public void shouldHandleArraysWithJustRuntimeTimeInfo() throws Exception {
+        // Given:
+        class WithArray {
+            public Object _arrayWithNull = new TypeThatCanBeMutated[]{new TypeThatCanBeMutated("1")};
+        }
+
+        final WithArray original = new WithArray();
+
+        // When:
+        final WithArray populated = populator.populate(new WithArray());
+
+        // Then:
+        assertThat(populated._arrayWithNull, is(not(nullValue())));
+        assertThat(populated._arrayWithNull, is(not(original._arrayWithNull)));
+    }
+
+    @Test
     public void shouldHandleCollectionsOfMutableTypes() throws Exception {
         // Given:
         class WithCollections {
@@ -355,6 +376,25 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
+    public void shouldHandleCollectionWithJustRuntimeTypeInfo() throws Exception {
+        // Given:
+        class WithCollections {
+            public Object _collection = new CustomCollection<TypeThatCanBeMutated>() {{
+                add(new TypeThatCanBeMutated());
+            }};
+        }
+
+        final WithCollections original = new WithCollections();
+
+        // When:
+        final WithCollections populated = populator.populate(new WithCollections());
+
+        // Then:
+        assertThat(populated._collection, is(not(nullValue())));
+        assertThat(populated._collection, is(not(original._collection)));
+    }
+
+    @Test
     public void shouldHandleListsOfMutableTypes() throws Exception {
         // Given:
         class WithLists {
@@ -427,10 +467,12 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldHandleListsInCollectionFields() throws Exception {
+    public void shouldHandleListsWithJustRuntimeTypeInfo() throws Exception {
         // Given:
         class WithLists {
-            public Collection<TypeThatCanBeMutated> list = new ArrayList<>();
+            public Object list = new ArrayList<String>() {{
+                add("initial");
+            }};
         }
 
         final WithLists original = new WithLists();
@@ -448,25 +490,6 @@ public class GraphPopulatorFunctionTest {
         // Given:
         class WithSets {
             public Set<TypeThatCanBeMutated> _set = new HashSet<TypeThatCanBeMutated>() {{
-                add(new TypeThatCanBeMutated());
-            }};
-        }
-
-        final WithSets original = new WithSets();
-
-        // When:
-        final WithSets populated = populator.populate(new WithSets());
-
-        // Then:
-        assertThat(populated._set, is(not(nullValue())));
-        assertThat(populated._set, is(not(original._set)));
-    }
-
-    @Test(enabled = false)
-    public void shouldHandleSetsOfMutableTypesOnCollectionField() throws Exception {
-        // Given:
-        class WithSets {
-            public Collection<TypeThatCanBeMutated> _set = new HashSet<TypeThatCanBeMutated>() {{
                 add(new TypeThatCanBeMutated());
             }};
         }
@@ -534,8 +557,8 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._setWithNull, is(not(original._setWithNull)));
     }
 
-    @Test(enabled = false)
-    public void shouldHandleSetsInCollectionField() throws Exception {
+    @Test
+    public void shouldHandleSetsWithJustRuntimeTypeInfo() throws Exception {
         // Given:
         class WithSets {
             public Collection<TypeThatCanBeMutated> _collection = new HashSet<>();
@@ -552,7 +575,7 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
-    public void shouldNotInvalidateHashSets() throws Exception {
+    public void shouldNotInvalidateSetsWhenContentIsMutated() throws Exception {
         // Given:
         class WithSets {
             public HashSet<TypeThatCanBeMutated> _nullSet = null;
@@ -645,6 +668,25 @@ public class GraphPopulatorFunctionTest {
     }
 
     @Test
+    public void shouldHandleMapsWithJustRuntimeTypeInfo() throws Exception {
+        // Given:
+        class TypeWithMapField {
+            public Object map = new HashMap<String, TypeThatCanBeMutated>() {{
+                put("this", new TypeThatCanBeMutated());
+            }};
+        }
+
+        final TypeWithMapField original = new TypeWithMapField();
+
+        // When:
+        final TypeWithMapField populated = populator.populate(new TypeWithMapField());
+
+        // Then:
+        assertThat(populated.map, is(not(nullValue())));
+        assertThat(populated.map, is(not(original.map)));
+    }
+
+    @Test
     public void shouldHandleEnums() throws Exception {
         // Given:
         class TypeWithEnumField {
@@ -724,12 +766,14 @@ public class GraphPopulatorFunctionTest {
     @Test
     public void shouldHandleTypeVariables() throws Exception {
         // Given:
-        class TypeWithTypeVariables<K, V> {
-            public Map<K, V> _map = new HashMap<>();
+        class TypeWithTypeVariables<TypeElement> {
+            // collection knows how to map ET -> TypeElement
+            public Collection<TypeElement> collection = new CustomCollection<>();
         }
 
         class TypeWrappingTypeWithTypeVariables {
-            public TypeWithTypeVariables<String, Integer> _type = new TypeWithTypeVariables<>();
+            // _type knows how to map TypeElement -> String
+            public TypeWithTypeVariables<String> _type = new TypeWithTypeVariables<>();
         }
 
         final TypeWrappingTypeWithTypeVariables currentValue = new TypeWrappingTypeWithTypeVariables();
@@ -738,10 +782,9 @@ public class GraphPopulatorFunctionTest {
         final TypeWrappingTypeWithTypeVariables populated = populator.populate(currentValue);
 
         // Then:
-        assertThat(populated._type._map.keySet(), is(not(empty())));
-        assertThat(populated._type._map.keySet().iterator().next(), is(instanceOf(String.class)));
-        assertThat(populated._type._map.keySet().iterator().next(), is(not("")));
-        assertThat(populated._type._map.values().iterator().next(), is(instanceOf(Integer.class)));
+        assertThat(populated._type.collection, is(not(empty())));
+        assertThat(populated._type.collection.iterator().next(), is(instanceOf(String.class)));
+        assertThat(populated._type.collection.iterator().next(), is(not("")));
     }
 
     @Test
@@ -886,6 +929,26 @@ public class GraphPopulatorFunctionTest {
         // Then:
         assertThat(populated._rawList, is(notNullValue()));
         assertThat(populated._rawList, is(not(original._rawList)));
+    }
+
+    @Test
+    public void shouldHandleFieldsWithJustRuntimeTypeInfo() throws Exception {
+        // Given:
+        class WithNoCompileTimeTypeInfo {
+            public Object immutableField = "initial";
+            public TypeThatCanBeMutated mutableField = new TypeThatCanBeMutated("initial");
+        }
+
+        final WithNoCompileTimeTypeInfo original = new WithNoCompileTimeTypeInfo();
+
+        // When:
+        final WithNoCompileTimeTypeInfo populated = populator.populate(new WithNoCompileTimeTypeInfo());
+
+        // Then:
+        assertThat(populated.immutableField, is(notNullValue()));
+        assertThat(populated.mutableField, is(notNullValue()));
+        assertThat(populated.immutableField, is(not(original.immutableField)));
+        assertThat(populated.mutableField, is(not(original.mutableField)));
     }
 
     // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.

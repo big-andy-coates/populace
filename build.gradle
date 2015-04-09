@@ -16,8 +16,6 @@
 
 
 
-
-
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'eclipse'
@@ -29,7 +27,7 @@ subprojects {
     apply plugin: 'maven'
 
     group = "com.github.datalorax.populace"
-    version = "0.3.1"
+    version = "1.1.0"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8

@@ -146,7 +146,7 @@ If you're using [Maven](http://maven.apache.org/), then add the following to you
   <dependency>
       <groupId>com.github.datalorax.populace</groupId>
       <artifactId>populace-core</artifactId>
-      <version>0.3.1</version>
+      <version>1.0.0</version>
   </dependency>
 </dependencies>
 ```
@@ -156,7 +156,7 @@ If you're using [Gradle](http://www.gradle.org/), then add the following to your
 
 ```
 dependencies {
-    compile 'com.github.datalorax.populace:populace-core:0.3.1'
+    compile 'com.github.datalorax.populace:populace-core:1.0.0'
 }
 ```
 
@@ -164,7 +164,7 @@ dependencies {
 If you're using [SBT](http://code.google.com/p/simple-build-tool/), then add the following to your project:
 
 ```
-libraryDependencies += "com.github.datalorax.populace" % "populace-core" % "0.3.1"
+libraryDependencies += "com.github.datalorax.populace" % "populace-core" % "1.0.0"
 ```
 
 ## License

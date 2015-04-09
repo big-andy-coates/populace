@@ -58,6 +58,8 @@ public class TypeResolver {
      * @return the resolved type.
      */
     public Type resolve(final Type type) {
+        Validate.notNull(type, "type null");
+
         if (type instanceof Class) {
             return resolveClass((Class<?>) type);
         }

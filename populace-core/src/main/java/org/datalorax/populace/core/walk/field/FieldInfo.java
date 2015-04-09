@@ -29,17 +29,17 @@ public class FieldInfo {
     private final RawField field;
     private final Object owningInstance;
     private final TypeResolver typeResolver;
-    private final PathProvider path;
+    private final PathProvider pathProvider;
 
-    public FieldInfo(final RawField field, final Object owningInstance, final TypeResolver typeResolver, final PathProvider path) {
+    public FieldInfo(final RawField field, final Object owningInstance, final TypeResolver typeResolver, final PathProvider pathProvider) {
         Validate.notNull(field, "field null");
         Validate.notNull(owningInstance, "owningInstance null");
         Validate.notNull(typeResolver, "typeResolver null");
-        Validate.notNull(path, "path null");
+        Validate.notNull(pathProvider, "pathProvider null");
         this.field = field;
         this.owningInstance = owningInstance;
         this.typeResolver = typeResolver;
-        this.path = path;
+        this.pathProvider = pathProvider;
     }
 
     /**
@@ -71,11 +71,15 @@ public class FieldInfo {
      * @see RawField#getGenericType()
      */
     public Type getGenericType() {
+        if (field.getType().isPrimitive()) {
+            return field.getType();
+        }
+
         final Object value = getValue();
         if (value != null) {
-            final Class<?> type = field.getType().isPrimitive() ? field.getType() : value.getClass();
-            return typeResolver.resolve(type);
+            return typeResolver.resolve(value.getClass());
         }
+
         return typeResolver.resolve(field.getGenericType());
     }
 
@@ -106,7 +110,7 @@ public class FieldInfo {
         try {
             return field.getValue(getOwningInstance());
         } catch (ReflectiveOperationException e) {
-            throw new FieldAccessException(field, path, e);
+            throw new FieldAccessException(field, pathProvider, e);
         }
     }
 
@@ -121,7 +125,7 @@ public class FieldInfo {
         try {
             field.setValue(getOwningInstance(), value);
         } catch (ReflectiveOperationException e) {
-            throw new FieldAccessException(field, path, e);
+            throw new FieldAccessException(field, pathProvider, e);
         }
     }
 
@@ -165,12 +169,12 @@ public class FieldInfo {
         if (o == null || getClass() != o.getClass()) return false;
 
         final FieldInfo that = (FieldInfo) o;
-        return path.equals(that.path);
+        return pathProvider.getPath().equals(that.pathProvider.getPath());
     }
 
     @Override
     public int hashCode() {
-        return path.hashCode();
+        return pathProvider.getPath().hashCode();
     }
 
     @Override
@@ -179,10 +183,8 @@ public class FieldInfo {
             "field=" + field +
             ", owningInstance=" + owningInstance +
             ", typeResolver=" + typeResolver +
-            ", path=" + path +
+            ", path=" + pathProvider.getPath() +
             '}';
     }
 }
-
-// Todo(ac): test
 

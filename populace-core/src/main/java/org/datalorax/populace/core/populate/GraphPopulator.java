@@ -52,10 +52,6 @@ public final class GraphPopulator {
         return new GraphPopulatorBuilder();
     }
 
-    private static boolean isNotInnerClass(final Class<?> type) {
-        return type.getEnclosingClass() == null || Modifier.isStatic(type.getModifiers());
-    }
-
     // Todo(ac): needs a TypeReference<T> parameter...
     public <T> T populate(final T instance) {
         final Visitor visitor = new Visitor();
@@ -103,6 +99,10 @@ public final class GraphPopulator {
         return (T) config.createInstance(type, null);
     }
 
+    private static boolean isNotInnerClass(final Class<?> type) {
+        return type.getEnclosingClass() == null || Modifier.isStatic(type.getModifiers());
+    }
+
     public interface Builder {
         // Todo(ac): these style interfaces should expose and accept builders, not built types
         Builder withFieldFilter(final FieldFilter filter);
@@ -129,7 +129,6 @@ public final class GraphPopulator {
             try {
                 final Type type = field.getGenericType();
                 final Object currentValue = field.getValue();
-                // Todo(ac): Get mutator based on field type or currentValue type?
                 final Mutator mutator = config.getMutator(type);
                 final Object mutated = mutator.mutate(type, currentValue, field.getOwningInstance(), config);
                 if (mutated != currentValue) {
@@ -145,7 +144,6 @@ public final class GraphPopulator {
             try {
                 final Type type = element.getGenericType();
                 final Object currentValue = element.getValue();
-                // Todo(ac): Get mutator based on collection field type or currentValue type?
                 final Mutator mutator = config.getMutator(type);
                 final Object mutated = mutator.mutate(type, currentValue, null, config);
                 if (mutated != currentValue) {

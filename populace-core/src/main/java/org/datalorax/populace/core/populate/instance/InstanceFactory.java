@@ -35,4 +35,5 @@ public interface InstanceFactory {
      * @throws org.datalorax.populace.core.populate.PopulatorException on failure to instantiate new instance
      */
     <T> T createInstance(Class<? extends T> type, final Object parent, final InstanceFactories instanceFactories);
+    // Todo(ac): Should return Optional<T>
 }

@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Optional;
 
 /**
  * Instance factory to can be used to create new instances for interface types that are marked with
@@ -35,26 +36,16 @@ import java.lang.reflect.Type;
 public class JaxbInstanceFactory implements InstanceFactory {
     public static final JaxbInstanceFactory INSTANCE = new JaxbInstanceFactory();
 
-    private static Class<?> getValueType(final Class<?> rawType, final XmlJavaTypeAdapter annotation) {
-        try {
-            final Class<? extends XmlAdapter> adapterType = annotation.value();
-            final Method marshalMethod = adapterType.getMethod("marshal", rawType);
-            return marshalMethod.getReturnType();
-        } catch (NoSuchMethodException e) {
-            throw new InstanceCreationException("Failed to determine value to for type marked with @XmlJavaTypeAdapter", rawType, e);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public <T> T createInstance(Class<? extends T> type, Object parent, final InstanceFactories instanceFactories) {
-        final XmlJavaTypeAdapter annotation = type.getAnnotation(XmlJavaTypeAdapter.class);
-        if (annotation == null) {
+        final Optional<XmlJavaTypeAdapter> annotation = findXmlJavaTypeAnnotation(type);
+        if (!annotation.isPresent()) {
             return null;
         }
 
-        final Object value = createValueInstance(type, parent, instanceFactories, annotation);
-        return (T) convert(annotation.value(), value, instanceFactories);
+        final Object value = createValueInstance(type, parent, instanceFactories, annotation.get());
+        return (T) convert(type, annotation.get().value(), value, instanceFactories);
     }
 
     @Override
@@ -72,23 +63,53 @@ public class JaxbInstanceFactory implements InstanceFactory {
         return getClass().getSimpleName();
     }
 
-    private <T> Object createValueInstance(final Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories, final XmlJavaTypeAdapter annotation) {
-        final Class<?> valueType = getValueType(rawType, annotation);
-        final InstanceFactory factory = instanceFactories.get(valueType);
-        return factory.createInstance(valueType, parent, instanceFactories);
-    }
-
     @SuppressWarnings("unchecked")
-    private Object convert(final Class<? extends XmlAdapter> adapterType, final Object value, final InstanceFactories instanceFactories) {
-        final XmlAdapter adapter = instanceFactories.get(adapterType).createInstance(adapterType, null, instanceFactories);
+    private Object convert(final Class<?> type, final Class<? extends XmlAdapter> adapterType,
+                           final Object value, final InstanceFactories instanceFactories) {
+
+        final XmlAdapter adapter = createTypeAdapter(type, adapterType, instanceFactories);
 
         try {
             return adapter.unmarshal(value);
         } catch (Exception e) {
             final Type valueType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class, XmlAdapter.class.getTypeParameters()[0]);
             final Type boundType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class, XmlAdapter.class.getTypeParameters()[1]);
-            throw new RuntimeException("Failed to marshal between XmlTypeAdapters value and bound types. " +
-                "bound: " + boundType + ", value: " + valueType, e);
+            throw new InstanceCreationException("Failed to marshal between XmlTypeAdapters value and bound types. " +
+                "bound: " + boundType + ", value: " + valueType, type, e);
+        }
+    }
+
+    private static <T> Optional<XmlJavaTypeAdapter> findXmlJavaTypeAnnotation(final Class<? extends T> type) {
+        final XmlJavaTypeAdapter annotation = type.getAnnotation(XmlJavaTypeAdapter.class);
+        return Optional.ofNullable(annotation);
+    }
+
+    private static Type getValueType(final Class<?> rawType, final XmlJavaTypeAdapter annotation) {
+        try {
+            final Class<? extends XmlAdapter> adapterType = annotation.value();
+            final Method marshalMethod = adapterType.getMethod("marshal", rawType);
+            return marshalMethod.getGenericReturnType();
+        } catch (NoSuchMethodException e) {
+            throw new InstanceCreationException("Failed to determine ValueType of the Adapter specified in the " +
+                "@XmlJavaTypeAdapter annotation. Abstract adapter maybe?", rawType, e);
+        }
+    }
+
+    private static <T> Object createValueInstance(final Class<? extends T> rawType, final Object parent,
+                                                  final InstanceFactories instanceFactories, final XmlJavaTypeAdapter annotation) {
+        final Type valueType = getValueType(rawType, annotation);
+        final InstanceFactory factory = instanceFactories.get(valueType);
+        final Class<?> rawValueType = TypeUtils.getRawType(valueType, null);
+        return factory.createInstance(rawValueType, parent, instanceFactories);
+    }
+
+    private static XmlAdapter createTypeAdapter(final Class<?> type, final Class<? extends XmlAdapter> adapterType,
+                                                final InstanceFactories instanceFactories) {
+        try {
+            return instanceFactories.get(adapterType).createInstance(adapterType, null, instanceFactories);
+        } catch (Exception e) {
+            throw new InstanceCreationException("Failed to create the type adapter needed to marshal the bound type. " +
+                "adapterType: " + adapterType, type, e);
         }
     }
 

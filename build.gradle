@@ -21,6 +21,14 @@ allprojects {
     apply plugin: 'eclipse'
 }
 
+idea {
+    project {
+        jdkName = '1.8'
+        languageLevel = '1.8'
+        vcs = 'Git'
+    }
+}
+
 subprojects {
     apply plugin: 'java'
     apply plugin: 'signing'
@@ -38,7 +46,7 @@ subprojects {
 
     //noinspection GroovyAssignabilityCheck
     dependencies {
-        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3.2'
+        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
         compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
         compile 'com.google.guava:guava:18.0'
 

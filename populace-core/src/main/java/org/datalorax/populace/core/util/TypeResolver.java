@@ -20,10 +20,7 @@ import com.google.common.reflect.TypeToken;
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.walk.field.TypeTable;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.lang.reflect.WildcardType;
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -76,22 +73,13 @@ public class TypeResolver {
             return resolveTypeVariable((TypeVariable<?>) type, assigningType);
         }
         if (type instanceof WildcardType) {
-            final WildcardType wildcardType = (WildcardType) type;
-            final Type[] resolvedLowerBounds = resolve(wildcardType.getLowerBounds(), assigningType);
-            final Type[] resolvedUpperBounds = resolve(wildcardType.getUpperBounds(), assigningType);
-            if (Arrays.equals(resolvedLowerBounds, wildcardType.getLowerBounds()) &&
-                Arrays.equals(resolvedUpperBounds, wildcardType.getUpperBounds())) {
-                return wildcardType;
-            }
-
-            return org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
-                .withLowerBounds(resolvedLowerBounds)
-                .withUpperBounds(resolvedUpperBounds)
-                .build();
+            return resolveWildcard((WildcardType) type, assigningType);
+        }
+        if (type instanceof GenericArrayType) {
+            return resolveGenericArray((GenericArrayType) type, assigningType);
         }
 
-        // Todo(ac): Generic Array
-        return type;
+        throw new UnsupportedOperationException("Unsupported type: " + type);
     }
 
     private Type[] resolve(final Type[] types, final TypeToken<?> assigningType) {
@@ -132,6 +120,33 @@ public class TypeResolver {
         }
 
         return resolve(resolved);
+    }
+
+    private Type resolveWildcard(final WildcardType type, final TypeToken<?> assigningType) {
+        final Type[] lowerBounds = type.getLowerBounds();
+        if (lowerBounds.length != 0) {
+            final Type[] resolvedLowerBounds = resolve(lowerBounds, assigningType);
+            if (Arrays.equals(resolvedLowerBounds, lowerBounds)) {
+                return type;
+            }
+
+            return TypeUtils.wildcardTypeWithLowerBounds(resolvedLowerBounds);
+        }
+
+        final Type[] resolvedUpperBounds = resolve(type.getUpperBounds(), assigningType);
+        if (Arrays.equals(resolvedUpperBounds, type.getUpperBounds())) {
+            return type;
+        }
+
+        return TypeUtils.wildcardTypeWithUpperBounds(resolvedUpperBounds);
+    }
+
+    private Type resolveGenericArray(final GenericArrayType type, final TypeToken<?> assigningType) {
+        final Type resolvedComponentType = resolve(type.getGenericComponentType(), assigningType);
+        if (resolvedComponentType.equals(type.getGenericComponentType())) {
+            return type;
+        }
+        return TypeUtils.genericArrayType(resolvedComponentType);
     }
 
     /**

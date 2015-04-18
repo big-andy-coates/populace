@@ -126,6 +126,52 @@ public final class TypeUtils {
     }
 
     /**
+     * Create a wild card type instance with no bounds
+     *
+     * @return {@link java.lang.reflect.WildcardType}
+     */
+    public static WildcardType wildcardType() {
+        return org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
+            .withUpperBounds(Object.class)  // implicit
+            .build();
+    }
+
+    /**
+     * Create a wild card type instance with the specified {@code lowerBounds}
+     *
+     * @return {@link java.lang.reflect.WildcardType}
+     */
+    public static WildcardType wildcardTypeWithLowerBounds(final Type... lowerBounds) {
+        return org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
+            .withUpperBounds(Object.class)  // implicit
+            .withLowerBounds(lowerBounds)
+            .build();
+    }
+
+    /**
+     * Create a wild card type instance with the specified {@code upperBounds}
+     *
+     * @return {@link java.lang.reflect.WildcardType}
+     */
+    public static WildcardType wildcardTypeWithUpperBounds(final Type... upperBounds) {
+        return org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
+            .withUpperBounds(upperBounds)
+            .build();
+    }
+
+    /**
+     * Create a generic array type instance.
+     *
+     * @param componentType the type of the elements of the array. For example the component type of {@code boolean[]}
+     *                      is {@code boolean}
+     * @return {@link GenericArrayType}
+     * @see org.apache.commons.lang3.reflect.TypeUtils#genericArrayType(java.lang.reflect.Type)
+     */
+    public static GenericArrayType genericArrayType(final Type componentType) {
+        return org.apache.commons.lang3.reflect.TypeUtils.genericArrayType(componentType);
+    }
+
+    /**
      * Create a parameterised type instance.
      *
      * @param raw the raw class to create a parameterized type instance for
@@ -243,7 +289,6 @@ public final class TypeUtils {
     }
 
     private static String abbreviatedName(final String typeName) {
-        // Todo(ac): make this return a.c.b.ClassName.
         return typeName;
     }
 }

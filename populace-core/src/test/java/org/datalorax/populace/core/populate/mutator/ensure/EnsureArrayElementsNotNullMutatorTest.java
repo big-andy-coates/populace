@@ -16,8 +16,8 @@
 
 package org.datalorax.populace.core.populate.mutator.ensure;
 
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.core.populate.PopulatorContext;
+import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -33,10 +33,6 @@ import static org.mockito.Mockito.*;
 public class EnsureArrayElementsNotNullMutatorTest {
     private EnsureArrayElementsNotNullMutator mutator;
     private PopulatorContext config;
-
-    private static Type arrayType(final Class<?> componentType) {
-        return TypeUtils.genericArrayType(componentType);
-    }
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -125,5 +121,9 @@ public class EnsureArrayElementsNotNullMutatorTest {
 
         // Then:
         verify(config).createInstance(any(Type.class), eq(null));
+    }
+
+    private static Type arrayType(final Class<?> componentType) {
+        return TypeUtils.genericArrayType(componentType);
     }
 }

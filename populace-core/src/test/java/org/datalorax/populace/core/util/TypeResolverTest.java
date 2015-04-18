@@ -26,6 +26,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -162,7 +163,7 @@ public class TypeResolverTest {
             Collection<?> field;
         }
         final Type typeWithWildcard = SomeType.class.getDeclaredField("field").getGenericType();
-        final Type expectedComponentType = org.apache.commons.lang3.reflect.TypeUtils.wildcardType().withUpperBounds(Object.class).build();
+        final Type expectedComponentType = TypeUtils.wildcardType();
 
         // When:
         final Type resolved = resolver.resolve(typeWithWildcard);
@@ -186,10 +187,7 @@ public class TypeResolverTest {
         final TypeVariable<Class<SomeType>> LB = SomeType.class.getTypeParameters()[0];
         when(typeTable.resolveTypeVariable(LB)).thenReturn(String.class);
         final ParameterizedType expectedSetType = TypeUtils.parameterise(Set.class, String.class);
-        final WildcardType expectedComponentType = org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
-            .withLowerBounds(expectedSetType)
-            .withUpperBounds(Object.class)
-            .build();
+        final WildcardType expectedComponentType = TypeUtils.wildcardTypeWithLowerBounds(expectedSetType);
 
         // When:
         final Type resolved = resolver.resolve(typeWithWildcard);
@@ -215,9 +213,7 @@ public class TypeResolverTest {
         final TypeVariable<Class<SomeType>> UB = SomeType.class.getTypeParameters()[0];
         when(typeTable.resolveTypeVariable(UB)).thenReturn(Integer.class);
         final ParameterizedType expectedSetType = TypeUtils.parameterise(Set.class, Integer.class);
-        final WildcardType expectedComponentType = org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
-            .withUpperBounds(expectedSetType)
-            .build();
+        final WildcardType expectedComponentType = TypeUtils.wildcardTypeWithUpperBounds(expectedSetType);
 
         // When:
         final Type resolved = resolver.resolve(typeWithWildcard);
@@ -232,8 +228,101 @@ public class TypeResolverTest {
         // end
     }
 
-    // Todo(ac): generic arrays, etc.
-    // Todo(ac): bounds on TypeVariables
+    @Test
+    public void shouldNotCreateNewWildcardIfLowerBoundNotResolved() throws Exception {
+        // Given:
+        class SomeType {
+            Collection<? super Number> field;
+        }
+        final Type typeWithWildcard = SomeType.class.getDeclaredField("field").getGenericType();
+        final Type wildcardType = ((ParameterizedType) typeWithWildcard).getActualTypeArguments()[0];
+
+        // When:
+        final Type resolved = resolver.resolve(typeWithWildcard);
+
+        // Then:
+        assertThat(((ParameterizedType) resolved).getActualTypeArguments()[0], is(sameInstance(wildcardType)));
+    }
+
+    @Test
+    public void shouldNotCreateNewWildcardIfUpperBoundNotResolved() throws Exception {
+        // Given:
+        class SomeType {
+            Collection<? extends Number> field;
+        }
+        final Type typeWithWildcard = SomeType.class.getDeclaredField("field").getGenericType();
+        final Type wildcardType = ((ParameterizedType) typeWithWildcard).getActualTypeArguments()[0];
+
+        // When:
+        final Type resolved = resolver.resolve(typeWithWildcard);
+
+        // Then:
+        assertThat(((ParameterizedType) resolved).getActualTypeArguments()[0], is(sameInstance(wildcardType)));
+    }
+
+    @Test
+    public void shouldResolveGenericArrayComponentTypeThatIsTypeVariable() throws Exception {
+        // Given:
+        class SomeType<ST> {
+            @SafeVarargs
+            final void someMethod(ST... sts) {
+            }
+        }
+
+        final Type genericArrayType = SomeType.class.getDeclaredMethod("someMethod", Object[].class).getGenericParameterTypes()[0];
+        final TypeVariable<Class<SomeType>> ST = SomeType.class.getTypeParameters()[0];
+        when(typeTable.resolveTypeVariable(ST)).thenReturn(Integer.class);
+
+        // When:
+        final Type resolved = resolver.resolve(genericArrayType);
+
+        // Then:
+        assertThat(resolver.resolve(genericArrayType), is(equalTo(TypeUtils.genericArrayType(Integer.class))));
+    }
+
+    @Test
+    public void shouldResolveGenericArrayComponentTypeThatIsParameterisedType() throws Exception {
+        // Given:
+        class SomeType<ST> {
+            @SafeVarargs
+            final void someMethod(List<ST>... lists) {
+            }
+        }
+
+        final Type genericArrayType = SomeType.class.getDeclaredMethod("someMethod", List[].class).getGenericParameterTypes()[0];
+        final TypeVariable<Class<SomeType>> ST = SomeType.class.getTypeParameters()[0];
+        when(typeTable.resolveTypeVariable(ST)).thenReturn(Integer.class);
+        final ParameterizedType expectedListType = TypeUtils.parameterise(List.class, Integer.class);
+
+        // When:
+        final Type resolved = resolver.resolve(genericArrayType);
+
+        // Then:
+        assertThat(resolver.resolve(genericArrayType), is(equalTo(TypeUtils.genericArrayType(expectedListType))));
+    }
+
+    @Test
+    public void shouldNotCreateNewGenericArrayTypeIfComponentTypeNotResolved() throws Exception {
+        // Given:
+        class SomeType<ST> {
+            @SafeVarargs
+            final void someMethod(ST... sts) {
+            }
+        }
+
+        final Type genericArrayType = SomeType.class.getDeclaredMethod("someMethod", Object[].class).getGenericParameterTypes()[0];
+
+        // When:
+        final Type resolved = resolver.resolve(genericArrayType);
+
+        // Then:
+        assertThat(resolved, is(sameInstance(genericArrayType)));
+    }
+
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void shouldThrowOnUnsupportedType() throws Exception {
+        resolver.resolve(mock(Type.class));
+    }
 
     @Test
     public void shouldNotNeedToWorkAroundApacheCommonsLangTypeUtilsBug() throws Exception {

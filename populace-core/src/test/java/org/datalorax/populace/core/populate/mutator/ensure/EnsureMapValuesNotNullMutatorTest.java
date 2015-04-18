@@ -16,8 +16,8 @@
 
 package org.datalorax.populace.core.populate.mutator.ensure;
 
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.core.populate.PopulatorContext;
+import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -105,7 +105,7 @@ public class EnsureMapValuesNotNullMutatorTest {
     public void shouldLeaveValueAsNullIfCreateInstanceReturnsNull() throws Exception {
         // Given:
         when(config.createInstance(any(Type.class), anyObject())).thenReturn(null);
-        final Type type = TypeUtils.parameterize(Map.class, String.class, String.class);
+        final Type type = TypeUtils.parameterise(Map.class, String.class, String.class);
         final Map currentValue = new HashMap<String, String>() {{
             put("key", null);
         }};
@@ -122,7 +122,7 @@ public class EnsureMapValuesNotNullMutatorTest {
     public void shouldWorkWithDerivedTypes() throws Exception {
         // Given:
         when(config.createInstance(any(Type.class), anyObject())).thenReturn("value");
-        final Type type = TypeUtils.parameterize(HashMap.class, String.class, String.class);
+        final Type type = TypeUtils.parameterise(HashMap.class, String.class, String.class);
         final Map currentValue = new HashMap<String, String>() {{
             put("key", null);
         }};
@@ -138,7 +138,7 @@ public class EnsureMapValuesNotNullMutatorTest {
     public void shouldNotPassParentObjectToCreateInstanceAsItsNotTheParentOfTheComponent() throws Exception {
         // Given:
         final Object parent = new Object();
-        final Type mapType = TypeUtils.parameterize(Map.class, Integer.class, String.class);
+        final Type mapType = TypeUtils.parameterise(Map.class, Integer.class, String.class);
         final Map<Integer, String> currentValue = new HashMap<Integer, String>() {{
             put(1, null);
         }};
@@ -153,7 +153,7 @@ public class EnsureMapValuesNotNullMutatorTest {
     @Test
     public void shouldGetValueTypeFromGenerics() throws Exception {
         // Given:
-        final Type baseType = TypeUtils.parameterize(Map.class, String.class, Number.class);
+        final Type baseType = TypeUtils.parameterise(Map.class, String.class, Number.class);
         final Map<String, Long> currentValue = new HashMap<String, Long>() {{
             put("key", null);
         }};

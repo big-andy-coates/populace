@@ -17,9 +17,9 @@
 package org.datalorax.populace.core.populate.mutator.change;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.core.populate.Mutator;
 import org.datalorax.populace.core.populate.PopulatorContext;
+import org.datalorax.populace.core.util.TypeUtils;
 
 import java.lang.reflect.Type;
 

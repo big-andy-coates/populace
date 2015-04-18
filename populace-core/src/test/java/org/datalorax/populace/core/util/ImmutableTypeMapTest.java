@@ -17,7 +17,6 @@
 package org.datalorax.populace.core.util;
 
 
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.GenericArrayType;
@@ -86,7 +85,7 @@ public class ImmutableTypeMapTest {
     @Test
     public void shouldGetSpecificOverDefaultValue() throws Exception {
         // Given:
-        final ParameterizedType specificType = TypeUtils.parameterize(HashSet.class, String.class);
+        final ParameterizedType specificType = TypeUtils.parameterise(HashSet.class, String.class);
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.newBuilder("default")
             .withSpecificType(specificType, "specific")
             .build();
@@ -101,7 +100,7 @@ public class ImmutableTypeMapTest {
     @Test
     public void shouldGetSpecificOverSuperValue() throws Exception {
         // Given:
-        final ParameterizedType specificType = TypeUtils.parameterize(HashSet.class, String.class);
+        final ParameterizedType specificType = TypeUtils.parameterise(HashSet.class, String.class);
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.newBuilder("default")
             .withSpecificType(specificType, "specific")
             .withSuperType(Set.class, "Set")
@@ -158,8 +157,8 @@ public class ImmutableTypeMapTest {
         final ImmutableTypeMap<String> reversed = new ImmutableTypeMap<>(NO_SPECIFIC_VALUES, reversedSuperValues, NO_PACKAGE_VALUES, "default", "array default");
 
         // When:
-        final String nValue = natural.get(TypeUtils.parameterize(HashSet.class, String.class));
-        final String rValue = reversed.get(TypeUtils.parameterize(HashSet.class, String.class));
+        final String nValue = natural.get(TypeUtils.parameterise(HashSet.class, String.class));
+        final String rValue = reversed.get(TypeUtils.parameterise(HashSet.class, String.class));
 
         // Then:
         assertThat(nValue, is(rValue));
@@ -341,7 +340,7 @@ public class ImmutableTypeMapTest {
             Collection<?> field;
         }
         final Type oracleParameterisedType = SomeType.class.getDeclaredField("field").getGenericType();
-        final Type otherParameterisedType = TypeUtils.parameterize(Collection.class, TypeUtils.wildcardType().withUpperBounds(Object.class).build());
+        final Type otherParameterisedType = TypeUtils.parameterise(Collection.class, TypeUtils.wildcardType());
 
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.newBuilder("default")
             .withSpecificType(oracleParameterisedType, "specific")
@@ -362,7 +361,7 @@ public class ImmutableTypeMapTest {
             Collection<?> field;
         }
         final Type oracleParameterisedType = SomeType.class.getDeclaredField("field").getGenericType();
-        final Type otherParameterisedType = TypeUtils.parameterize(Collection.class, TypeUtils.wildcardType().withUpperBounds(Object.class).build());
+        final Type otherParameterisedType = TypeUtils.parameterise(Collection.class, TypeUtils.wildcardType());
 
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.newBuilder("default")
             .withSpecificType(otherParameterisedType, "specific")

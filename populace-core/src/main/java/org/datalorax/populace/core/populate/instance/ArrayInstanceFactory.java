@@ -17,7 +17,7 @@
 package org.datalorax.populace.core.populate.instance;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
+import org.datalorax.populace.core.util.TypeUtils;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;

@@ -17,6 +17,8 @@
 package org.datalorax.populace.core.populate;
 
 import org.datalorax.populace.core.CustomCollection;
+import org.datalorax.populace.core.populate.instance.InstanceFactories;
+import org.datalorax.populace.core.populate.instance.InstanceFactory;
 import org.datalorax.populace.core.populate.instance.NullObjectStrategy;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.populate.mutator.NoOpMutator;
@@ -35,6 +37,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
@@ -45,13 +48,6 @@ import static org.mockito.Mockito.*;
  */
 public class GraphPopulatorFunctionTest {
     private GraphPopulator populator;
-
-    private static <T> void assertSetValid(final HashSet<T> original) {
-        // Check set hasn't been made invalid by values being mutated after they've been inserted into the set:
-        final HashSet<T> copy = new HashSet<>(original);
-        assertThat(original, is(equalTo(copy)));
-        assertThat(copy, is(equalTo(original)));
-    }
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -951,9 +947,53 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated.mutableField, is(not(original.mutableField)));
     }
 
-    // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
-    // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
-    // Todo(Ac): Add test for Map<String, List<Integer>>
+    @Test
+    public void shouldTreatUnboundedWildcardsAsObjects() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithUnboundedWildcard {
+            public List<?> wildcardField;
+        }
+
+        final NullObjectStrategy nullHandler = mock(NullObjectStrategy.class);
+        final TypeWithUnboundedWildcard currentValue = new TypeWithUnboundedWildcard();
+        final GraphPopulator.Builder builder = GraphPopulator.newBuilder();
+        populator = builder.withInstanceFactories(builder
+            .instanceFactoriesBuilder()
+            .withNullObjectStrategy(nullHandler).build())
+            .build();
+
+        // When:
+        populator.populate(currentValue);
+
+        // Then:
+        verify(nullHandler, atLeastOnce()).onNullObject(eq(currentValue));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldAllowInstanceFactoryToBeRegisteredAgainstBoundedWildcardType() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithBoundedWildcard {
+            public List<? extends Number> wildcardField;
+        }
+
+        final Type wildcard = TypeWithBoundedWildcard.class.getField("wildcardField").getGenericType();
+        final InstanceFactory factory = mock(InstanceFactory.class);
+        final TypeWithBoundedWildcard currentValue = new TypeWithBoundedWildcard();
+        final GraphPopulator.Builder builder = GraphPopulator.newBuilder();
+        populator = builder.withInstanceFactories(builder
+            .instanceFactoriesBuilder()
+            .withSpecificFactory(wildcard, factory).build())
+            .build();
+
+        // When:
+        populator.populate(currentValue);
+
+        // Then:
+        verify(factory).createInstance(any(Class.class), anyObject(), any(InstanceFactories.class));
+    }
 
     @Test
     public void shouldWorkWithBigDecimals() throws Exception {
@@ -972,6 +1012,10 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._bigDecimal, is(not(original._bigDecimal)));
     }
 
+    // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
+    // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
+    // Todo(Ac): Add test for Map<String, List<Integer>>
+
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(NoOpMutator.class);
         final Mutators.Builder builder = Mutators.newBuilder();
@@ -980,6 +1024,13 @@ public class GraphPopulatorFunctionTest {
         }
         populator = GraphPopulator.newBuilder().withMutators(builder.build()).build();
         return mutator;
+    }
+
+    private static <T> void assertSetValid(final HashSet<T> original) {
+        // Check set hasn't been made invalid by values being mutated after they've been inserted into the set:
+        final HashSet<T> copy = new HashSet<>(original);
+        assertThat(original, is(equalTo(copy)));
+        assertThat(copy, is(equalTo(original)));
     }
 
     @SuppressWarnings("UnusedDeclaration")

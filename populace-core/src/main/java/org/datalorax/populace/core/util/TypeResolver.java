@@ -23,6 +23,8 @@ import org.datalorax.populace.core.walk.field.TypeTable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -58,33 +60,44 @@ public class TypeResolver {
      * @return the resolved type.
      */
     public Type resolve(final Type type) {
+        return resolve(type, null);
+    }
+
+    private Type resolve(final Type type, final TypeToken<?> assigningType) {
         Validate.notNull(type, "type null");
 
         if (type instanceof Class) {
             return resolveClass((Class<?>) type);
         }
         if (type instanceof ParameterizedType) {
-            return resolveParameterisedType(type);
+            return resolveParameterisedType((ParameterizedType) type);
         }
         if (type instanceof TypeVariable) {
-            return resolveTypeVariable(type);
+            return resolveTypeVariable((TypeVariable<?>) type, assigningType);
         }
-        //        if (genericType instanceof WildcardType) {
-//            final WildcardType wildcardType = (WildcardType) genericType;
-//            final Type[] lowerBounds = wildcardType.getLowerBounds();
-//            final Type[] upperBounds = wildcardType.getLowerBounds();
-//            if (lowerBounds.length == 0 && upperBounds.length == 0) {
-//                return wildcardType;
-//            }
-//
-//            // Todo(ac): Resolve all bouunds and build new wildcard.
-//            return org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
-//
-//        }
+        if (type instanceof WildcardType) {
+            final WildcardType wildcardType = (WildcardType) type;
+            final Type[] resolvedLowerBounds = resolve(wildcardType.getLowerBounds(), assigningType);
+            final Type[] resolvedUpperBounds = resolve(wildcardType.getUpperBounds(), assigningType);
+            if (Arrays.equals(resolvedLowerBounds, wildcardType.getLowerBounds()) &&
+                Arrays.equals(resolvedUpperBounds, wildcardType.getUpperBounds())) {
+                return wildcardType;
+            }
 
+            return org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
+                .withLowerBounds(resolvedLowerBounds)
+                .withUpperBounds(resolvedUpperBounds)
+                .build();
+        }
 
-        // Todo(ac):
+        // Todo(ac): Generic Array
         return type;
+    }
+
+    private Type[] resolve(final Type[] types, final TypeToken<?> assigningType) {
+        return Arrays.stream(types)
+            .map(type -> resolve(type, assigningType))
+            .toArray(Type[]::new);
     }
 
     private Type resolveClass(final Class<?> type) {
@@ -97,41 +110,23 @@ public class TypeResolver {
         return resolveParameterisedType(parameterised);
     }
 
-    private Type resolveParameterisedType(final Type type) {
+    private Type resolveParameterisedType(final ParameterizedType type) {
         final TypeToken<?> typeToken = TypeToken.of(type);
-        final ParameterizedType pt = (ParameterizedType) typeToken.getType();
-        final Type[] typeArgs = pt.getActualTypeArguments();
-        final Type[] resolvedArgs = new Type[typeArgs.length];
 
-        for (int i = 0; i != typeArgs.length; ++i) {
-            final Type typeArg = typeArgs[i];
-            resolvedArgs[i] = typeArg;
-            if (typeArg instanceof Class) {
-                continue;
-            }
-
-            Optional<Type> resolved = resolveToNew(typeArg);
-            if (resolved.isPresent()) {
-                resolvedArgs[i] = resolved.get();
-                continue;
-            }
-
-            if (!(typeArg instanceof TypeVariable)) {
-                throw new UnsupportedOperationException();
-            }
-
-            resolved = resolveTypeVariableFromSupers((TypeVariable<?>) typeArg, typeToken);
-
-            if (resolved.isPresent()) {
-                resolvedArgs[i] = resolved.get();
-            }
-        }
+        final Type[] resolvedArgs = Arrays.stream(type.getActualTypeArguments())
+            .map(t -> resolve(t, typeToken))
+            .toArray(Type[]::new);
 
         return TypeUtils.parameterise(typeToken.getRawType(), resolvedArgs);
     }
 
-    private Type resolveTypeVariable(final Type type) {
-        final Type resolved = typeTable.resolveTypeVariable((TypeVariable) type);
+    private Type resolveTypeVariable(final TypeVariable<?> type, final TypeToken<?> assigningType) {
+        Type resolved = typeTable.resolveTypeVariable(type);
+
+        if (type.equals(resolved) && assigningType != null) {
+            resolved = resolveTypeVariableFromSupers(type, assigningType);
+        }
+
         if (type.equals(resolved)) {
             return type;
         }
@@ -140,30 +135,19 @@ public class TypeResolver {
     }
 
     /**
-     * Resolve the provided {@code type} using the supplied {@code typeTable}.
-     *
-     * @param type the type to resolve
-     * @return the resolved type or Optional.empty() if the type could not be resolved.
-     */
-    private Optional<Type> resolveToNew(final Type type) {
-        final Type resolved = resolve(type);
-        return type.equals(resolved) ? Optional.empty() : Optional.of(resolved);
-    }
-
-    /**
      * Resolved to provided {@code typeVar}, for the provided {@code type}, using the provided {@code typeTable}
      *
      * @param typeVar the type variable to resolve
-     * @param type    the type the variable belongs to.
+     * @param assigningType    the type the variable belongs to.
      * @return the resolved type, or Optional.empty() if the type couldn't be resolved.
      */
-    private Optional<Type> resolveTypeVariableFromSupers(final TypeVariable<?> typeVar, final TypeToken<?> type) {
-        final Stream<TypeVariable<?>> typeArgAliases = findSuperAndInterfaceTypeArgumentAliases(typeVar, type);
-        return typeArgAliases
-            .map(this::resolveToNew)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+    private Type resolveTypeVariableFromSupers(final TypeVariable<?> typeVar, final TypeToken<?> assigningType) {
+        final Stream<TypeVariable<?>> typeArgAliases = findSuperAndInterfaceTypeArgumentAliases(typeVar, assigningType);
+        final Optional<Type> first = typeArgAliases
+            .map(t -> this.resolve(t, assigningType))
+            .filter(t -> !(t instanceof TypeVariable))
             .findFirst();
+        return first.isPresent() ? first.get() : typeVar;
     }
 
     /**
@@ -188,7 +172,7 @@ public class TypeResolver {
      *    interface SomeInterface&lt;T2&gt; {}
      *    class SomeType&lt;T2&gt; implements SomeInterface&lt;T2&gt; {}
      *
-     *    TypeVariable<?> typeVariable = SomeType.class.getTypeParameters()[0];
+     *    TypeVariable&lt;?&gt; typeVariable = SomeType.class.getTypeParameters()[0];
      *    TypeToken interfaceToken = findTypeToken(TypeToken.of(SomeType.class).getTypes(), SomeInterface.class);
      *    getTypeArgumentAliases(typeVariable, interfaceToken);
      * }

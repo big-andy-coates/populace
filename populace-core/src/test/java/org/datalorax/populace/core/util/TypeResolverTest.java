@@ -16,18 +16,22 @@
 
 package org.datalorax.populace.core.util;
 
+import org.datalorax.populace.core.CustomCollection;
 import org.datalorax.populace.core.walk.field.TypeTable;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
+import static org.datalorax.populace.core.util.TypeMatchers.typeEqualTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -53,12 +57,12 @@ public class TypeResolverTest {
 
     @Test
     public void shouldReturnRawUnparameterisedClassUntouched() throws Exception {
-        assertThat(resolver.resolve(String.class), is(equalTo((Type) String.class)));
+        assertThat(resolver.resolve(String.class), is(typeEqualTo(String.class)));
     }
 
     @Test
     public void shouldReturnParameterisedClassWithTypeVariablesIfItCantResolveThem() throws Exception {
-        assertThat(resolver.resolve(Map.class), is((Type) TypeUtils.parameterise(Map.class, Map.class.getTypeParameters())));
+        assertThat(resolver.resolve(Map.class), is(typeEqualTo(TypeUtils.parameterise(Map.class, Map.class.getTypeParameters()))));
     }
 
     @Test
@@ -67,7 +71,7 @@ public class TypeResolverTest {
         when(typeTable.resolveTypeVariable(Map.class.getTypeParameters()[0])).thenReturn(String.class);
 
         // Then:
-        assertThat(resolver.resolve(Map.class), is((Type) TypeUtils.parameterise(Map.class, String.class, Map.class.getTypeParameters()[1])));
+        assertThat(resolver.resolve(Map.class), is(typeEqualTo(TypeUtils.parameterise(Map.class, String.class, Map.class.getTypeParameters()[1]))));
     }
 
     @Test
@@ -77,7 +81,7 @@ public class TypeResolverTest {
         when(typeTable.resolveTypeVariable(Map.class.getTypeParameters()[1])).thenReturn(Integer.class);
 
         // Then:
-        assertThat(resolver.resolve(Map.class), is((Type) TypeUtils.parameterise(Map.class, String.class, Integer.class)));
+        assertThat(resolver.resolve(Map.class), is(typeEqualTo(TypeUtils.parameterise(Map.class, String.class, Integer.class))));
     }
 
     @Test
@@ -89,21 +93,24 @@ public class TypeResolverTest {
         when(typeTable.resolveTypeVariable(SomeInterface.class.getTypeParameters()[0])).thenReturn(Number.class);
 
         // Then:
-        assertThat(resolver.resolve(SomeType.class), is(TypeUtils.parameterise(SomeType.class, Number.class)));
+        assertThat(resolver.resolve(SomeType.class), is(typeEqualTo(TypeUtils.parameterise(SomeType.class, Number.class))));
     }
 
     @Test
-    public void shouldResolveUsingSuperClassGenericInfo() throws Exception {
+    public void shouldResolveUsingSuperTypes() throws Exception {
         // Given:
-        class SuperClass<ST> {
-        }
-        class SomeType<T> extends SuperClass<T> {
+        class TypeWithTypeVariables<TypeElement> {
+            // collection knows how to map ET -> TypeElement
+            public Collection<TypeElement> collection = new CustomCollection<>();
         }
 
-        when(typeTable.resolveTypeVariable(SuperClass.class.getTypeParameters()[0])).thenReturn(Number.class);
+        final TypeVariable<Class<TypeWithTypeVariables>> TypeElement = TypeWithTypeVariables.class.getTypeParameters()[0];
+        final TypeVariable<Class<Collection>> E = Collection.class.getTypeParameters()[0];
+        when(typeTable.resolveTypeVariable(E)).thenReturn(TypeElement);
+        when(typeTable.resolveTypeVariable(TypeElement)).thenReturn(String.class);
 
         // Then:
-        assertThat(resolver.resolve(SomeType.class), is(TypeUtils.parameterise(SomeType.class, Number.class)));
+        assertThat(resolver.resolve(CustomCollection.class), is(typeEqualTo(TypeUtils.parameterise(CustomCollection.class, String.class))));
     }
 
     @Test
@@ -115,11 +122,11 @@ public class TypeResolverTest {
         when(typeTable.resolveTypeVariable(SomeInterface.class.getTypeParameters()[0])).thenReturn(String.class);
 
         // Then:
-        assertThat(resolver.resolve(SomeType.class), is(TypeUtils.parameterise(SomeType.class, SomeType.class.getTypeParameters())));
+        assertThat(resolver.resolve(SomeType.class), is(typeEqualTo(TypeUtils.parameterise(SomeType.class, SomeType.class.getTypeParameters()))));
     }
 
     @Test
-    public void shouldNotUseUnresolveSuperClassTypeVariables() throws Exception {
+    public void shouldNotUseResolveSuperClassTypeVariables() throws Exception {
         // Given:
         class SuperClass<ST> {
         }
@@ -129,7 +136,7 @@ public class TypeResolverTest {
         when(typeTable.resolveTypeVariable(SuperClass.class.getTypeParameters()[0])).thenReturn(String.class);
 
         // Then:
-        assertThat(resolver.resolve(SomeType.class), is(TypeUtils.parameterise(SomeType.class, SomeType.class.getTypeParameters())));
+        assertThat(resolver.resolve(SomeType.class), is(typeEqualTo(TypeUtils.parameterise(SomeType.class, SomeType.class.getTypeParameters()))));
     }
 
     @Test
@@ -140,25 +147,113 @@ public class TypeResolverTest {
         class SomeType<T extends Number> extends SuperClass<T> {
         }
 
-        when(typeTable.resolveTypeVariable(SuperClass.class.getTypeParameters()[0])).thenReturn(Integer.class);
+        final TypeVariable<Class<SuperClass>> ST = SuperClass.class.getTypeParameters()[0];
+        when(typeTable.resolveTypeVariable(ST)).thenReturn(Integer.class);
 
         // Then:
-        assertThat(resolver.resolve(SomeType.class), is(TypeUtils.parameterise(SomeType.class, Integer.class)));
+        assertThat(resolver.resolve(SomeType.class), is(typeEqualTo(TypeUtils.parameterise(SomeType.class, Integer.class))));
     }
 
-    @Test(enabled = false)
+    @SuppressWarnings("unchecked")
+    @Test
     public void shouldWorkWithWildCards() throws Exception {
         // Given:
         class SomeType {
             Collection<?> field;
         }
         final Type typeWithWildcard = SomeType.class.getDeclaredField("field").getGenericType();
+        final Type expectedComponentType = org.apache.commons.lang3.reflect.TypeUtils.wildcardType().withUpperBounds(Object.class).build();
+
+        // When:
+        final Type resolved = resolver.resolve(typeWithWildcard);
 
         // Then:
-        assertThat(resolver.resolve(typeWithWildcard), is(TypeUtils.parameterise(SomeType.class, Integer.class)));
+        assertThat(resolved, is(equalTo(TypeUtils.parameterise(Collection.class, expectedComponentType))));
+        // commons.lang bug workaround:
+        assertThat(resolved, is(instanceOf(ParameterizedType.class)));
+        assertThat(((ParameterizedType) resolved).getActualTypeArguments(), is(array(typeEqualTo(expectedComponentType))));
+        // end
     }
 
-    // Todo(ac): wildcards, generic arrays, etc.
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldResolveWildcardLowerBounds() throws Exception {
+        // Given:
+        class SomeType<LB> {
+            Collection<? super Set<LB>> field;
+        }
+        final Type typeWithWildcard = SomeType.class.getDeclaredField("field").getGenericType();
+        final TypeVariable<Class<SomeType>> LB = SomeType.class.getTypeParameters()[0];
+        when(typeTable.resolveTypeVariable(LB)).thenReturn(String.class);
+        final ParameterizedType expectedSetType = TypeUtils.parameterise(Set.class, String.class);
+        final WildcardType expectedComponentType = org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
+            .withLowerBounds(expectedSetType)
+            .withUpperBounds(Object.class)
+            .build();
+
+        // When:
+        final Type resolved = resolver.resolve(typeWithWildcard);
+
+        // Then:
+        assertThat(resolved, is(equalTo(TypeUtils.parameterise(Collection.class, expectedComponentType))));
+        // commons.lang bug workaround:
+        assertThat(resolved, is(instanceOf(ParameterizedType.class)));
+        final Type argType = ((ParameterizedType) resolved).getActualTypeArguments()[0];
+        assertThat(argType, is(typeEqualTo(expectedComponentType)));
+        assertThat(((WildcardType) argType).getLowerBounds(), is(array(typeEqualTo(expectedSetType))));
+        // end
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldResolveWildcardsUpperBounds() throws Exception {
+        // Given:
+        class SomeType<UB> {
+            Collection<? extends Set<UB>> field;
+        }
+        final Type typeWithWildcard = SomeType.class.getDeclaredField("field").getGenericType();
+        final TypeVariable<Class<SomeType>> UB = SomeType.class.getTypeParameters()[0];
+        when(typeTable.resolveTypeVariable(UB)).thenReturn(Integer.class);
+        final ParameterizedType expectedSetType = TypeUtils.parameterise(Set.class, Integer.class);
+        final WildcardType expectedComponentType = org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
+            .withUpperBounds(expectedSetType)
+            .build();
+
+        // When:
+        final Type resolved = resolver.resolve(typeWithWildcard);
+
+        // Then:
+        assertThat(resolver.resolve(typeWithWildcard), is(equalTo(TypeUtils.parameterise(Collection.class, expectedComponentType))));
+        // commons.lang bug workaround:
+        assertThat(resolved, is(instanceOf(ParameterizedType.class)));
+        final Type argType = ((ParameterizedType) resolved).getActualTypeArguments()[0];
+        assertThat(argType, is(typeEqualTo(expectedComponentType)));
+        assertThat(((WildcardType) argType).getUpperBounds(), is(array(typeEqualTo(expectedSetType))));
+        // end
+    }
+
+    // Todo(ac): generic arrays, etc.
+    // Todo(ac): bounds on TypeVariables
+
+    @Test
+    public void shouldNotNeedToWorkAroundApacheCommonsLangTypeUtilsBug() throws Exception {
+        // Given:
+        class SomeType {
+            Collection<?> field;
+        }
+
+        final ParameterizedType wildcardCollectionType = (ParameterizedType) SomeType.class.getDeclaredField("field").getGenericType();
+        final WildcardType wildcard = (WildcardType) wildcardCollectionType.getActualTypeArguments()[0];
+        final ParameterizedType ptWithWildcard = org.apache.commons.lang3.reflect.TypeUtils.parameterize(Collection.class, wildcard);
+        final ParameterizedType otherPt = org.apache.commons.lang3.reflect.TypeUtils.parameterize(Collection.class, String.class);
+
+        // Then:
+        assertThat(otherPt, is(not(equalTo(ptWithWildcard))));  // Passes
+        assertThat(ptWithWildcard, is(equalTo(otherPt)));       // should fail!
+
+        // NB: If this test starts failing at the line above, then the bug in commons.lang has been fixed.
+        // So, remove this test and all the workarounds marked with 'commons.lang bug workaround'.
+    }
 
     interface SomeInterface<E> {
     }

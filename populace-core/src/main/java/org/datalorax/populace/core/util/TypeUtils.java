@@ -18,9 +18,7 @@ package org.datalorax.populace.core.util;
 
 import org.apache.commons.lang3.Validate;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -116,6 +114,18 @@ public final class TypeUtils {
     }
 
     /**
+     * Checks if the subject type may be implicitly cast to the target type following the Java generics rules.
+     *
+     * @param type   the subject type to be assigned to the target type
+     * @param toType the target type
+     * @return {@code true} if {@code type} is assignable to {@code toType}.
+     * @see org.apache.commons.lang3.reflect.TypeUtils#isAssignable(Type, Type)
+     */
+    public static boolean isAssignable(final Type type, final Type toType) {
+        return org.apache.commons.lang3.reflect.TypeUtils.isAssignable(type, toType);
+    }
+
+    /**
      * Create a parameterised type instance.
      *
      * @param raw the raw class to create a parameterized type instance for
@@ -126,18 +136,6 @@ public final class TypeUtils {
      */
     public static ParameterizedType parameterise(final Class<?> raw, final Type... typeArguments) {
         return org.apache.commons.lang3.reflect.TypeUtils.parameterize(raw, typeArguments);
-    }
-
-    /**
-     * Create a parameterized type instance.
-     *
-     * @param raw the raw class to create a parameterized type instance for
-     * @param typeArgMappings the mapping used for parameterization
-     * @return {@link ParameterizedType}
-     * @see org.apache.commons.lang3.reflect.TypeUtils#parameterize(Class, java.util.Map)
-     */
-    public static ParameterizedType parameterise(final Class<?> raw, final Map<TypeVariable<?>, Type> typeArgMappings) {
-        return org.apache.commons.lang3.reflect.TypeUtils.parameterize(raw, typeArgMappings);
     }
 
     /**
@@ -183,6 +181,65 @@ public final class TypeUtils {
         }
 
         throw new UnsupportedOperationException("Type not supported: " + type);
+    }
+
+    /**
+     * Ensures a consistent implementation of the different sub types i.e. {@link java.lang.reflect.ParameterizedType},
+     * {@link java.lang.Class}, {@link java.lang.reflect.TypeVariable} and {@link java.lang.reflect.GenericArrayType}.
+     * <p>
+     * This is useful if you need to compare them, as implementations from different vendors do not generally compare as
+     * equal, even if the type information they convey is equivalent.
+     * <p>
+     * Calling this method with two equivalent types, from two different implementations, will result in two {@code type}s
+     * that will be equal i.e. {@code ensureTypeImpl(t1).equals(ensureTypeImpl(t2))} will return true.
+     *
+     * @param type the type, from any implementation, for which a consistent implementation is required.
+     * @return the same type, but from a consistent implementation.
+     */
+    public static Type ensureConsistentType(final Type type) {
+        if (type instanceof Class) {
+            return type;    // Final class, so only one impl.
+        }
+
+        if (type instanceof ParameterizedType) {
+            return ensureConsistentParameterisedType((ParameterizedType) type);
+        }
+
+        if (type instanceof TypeVariable) {
+            return type;
+        }
+
+        if (type instanceof WildcardType) {
+            return ensureConsistentWildcard((WildcardType) type);
+        }
+
+        if (type instanceof GenericArrayType) {
+            return ensureConsistentGenericArrayType((GenericArrayType) type);
+        }
+
+        throw new UnsupportedOperationException("Unsupported type: " + type.getClass());
+    }
+
+    private static Type ensureConsistentParameterisedType(final ParameterizedType type) {
+        final Type[] consistentTypeArgs = Arrays.stream(type.getActualTypeArguments())
+            .map(TypeUtils::ensureConsistentType)
+            .toArray(Type[]::new);
+
+        return parameterise(getRawType(type, null), consistentTypeArgs);
+    }
+
+    private static Type ensureConsistentWildcard(final WildcardType type) {
+        final Type[] lowerBounds = Arrays.stream(type.getLowerBounds()).map(TypeUtils::ensureConsistentType).toArray(Type[]::new);
+        final Type[] upperBounds = Arrays.stream(type.getUpperBounds()).map(TypeUtils::ensureConsistentType).toArray(Type[]::new);
+        return org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
+            .withLowerBounds(lowerBounds)
+            .withUpperBounds(upperBounds)
+            .build();
+    }
+
+    private static Type ensureConsistentGenericArrayType(final GenericArrayType type) {
+        final Type componentType = ensureConsistentType(type.getGenericComponentType());
+        return org.apache.commons.lang3.reflect.TypeUtils.genericArrayType(componentType);
     }
 
     private static String abbreviatedName(final String typeName) {

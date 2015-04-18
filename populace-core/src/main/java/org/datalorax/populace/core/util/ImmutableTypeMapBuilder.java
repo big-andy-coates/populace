@@ -54,7 +54,8 @@ final class ImmutableTypeMapBuilder<T> implements ImmutableTypeMap.Builder<T> {
     public ImmutableTypeMapBuilder<T> withSpecificType(final Type type, final T handler) {
         Validate.notNull(type, "type null");
         Validate.notNull(handler, "handler null");
-        specificValues.put(type, handler);
+        final Type consistentType = TypeUtils.ensureConsistentType(type);
+        specificValues.put(consistentType, handler);
         return this;
     }
 

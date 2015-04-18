@@ -154,8 +154,8 @@ public class ImmutableTypeMapTest {
             put(Collection.class, "no cigar");
             put(Set.class, "most specific");
         }};
-        final ImmutableTypeMap<String> natural = new ImmutableTypeMap<String>(NO_SPECIFIC_VALUES, naturalSuperValues, NO_PACKAGE_VALUES, "default", "array default");
-        final ImmutableTypeMap<String> reversed = new ImmutableTypeMap<String>(NO_SPECIFIC_VALUES, reversedSuperValues, NO_PACKAGE_VALUES, "default", "array default");
+        final ImmutableTypeMap<String> natural = new ImmutableTypeMap<>(NO_SPECIFIC_VALUES, naturalSuperValues, NO_PACKAGE_VALUES, "default", "array default");
+        final ImmutableTypeMap<String> reversed = new ImmutableTypeMap<>(NO_SPECIFIC_VALUES, reversedSuperValues, NO_PACKAGE_VALUES, "default", "array default");
 
         // When:
         final String nValue = natural.get(TypeUtils.parameterize(HashSet.class, String.class));
@@ -265,8 +265,8 @@ public class ImmutableTypeMapTest {
             put("org", "no cigar");
             put("org.datalorax", "most specific");
         }};
-        final ImmutableTypeMap<String> natural = new ImmutableTypeMap<String>(NO_SPECIFIC_VALUES, NO_SUPER_VALUES, naturalSuperValues, "default", "array default");
-        final ImmutableTypeMap<String> reversed = new ImmutableTypeMap<String>(NO_SPECIFIC_VALUES, NO_SUPER_VALUES, reversedSuperValues, "default", "array default");
+        final ImmutableTypeMap<String> natural = new ImmutableTypeMap<>(NO_SPECIFIC_VALUES, NO_SUPER_VALUES, naturalSuperValues, "default", "array default");
+        final ImmutableTypeMap<String> reversed = new ImmutableTypeMap<>(NO_SPECIFIC_VALUES, NO_SUPER_VALUES, reversedSuperValues, "default", "array default");
 
         // When:
         final String nValue = natural.get(getClass());
@@ -332,6 +332,48 @@ public class ImmutableTypeMapTest {
 
         // Then:
         assertThat(value, is("array default"));
+    }
+
+    @Test
+    public void shouldWorkWithMixtureOfTypeImplementations() throws Exception {
+        // Given:
+        class SomeType {
+            Collection<?> field;
+        }
+        final Type oracleParameterisedType = SomeType.class.getDeclaredField("field").getGenericType();
+        final Type otherParameterisedType = TypeUtils.parameterize(Collection.class, TypeUtils.wildcardType().withUpperBounds(Object.class).build());
+
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.newBuilder("default")
+            .withSpecificType(oracleParameterisedType, "specific")
+            .withArrayDefault("array default")
+            .build();
+
+        // When:
+        final String value = collection.get(otherParameterisedType);
+
+        // Then:
+        assertThat(value, is("specific"));
+    }
+
+    @Test
+    public void shouldWorkWithMixtureOfTypeImplementations_OtherWay() throws Exception {
+        // Given:
+        class SomeType {
+            Collection<?> field;
+        }
+        final Type oracleParameterisedType = SomeType.class.getDeclaredField("field").getGenericType();
+        final Type otherParameterisedType = TypeUtils.parameterize(Collection.class, TypeUtils.wildcardType().withUpperBounds(Object.class).build());
+
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.newBuilder("default")
+            .withSpecificType(otherParameterisedType, "specific")
+            .withArrayDefault("array default")
+            .build();
+
+        // When:
+        final String value = collection.get(oracleParameterisedType);
+
+        // Then:
+        assertThat(value, is("specific"));
     }
 
     private static class ClassComparator implements Comparator<Class<?>> {

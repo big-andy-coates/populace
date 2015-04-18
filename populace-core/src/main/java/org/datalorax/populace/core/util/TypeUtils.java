@@ -139,6 +139,7 @@ public final class TypeUtils {
     /**
      * Create a wild card type instance with the specified {@code lowerBounds}
      *
+     * @param lowerBounds the lower bounds to add.
      * @return {@link java.lang.reflect.WildcardType}
      */
     public static WildcardType wildcardTypeWithLowerBounds(final Type... lowerBounds) {
@@ -151,11 +152,12 @@ public final class TypeUtils {
     /**
      * Create a wild card type instance with the specified {@code upperBounds}
      *
+     * @param upperBounds the upper bounds to add.
      * @return {@link java.lang.reflect.WildcardType}
      */
     public static WildcardType wildcardTypeWithUpperBounds(final Type... upperBounds) {
         return org.apache.commons.lang3.reflect.TypeUtils.wildcardType()
-            .withUpperBounds(upperBounds)
+            .withUpperBounds(upperBounds.length == 0 ? new Type[]{Object.class} : upperBounds)
             .build();
     }
 
@@ -198,18 +200,6 @@ public final class TypeUtils {
     }
 
     /**
-     * Returns an abbreviated class name for logging purposes.  Package names are abbreviated to a single character.
-     *
-     * @param type the type whose name should be abbreviated.
-     * @return the abbreviated class name
-     */
-    public static String abbreviatedName(final Class<?> type) {
-        // Todo(ac):
-        return type.getSimpleName();
-        //return abbreviatedName(type.getName());
-    }
-
-    /**
      * Returns an abbreviated generic name for logging purposes.  Package names are abbreviated to a single character.
      * Generic info is included.
      *
@@ -218,12 +208,12 @@ public final class TypeUtils {
      */
     public static String abbreviatedName(final Type type) {
         if (type instanceof Class) {
-            return abbreviatedName((Class<?>) type);
+            return abbreviatedName(((Class<?>) type).getName());
         }
 
         if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
-            return abbreviatedName(parameterizedType.getTypeName());
+            final ParameterizedType pt = (ParameterizedType) type;
+            return abbreviatedName(pt.getTypeName());
         }
 
         throw new UnsupportedOperationException("Type not supported: " + type);
@@ -289,6 +279,21 @@ public final class TypeUtils {
     }
 
     private static String abbreviatedName(final String typeName) {
-        return typeName;
+        final StringBuilder builder = new StringBuilder();
+
+        int startOfLastWord = 0;
+        for (int i = 0; i != typeName.length(); ++i) {
+            final char c = typeName.charAt(i);
+            if (c == '.') {
+                builder.append(typeName.charAt(startOfLastWord)).append('.');
+                startOfLastWord = i + 1;
+            } else if (c == '<' || '>' == c) {
+                builder.append(typeName.substring(startOfLastWord, i + 1));
+                startOfLastWord = i + 1;
+            }
+        }
+
+        builder.append(typeName.substring(startOfLastWord));
+        return builder.toString();
     }
 }

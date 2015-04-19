@@ -18,8 +18,10 @@ package org.datalorax.populace.core.util;
 
 import org.testng.annotations.Test;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -71,5 +73,17 @@ public class TypeUtilsTest {
         assertThat(resolvedType, is(equalTo(valueType)));
     }
 
-    // Todo(ac): Support wildcard types and generic arrays.
+    @Test
+    public void shouldAbbreviateClassName() throws Exception {
+        assertThat(TypeUtils.abbreviatedName(getClass()), is("o.d.p.c.u.TypeUtilsTest"));
+    }
+
+    @Test
+    public void shouldAbbreviateParameterisedTypeName() throws Exception {
+        // Given:
+        final ParameterizedType pt = TypeUtils.parameterise(Collection.class, String.class);
+
+        // Then:
+        assertThat(TypeUtils.abbreviatedName(pt), is("j.u.Collection<j.l.String>"));
+    }
 }

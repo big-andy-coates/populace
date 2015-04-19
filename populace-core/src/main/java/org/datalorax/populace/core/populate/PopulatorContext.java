@@ -17,10 +17,10 @@
 package org.datalorax.populace.core.populate;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.instance.InstanceFactory;
 import org.datalorax.populace.core.populate.mutator.Mutators;
+import org.datalorax.populace.core.util.TypeUtils;
 
 import java.lang.reflect.Type;
 

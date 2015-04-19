@@ -16,7 +16,7 @@
 
 package org.datalorax.populace.core.populate.instance;
 
-import org.apache.commons.lang3.reflect.TypeUtils;
+import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

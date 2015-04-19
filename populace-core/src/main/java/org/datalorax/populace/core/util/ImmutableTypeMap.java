@@ -17,7 +17,6 @@
 package org.datalorax.populace.core.util;
 
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.reflect.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -72,11 +71,11 @@ public class ImmutableTypeMap<V> {
     }
 
     public static <T> Builder<T> newBuilder(final T defaultHandler) {
-        return new ImmutableTypeMapBuilder<T>(defaultHandler);
+        return new ImmutableTypeMapBuilder<>(defaultHandler);
     }
 
     public static <T> Builder<T> asBuilder(final ImmutableTypeMap<T> source) {
-        return new ImmutableTypeMapBuilder<T>(source.specificValues, source.superValues, source.packageValues,
+        return new ImmutableTypeMapBuilder<>(source.specificValues, source.superValues, source.packageValues,
             source.arrayDefaultValue, source.defaultValue);
     }
 
@@ -119,7 +118,8 @@ public class ImmutableTypeMap<V> {
      */
     public V getSpecific(final Type key) {
         Validate.notNull(key, "key null");
-        return specificValues.get(key);
+        final Type consistentKey = TypeUtils.ensureConsistentType(key);
+        return specificValues.get(consistentKey);
     }
 
     /**

@@ -16,8 +16,8 @@
 
 package org.datalorax.populace.core.populate;
 
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.core.populate.mutator.Mutators;
+import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

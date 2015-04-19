@@ -16,8 +16,8 @@
 
 package org.datalorax.populace.core.populate.mutator.ensure;
 
-import org.apache.commons.lang3.reflect.TypeUtils;
 import org.datalorax.populace.core.populate.PopulatorContext;
+import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -108,7 +108,7 @@ public class EnsureListElementsNotNullMutatorTest {
     public void shouldLeaveValueAsNullIfCreateInstanceReturnsNull() throws Exception {
         // Given:
         when(config.createInstance(any(Type.class), anyObject())).thenReturn(null);
-        final Type type = TypeUtils.parameterize(List.class, String.class);
+        final Type type = TypeUtils.parameterise(List.class, String.class);
         final List currentValue = new ArrayList<String>() {{
             add(null);
         }};
@@ -125,7 +125,7 @@ public class EnsureListElementsNotNullMutatorTest {
     public void shouldWorkWithDerivedTypes() throws Exception {
         // Given:
         when(config.createInstance(any(Type.class), anyObject())).thenReturn("value");
-        final Type type = TypeUtils.parameterize(ArrayList.class, String.class);
+        final Type type = TypeUtils.parameterise(ArrayList.class, String.class);
         final List currentValue = new ArrayList<String>() {{
             add(null);
         }};
@@ -141,7 +141,7 @@ public class EnsureListElementsNotNullMutatorTest {
     public void shouldNotPassParentObjectToCreateInstanceAsItsNotTheParentOfTheComponent() throws Exception {
         // Given:
         final Object parent = new Object();
-        final Type type = TypeUtils.parameterize(List.class, String.class);
+        final Type type = TypeUtils.parameterise(List.class, String.class);
         final List<String> currentValue = new ArrayList<String>() {{
             add(null);
         }};
@@ -156,7 +156,7 @@ public class EnsureListElementsNotNullMutatorTest {
     @Test
     public void shouldGetValueTypeFromGenerics() throws Exception {
         // Given:
-        final Type baseType = TypeUtils.parameterize(List.class, Number.class);
+        final Type baseType = TypeUtils.parameterise(List.class, Number.class);
         final List currentValue = new ArrayList<Long>() {{
             add(null);
         }};

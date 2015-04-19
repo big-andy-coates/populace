@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/datalorax/populace.svg?branch=master)](https://travis-ci.org/datalorax/populace)
+[![Coverage Status](https://coveralls.io/repos/datalorax/populace/badge.svg)](https://coveralls.io/r/datalorax/populace)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.datalorax.populace/populace-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.datalorax.populace/populace-core/)
+[![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+
 # Populace
 Populace is flexible library for walking and populating object graphs. It is often used to facilitate solid test coverage
 of serialisation mechanisms where complex domain models are used and full object graphs need to be populated.
@@ -176,7 +181,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
 See the License for the specific language governing permissions and limitations under the License.
 
 ## How to build
-[![Build Status](https://travis-ci.org/datalorax/populace.svg?branch=master)](https://travis-ci.org/datalorax/populace)
 
 ### Prerequisites
 Before building the code you'll need:

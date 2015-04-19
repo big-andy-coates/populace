@@ -86,6 +86,4 @@ public class TypeUtilsTest {
         // Then:
         assertThat(TypeUtils.abbreviatedName(pt), is("j.u.Collection<j.l.String>"));
     }
-
-    // Todo(ac): Support wildcard types and generic arrays.
 }

@@ -16,9 +16,6 @@
 
 
 
-
-
-
 apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'jacoco'
 
@@ -213,4 +210,3 @@ tasks.coveralls {
 }
 
 defaultTasks 'clean', 'jar'
-

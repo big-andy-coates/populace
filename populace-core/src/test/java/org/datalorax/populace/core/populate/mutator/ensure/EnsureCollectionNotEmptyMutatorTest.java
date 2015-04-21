@@ -18,10 +18,11 @@ package org.datalorax.populace.core.populate.mutator.ensure;
 
 import org.datalorax.populace.core.populate.Mutator;
 import org.datalorax.populace.core.populate.PopulatorContext;
-import org.datalorax.populace.core.populate.mutator.NoOpMutator;
+import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,28 +71,56 @@ public class EnsureCollectionNotEmptyMutatorTest {
     }
 
     @Test
-    public void shouldNotBlowUpOnRawBaseType() throws Exception {
+    public void shouldWorkWithRawBaseTypes() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
-        final List currentValue = new ArrayList();
+        givenMutatorRegistered(List.class.getTypeParameters()[0], mutatorThatReturns("this"));
+        final List<String> currentValue = new ArrayList<>();
+        final List<String> expected = new ArrayList<>();
+        expected.add("this");
 
         // When:
-        mutator.mutate(List.class, currentValue, null, config);
+        final Object mutated = mutator.mutate(List.class, currentValue, null, config);
+
+        // Then:
+        assertThat(mutated, is(expected));
     }
 
     @Test
-    public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
+    public void shouldWorkWithRawDerivedTypes() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
-        final List currentValue = new ArrayList();
+        givenMutatorRegistered(ArrayList.class.getTypeParameters()[0], mutatorThatReturns("this"));
+        final List<String> currentValue = new ArrayList<>();
+        final List<String> expected = new ArrayList<>();
+        expected.add("this");
 
         // When:
-        mutator.mutate(ArrayList.class, currentValue, null, config);
+        final Object mutated = mutator.mutate(ArrayList.class, currentValue, null, config);
+
+        // Then:
+        assertThat(mutated, is(expected));
     }
 
-    // Todo(ac): how about some tests? including Collection<Collection<>> style
+    @Test
+    public void shouldWorkWithParameterizedTypes() throws Exception {
+        // Given:
+        givenMutatorRegistered(String.class, mutatorThatReturns("something"));
+        final Type pt = TypeUtils.parameterise(ArrayList.class, String.class);
+        final List<String> currentValue = new ArrayList<>();
+        final List<String> expected = new ArrayList<>();
+        expected.add("something");
 
-    private void givenMutatorRegistered(Class<?> type, Mutator mutator) {
+        // When:
+        final Object mutated = mutator.mutate(pt, currentValue, null, config);
+
+        // Then:
+        assertThat(mutated, is(expected));
+    }
+
+    private void givenMutatorRegistered(final Type type, final Mutator mutator) {
         when(config.getMutator(type)).thenReturn(mutator);
+    }
+
+    private Mutator mutatorThatReturns(final Object value) {
+        return (type, currentValue, parent, config1) -> value;
     }
 }

@@ -82,7 +82,7 @@ public class CollectionInspector implements Inspector {
 
         @Override
         public Type getGenericType(final Type containerType) {
-            return TypeUtils.getTypeArgument(containerType, Collection.class, COLLECTION_TYPE_VARIABLE);
+            return TypeUtils.getTypeArgument(containerType, COLLECTION_TYPE_VARIABLE);
         }
 
         @Override

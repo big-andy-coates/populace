@@ -36,12 +36,6 @@ public class MapValueInspector implements Inspector {
     public static final Inspector INSTANCE = new MapValueInspector();
     private static final TypeVariable<Class<Map>> MAP_VALUE_TYPE_VARIABLE = Map.class.getTypeParameters()[1];
 
-    @SuppressWarnings("unchecked")
-    private static Map<?, Object> ensureMap(final Object instance) {
-        Validate.isInstanceOf(Map.class, instance);
-        return (Map<?, Object>) instance;
-    }
-
     @Override
     public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
         final Map<?, Object> map = ensureMap(instance);
@@ -70,6 +64,12 @@ public class MapValueInspector implements Inspector {
         return elements.iterator();
     }
 
+    @SuppressWarnings("unchecked")
+    private static Map<?, Object> ensureMap(final Object instance) {
+        Validate.isInstanceOf(Map.class, instance);
+        return (Map<?, Object>) instance;
+    }
+
     private class MapElement implements RawElement {
         private final Map.Entry<?, Object> entry;
 
@@ -80,7 +80,7 @@ public class MapValueInspector implements Inspector {
 
         @Override
         public Type getGenericType(final Type containerType) {
-            return TypeUtils.getTypeArgument(containerType, Map.class, MAP_VALUE_TYPE_VARIABLE);
+            return TypeUtils.getTypeArgument(containerType, MAP_VALUE_TYPE_VARIABLE);
         }
 
         @Override

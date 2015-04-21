@@ -37,12 +37,6 @@ public class ListInspector implements Inspector {
     private static final TypeVariable<Class<Collection>> COLLECTION_TYPE_VARIABLE = Collection.class.getTypeParameters()[0];
 
     @SuppressWarnings("unchecked")
-    private static List<Object> ensureList(final Object instance) {
-        Validate.isInstanceOf(List.class, instance);
-        return (List<Object>) instance;
-    }
-
-    @SuppressWarnings("unchecked")
     @Override
     public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
         final List<Object> collection = ensureList(instance);
@@ -82,6 +76,12 @@ public class ListInspector implements Inspector {
         };
     }
 
+    @SuppressWarnings("unchecked")
+    private static List<Object> ensureList(final Object instance) {
+        Validate.isInstanceOf(List.class, instance);
+        return (List<Object>) instance;
+    }
+
     private static class ListElement implements RawElement {
         private final List<Object> list;
         private final int index;
@@ -94,10 +94,11 @@ public class ListInspector implements Inspector {
         @Override
         public Type getGenericType(final Type containerType) {
             final Class<?> rawType = TypeUtils.getRawType(containerType, null);
+            // Todo(ac): This is ugly and should be unnecessary
             if (List.class.isAssignableFrom(rawType)) {
-                return TypeUtils.getTypeArgument(containerType, List.class, LIST_TYPE_VARIABLE);
+                return TypeUtils.getTypeArgument(containerType, LIST_TYPE_VARIABLE);
             }
-            return TypeUtils.getTypeArgument(containerType, Collection.class, COLLECTION_TYPE_VARIABLE);
+            return TypeUtils.getTypeArgument(containerType, COLLECTION_TYPE_VARIABLE);
         }
 
         @Override

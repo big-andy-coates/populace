@@ -57,7 +57,51 @@ public final class TypeUtils {
     }
 
     /**
-     * Gets a single type argument, resolved to a class, from the set of type arguments of a class/interface based on a
+     * Gets a single type argument from the set of type arguments of a class/interface based on a declaring class of the
+     * supplied {@code typeVariable}.
+     *
+     * For instance, given the parameterised type representing {@code Map&lt;String,Integer&gt;} and the
+     * {@code typeVariable} of {@code Map.class.getTypeParameters()[0]}, then this method will return String.class.
+     *
+     * This method will work even if the type represented by {@code type} is a subtype of the required type and does
+     * not itself have any template arguments. For example, this method will determine that both of the parameters for
+     * the interface {@link Map} are {@link Object} for the subtype {@link java.util.Properties Properties} even though
+     * the subtype does not directly implement the {@code Map} interface.
+     *
+     * If the parameterized {@code type}'s type arguments are {@link java.lang.reflect.TypeVariable}s or
+     * {@link java.lang.reflect.WildcardType}, then these are returned.
+     *
+     * If the {@code type} is not a parameterised type, but a raw {@code Class}, and {@code typeVariable} is a valid
+     * {@link java.lang.reflect.TypeVariable} of the type or its super type/interfaces, then the method will return the
+     * {@link java.lang.reflect.Type type} representing the type argument. For example, if {@code type} is
+     * {@code ArrayList.class} and {@code typeVariable} is {@code List.class.getTypeParameters()[0]}, then the method will
+     * return the equivalent of {@code ArrayList.class.getTypeParameters()[0]}
+     *
+     * This method throws {@link java.lang.IllegalArgumentException} if {@code type} is not assignable to {@code toClass}.
+     * It returns an Object.class if the actual type parameter can not be determined.
+     *
+     * @param type         the type from which to determine the type parameters of {@code toClass}
+     * @param typeVariable the specific typeVariable of {@code toClass} to retrieve.
+     * @return the {@code Class} of the type argument, or null if {@code type} is not assignable to {@code toClass}
+     * @throws java.lang.IllegalArgumentException if {@code type} is not assignable to {@code toClass}.
+     */
+    public static Type getTypeArgument(final Type type, final TypeVariable<? extends Class<?>> typeVariable) {
+        final Class<?> toClass = typeVariable.getGenericDeclaration();
+        if (toClass.equals(type)) {
+            return typeVariable;
+        }
+
+        final Map<TypeVariable<?>, Type> typeArguments = org.apache.commons.lang3.reflect.TypeUtils.getTypeArguments(type, toClass);
+        if (typeArguments == null) {
+            throw new IllegalArgumentException(type + " is not assignable to " + toClass);
+        }
+
+        final Type typeArg = typeArguments.get(typeVariable);
+        return typeArg == null ? Object.class : typeArg;
+    }
+
+    /**
+     * Gets a single type argument from the set of type arguments of a class/interface based on a
      * the {@code toClass} subtype. For instance, given the parameterised type representing {@code Map&lt;String,Integer&gt;}
      * , the {@code toClass} value of {@code Map.class}, and the {@code typeVariable} of
      * {@code Map.class.getTypeParameters()[0]}, then this method will return String.class.  This method will work even
@@ -76,21 +120,21 @@ public final class TypeUtils {
      * @param <T>          The type of {@code toClass}
      * @return the {@code Class} of the type argument, or null if {@code type} is not assignable to {@code toClass}
      * @throws java.lang.IllegalArgumentException if {@code type} is not assignable to {@code toClass}.
+     * @deprecated use {@link #getTypeArgument(java.lang.reflect.Type, java.lang.reflect.TypeVariable)}
      */
+    @Deprecated     // Todo(ac): remove in v2.x
     public static <T> Type getTypeArgument(final Type type, final Class<T> toClass, final TypeVariable<Class<T>> typeVariable) {
+        if (toClass.equals(type)) {
+            return typeVariable;
+        }
+
         final Map<TypeVariable<?>, Type> typeArguments = org.apache.commons.lang3.reflect.TypeUtils.getTypeArguments(type, toClass);
         if (typeArguments == null) {
             throw new IllegalArgumentException(type + " is not assignable to " + toClass);
         }
 
         final Type typeArg = typeArguments.get(typeVariable);
-        if (typeArg instanceof ParameterizedType) {
-            return typeArg;
-        }
-        if (typeArg instanceof Class) {
-            return typeArg;
-        }
-        return Object.class;
+        return typeArg == null ? Object.class : typeArg;
     }
 
     /**
@@ -216,7 +260,7 @@ public final class TypeUtils {
             return abbreviatedName(pt.getTypeName());
         }
 
-        throw new UnsupportedOperationException("Type not supported: " + type);
+        throw new IllegalArgumentException("Type not supported: " + type);
     }
 
     /**

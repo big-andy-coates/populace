@@ -45,19 +45,6 @@ public class SetInspector implements Inspector {
     private static final TypeVariable<Class<Set>> SET_TYPE_VARIABLE = Set.class.getTypeParameters()[0];
 
     @SuppressWarnings("unchecked")
-    private static Set<Object> ensureSet(final Object instance) {
-        Validate.isInstanceOf(Set.class, instance);
-        return (Set<Object>) instance;
-    }
-
-    private static Iterator<RawElement> toRawElements(final Set<Object> set) {
-        final ArrayList<RawElement> elements = set.stream()
-            .map(e -> new SetElement(e, set))
-            .collect(Collectors.toCollection(ArrayList::new));
-        return elements.iterator();
-    }
-
-    @SuppressWarnings("unchecked")
     @Override
     public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
         final Set<Object> set = ensureSet(instance);
@@ -79,6 +66,19 @@ public class SetInspector implements Inspector {
         return getClass().getSimpleName();
     }
 
+    @SuppressWarnings("unchecked")
+    private static Set<Object> ensureSet(final Object instance) {
+        Validate.isInstanceOf(Set.class, instance);
+        return (Set<Object>) instance;
+    }
+
+    private static Iterator<RawElement> toRawElements(final Set<Object> set) {
+        final ArrayList<RawElement> elements = set.stream()
+            .map(e -> new SetElement(e, set))
+            .collect(Collectors.toCollection(ArrayList::new));
+        return elements.iterator();
+    }
+
     private static class SetElement implements RawElement {
         private final Set<Object> set;
         private Object element;
@@ -90,7 +90,7 @@ public class SetInspector implements Inspector {
 
         @Override
         public Type getGenericType(final Type containerType) {
-            return TypeUtils.getTypeArgument(containerType, Set.class, SET_TYPE_VARIABLE);
+            return TypeUtils.getTypeArgument(containerType, SET_TYPE_VARIABLE);
         }
 
         @Override

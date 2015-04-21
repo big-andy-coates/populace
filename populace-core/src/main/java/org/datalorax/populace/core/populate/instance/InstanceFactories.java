@@ -20,6 +20,7 @@ import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.util.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
+import java.util.Optional;
 
 /**
  * Collection of InstanceFactories to handle different types.
@@ -77,17 +78,60 @@ public class InstanceFactories {
         return ChainedInstanceFactory.chain(first, second, additional);
     }
 
-    public InstanceFactory get(final Type key) {
-        if (Object.class.equals(key)) {
+    /**
+     * Get the instance factory most specific to the provided {@code type}.
+     *
+     * @param type the specific type to find
+     * @return the instance factory
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#get(java.lang.reflect.Type) for details
+     */
+    public InstanceFactory get(final Type type) {
+        if (Object.class.equals(type)) {
             return nullObjectFactory;
         }
-        return factories.get(key);
+
+        return factories.get(type);
     }
 
-    // Todo(ac): expose all?, across mutators, inspectors?
+    /**
+     * Get the instance factory registered against the specific {@code type} provided, is present.
+     *
+     * @param type the specific type to find.
+     * @return the instance factory if found, else Optional.empty()
+     */
+    public Optional<InstanceFactory> getSpecific(final Type type) {
+        return Optional.ofNullable(factories.getSpecific(type));
+    }
+
+    /**
+     * Get the instance factory registered against the super {@code type} provided, is present.
+     *
+     * @param type the super type to find.
+     * @return the instance factory if found, else Optional.empty()
+     */
+    public Optional<InstanceFactory> getSuper(final Class<?> type) {
+        return Optional.ofNullable(factories.getSuper(type));
+    }
+
+    /**
+     * Get the default instance factory for array types.
+     *
+     * @return the instance factory
+     */
+    public InstanceFactory getArrayDefault() {
+        return factories.getArrayDefault();
+    }
+
+    /**
+     * Get the default instance factory for none-array types.
+     *
+     * @return the instance factory
+     */
     public InstanceFactory getDefault() {
         return factories.getDefault();
     }
+
+    // Todo(ac): expose the same accessors across mutators & inspectors?
 
     @Override
     public boolean equals(final Object o) {
@@ -129,7 +173,7 @@ public class InstanceFactories {
         InstanceFactories build();
     }
 
-    private static class NullObjectInstanceFactory implements InstanceFactory {
+    static class NullObjectInstanceFactory implements InstanceFactory {
         private final NullObjectStrategy strategy;
 
         NullObjectInstanceFactory(final NullObjectStrategy strategy) {

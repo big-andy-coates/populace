@@ -97,14 +97,16 @@ public class ImmutableTypeMap<V> {
         }
 
         final Class<?> rawType = TypeUtils.getRawType(key, null);
-        value = getSuper(rawType);
-        if (value != null) {
-            return value;
-        }
+        if (rawType != null) {
+            value = getSuper(rawType);
+            if (value != null) {
+                return value;
+            }
 
-        value = getPackage(rawType);
-        if (value != null) {
-            return value;
+            value = getPackage(rawType);
+            if (value != null) {
+                return value;
+            }
         }
 
         return getDefault();
@@ -116,6 +118,7 @@ public class ImmutableTypeMap<V> {
      * @param key the key to lookup
      * @return the value matching this specific key, if found, else null.
      */
+    // Todo(ac): Switch to Optional in v2.x
     public V getSpecific(final Type key) {
         Validate.notNull(key, "key null");
         final Type consistentKey = TypeUtils.ensureConsistentType(key);
@@ -128,6 +131,7 @@ public class ImmutableTypeMap<V> {
      * @param key the key to lookup
      * @return the most value for the most specific super key, if found, else null.
      */
+    // Todo(ac): Switch to Optional in v2.x
     public V getSuper(final Class<?> key) {
         Validate.notNull(key, "key null");
         Map.Entry<Class<?>, V> bestMatch = null;
@@ -146,6 +150,7 @@ public class ImmutableTypeMap<V> {
         return bestMatch == null ? null : bestMatch.getValue();
     }
 
+    // Todo(ac): Switch to Optional in v2.x
     public V getPackage(final String packageName) {
         Validate.notEmpty(packageName, "packageName empty");
 

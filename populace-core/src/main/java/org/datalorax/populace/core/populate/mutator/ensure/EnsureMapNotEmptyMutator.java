@@ -90,11 +90,11 @@ public class EnsureMapNotEmptyMutator implements Mutator {
     }
 
     private Type getKeyType(Type type) {
-        return TypeUtils.getTypeArgument(type, Map.class, MAP_TYPE_VARIABLES[0]);
+        return TypeUtils.getTypeArgument(type, MAP_TYPE_VARIABLES[0]);
     }
 
     private Type getValueType(Type type) {
-        return TypeUtils.getTypeArgument(type, Map.class, MAP_TYPE_VARIABLES[1]);
+        return TypeUtils.getTypeArgument(type, MAP_TYPE_VARIABLES[1]);
     }
 }
 

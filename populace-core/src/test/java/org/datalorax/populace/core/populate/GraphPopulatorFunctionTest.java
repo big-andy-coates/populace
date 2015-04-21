@@ -22,6 +22,7 @@ import org.datalorax.populace.core.populate.instance.InstanceFactory;
 import org.datalorax.populace.core.populate.instance.NullObjectStrategy;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.populate.mutator.NoOpMutator;
+import org.hamcrest.Matchers;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -765,6 +766,8 @@ public class GraphPopulatorFunctionTest {
         class TypeWithTypeVariables<TypeElement> {
             // collection knows how to map ET -> TypeElement
             public Collection<TypeElement> collection = new CustomCollection<>();
+
+            public TypeElement element;
         }
 
         class TypeWrappingTypeWithTypeVariables {
@@ -781,6 +784,9 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._type.collection, is(not(empty())));
         assertThat(populated._type.collection.iterator().next(), is(instanceOf(String.class)));
         assertThat(populated._type.collection.iterator().next(), is(not("")));
+        assertThat(populated._type.element, is(Matchers.notNullValue()));
+        assertThat(populated._type.element, is(instanceOf(String.class)));
+        assertThat(populated._type.element, is(not("")));
     }
 
     @Test
@@ -970,6 +976,24 @@ public class GraphPopulatorFunctionTest {
         verify(nullHandler, atLeastOnce()).onNullObject(eq(currentValue));
     }
 
+    @Test
+    public void shouldTreatWildcardWithUpperBoundAsUpperBound() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithBoundedWildcard {
+            public List<? extends Integer> wildcardField;
+        }
+
+        final TypeWithBoundedWildcard currentValue = new TypeWithBoundedWildcard();
+
+        // When:
+        final TypeWithBoundedWildcard populated = populator.populate(currentValue);
+
+        // Then:
+        assertThat(populated.wildcardField, is(not(empty())));
+        assertThat(populated.wildcardField.get(0), is(Matchers.notNullValue()));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void shouldAllowInstanceFactoryToBeRegisteredAgainstBoundedWildcardType() throws Exception {
@@ -1012,9 +1036,29 @@ public class GraphPopulatorFunctionTest {
         assertThat(populated._bigDecimal, is(not(original._bigDecimal)));
     }
 
+    @Test
+    public void shouldWorkWithContainersOfContainers() throws Exception {
+        // Given:
+        class WithContainersOfContainers {
+            public List<Set<TypeThatCanBeMutated>> _list = new ArrayList<Set<TypeThatCanBeMutated>>() {{
+                final Set<TypeThatCanBeMutated> set = new HashSet<>();
+                set.add(new TypeThatCanBeMutated());
+                add(set);
+            }};
+        }
+
+        final WithContainersOfContainers original = new WithContainersOfContainers();
+
+        // When:
+        final WithContainersOfContainers populated = populator.populate(new WithContainersOfContainers());
+
+        // Then:
+        assertThat(populated._list, is(not(nullValue())));
+        assertThat(populated._list, is(not(original._list)));
+    }
+
     // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.
     // Todo(ac): Add test with deep object graph (may have issues with stack overflow)
-    // Todo(Ac): Add test for Map<String, List<Integer>>
 
     private Mutator givenMutatorRegistered(Type... types) {
         final Mutator mutator = spy(NoOpMutator.class);

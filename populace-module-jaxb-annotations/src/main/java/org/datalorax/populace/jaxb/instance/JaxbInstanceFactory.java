@@ -72,8 +72,8 @@ public class JaxbInstanceFactory implements InstanceFactory {
         try {
             return adapter.unmarshal(value);
         } catch (Exception e) {
-            final Type valueType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class, XmlAdapter.class.getTypeParameters()[0]);
-            final Type boundType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class, XmlAdapter.class.getTypeParameters()[1]);
+            final Type valueType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class.getTypeParameters()[0]);
+            final Type boundType = TypeUtils.getTypeArgument(adapterType, XmlAdapter.class.getTypeParameters()[1]);
             throw new InstanceCreationException("Failed to marshal between XmlTypeAdapters value and bound types. " +
                 "bound: " + boundType + ", value: " + valueType, type, e);
         }

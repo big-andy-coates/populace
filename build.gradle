@@ -16,7 +16,6 @@
 
 
 
-
 apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'jacoco'
 
@@ -178,7 +177,7 @@ private boolean hasRequiredProperties() {
             project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
 }
 
-task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
+task coverage(type: JacocoReport, group: 'Coverage reports') {
     description = 'Generates an aggregate report from all subprojects'
     dependsOn(subprojects.test)
 
@@ -199,14 +198,14 @@ task jacocoRootReport(type: JacocoReport, group: 'Coverage reports') {
 
 coveralls {
     sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
-    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
+    jacocoReportPath = "${buildDir}/reports/jacoco/coverage/coverage.xml"
 }
 
 tasks.coveralls {
     group = 'Coverage reports'
     description = 'Uploads the aggregated coverage report to Coveralls'
 
-    dependsOn jacocoRootReport
+    dependsOn coverage
     onlyIf { System.env.'CI' }
 }
 

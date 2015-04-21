@@ -24,7 +24,7 @@ package org.datalorax.populace.core.populate.instance;
 public interface InstanceFactory {
     /**
      * Create a new instance of {@code rawType}. If the factory does not support the type it will return null. If an error
-     * occurred while attempting to create an instance it will through a
+     * occurred while attempting to create an instance it will throw a
      * {@link org.datalorax.populace.core.populate.PopulatorException}. Otherwise the call will return a new instance.
      *
      * @param <T>               the type to create

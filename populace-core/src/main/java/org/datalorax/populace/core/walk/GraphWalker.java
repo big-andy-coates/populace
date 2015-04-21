@@ -37,7 +37,8 @@ import static org.datalorax.populace.core.util.TypeUtils.abbreviatedName;
 
 /**
  * Type that recursively walks an object graph, calling back to the client code on the provided
- * {@link org.datalorax.populace.core.walk.visitor.FieldVisitor field visitor} interface.
+ * {@link org.datalorax.populace.core.walk.visitor.FieldVisitor field visitor} and
+ * {@link org.datalorax.populace.core.walk.visitor.ElementVisitor element visitor} interfaces.
  *
  * @author Andrew Coates - 28/02/2015.
  */
@@ -201,7 +202,8 @@ public class GraphWalker {
         Builder withFieldFilter(final FieldFilter filter);
 
         /**
-         * @return obtain the currently installed field filter.
+         * Get the currently installed field filter
+         * @return the currently installed field filter.
          */
         FieldFilter getFieldFilter();
 
@@ -222,7 +224,9 @@ public class GraphWalker {
         /**
          * Obtain a {@link org.datalorax.populace.core.walk.inspector.Inspectors.Builder builder} initialised with the currently
          * installed {@link org.datalorax.populace.core.walk.inspector.Inspector inspectors}. The builder can be used to build
-         * a modified set of inspectors by either adding new, or replacing existing, inspectors.
+         * a modified set of inspectors by either adding new, or replacing existing, inspectors. The newly built set of
+         * Inspectors can the be used to replace any previously configured inspectors by calling
+         * {@link #withInspectors(org.datalorax.populace.core.walk.inspector.Inspectors)}
          *
          * @return the inspectors builder
          */

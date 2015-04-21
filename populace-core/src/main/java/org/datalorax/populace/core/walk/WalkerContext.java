@@ -25,6 +25,7 @@ import org.datalorax.populace.core.walk.inspector.Inspectors;
 import java.lang.reflect.Type;
 
 /**
+ * Holds information about the configuration of the walker
  * @author Andrew Coates - 28/02/2015.
  */
 public class WalkerContext {

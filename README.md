@@ -175,6 +175,10 @@ If you're using [SBT](http://code.google.com/p/simple-build-tool/), then add the
 libraryDependencies += "com.github.datalorax.populace" % "populace-core" % "1.0.0"
 ```
 
+## Javadocs
+Javadocs for each release can be pulled down from maven central and are available
+[here](http://datalorax.github.io/populace/javadocs/).
+
 ## License
 
 Populace is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).

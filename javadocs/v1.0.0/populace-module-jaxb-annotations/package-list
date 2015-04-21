@@ -1,0 +1,4 @@
+org.datalorax.populace.jaxb
+org.datalorax.populace.jaxb.field.filter
+org.datalorax.populace.jaxb.instance
+org.datalorax.populace.jaxb.walk.inspection.annotation

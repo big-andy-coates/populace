@@ -334,6 +334,34 @@ public class ImmutableTypeMapTest {
     }
 
     @Test
+    public void shouldHandleSpecificWildcardTypes() throws Exception {
+        // Given:
+        final Type wildcardType = TypeUtils.wildcardTypeWithLowerBounds(Integer.class);
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.newBuilder("default")
+            .withSpecificType(wildcardType, "specific")
+            .build();
+
+        // When:
+        final String value = collection.get(wildcardType);
+
+        // Then:
+        assertThat(value, is("specific"));
+    }
+
+    @Test
+    public void shouldNotBlowUpOnWildcardTypesIfNoSpecificHandlerRegistered() throws Exception {
+        // Given:
+        final Type wildcardType = TypeUtils.wildcardTypeWithLowerBounds(Integer.class);
+        final ImmutableTypeMap<String> collection = ImmutableTypeMap.newBuilder("default").build();
+
+        // When:
+        final String value = collection.get(wildcardType);
+
+        // Then:
+        assertThat(value, is("default"));
+    }
+
+    @Test
     public void shouldWorkWithMixtureOfTypeImplementations() throws Exception {
         // Given:
         class SomeType {

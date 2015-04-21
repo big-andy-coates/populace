@@ -67,6 +67,7 @@ public class FieldInfo {
     }
 
     /**
+     * Todo(ac): Document the steps it uses to determine generic type info in the readme.
      * @return the generic type of the field
      * @see RawField#getGenericType()
      */

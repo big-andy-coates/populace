@@ -18,10 +18,11 @@ package org.datalorax.populace.core.populate.mutator.ensure;
 
 import org.datalorax.populace.core.populate.Mutator;
 import org.datalorax.populace.core.populate.PopulatorContext;
-import org.datalorax.populace.core.populate.mutator.NoOpMutator;
+import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,28 +70,59 @@ public class EnsureMapNotEmptyMutatorTest {
     }
 
     @Test
-    public void shouldNotBlowUpOnRawBaseType() throws Exception {
+    public void shouldWorkWithRawBaseTypes() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
-        final Map currentValue = new HashMap<String, String>();
+        givenMutatorRegistered(Map.class.getTypeParameters()[0], mutatorThatReturns("key"));
+        givenMutatorRegistered(Map.class.getTypeParameters()[1], mutatorThatReturns("value"));
+        final Map<String, String> currentValue = new HashMap<>();
+        final Map<String, String> expected = new HashMap<>();
+        expected.put("key", "value");
 
         // When:
-        mutator.mutate(Map.class, currentValue, null, config);
+        final Object mutated = mutator.mutate(Map.class, currentValue, null, config);
+
+        // Then:
+        assertThat(mutated, is(expected));
     }
 
     @Test
-    public void shouldNotBlowUpOnRawDerivedTypes() throws Exception {
+    public void shouldWorkWithRawDerivedTypes() throws Exception {
         // Given:
-        givenMutatorRegistered(Object.class, NoOpMutator.INSTANCE);
-        final Map currentValue = new HashMap<String, String>();
+        givenMutatorRegistered(HashMap.class.getTypeParameters()[0], mutatorThatReturns("key"));
+        givenMutatorRegistered(HashMap.class.getTypeParameters()[1], mutatorThatReturns("value"));
+        final Map<String, String> currentValue = new HashMap<>();
+        final Map<String, String> expected = new HashMap<>();
+        expected.put("key", "value");
 
         // When:
-        mutator.mutate(HashMap.class, currentValue, null, config);
+        final Object mutated = mutator.mutate(HashMap.class, currentValue, null, config);
+
+        // Then:
+        assertThat(mutated, is(expected));
     }
 
-    // Todo(ac): how about some tests?
+    @Test
+    public void shouldWorkWithParameterizedTypes() throws Exception {
+        // Given:
+        givenMutatorRegistered(String.class, mutatorThatReturns("key"));
+        givenMutatorRegistered(Integer.class, mutatorThatReturns(42));
+        final Type pt = TypeUtils.parameterise(HashMap.class, String.class, Integer.class);
+        final Map<String, Integer> currentValue = new HashMap<>();
+        final Map<String, Integer> expected = new HashMap<>();
+        expected.put("key", 42);
 
-    private void givenMutatorRegistered(Class<?> type, Mutator mutator) {
+        // When:
+        final Object mutated = mutator.mutate(pt, currentValue, null, config);
+
+        // Then:
+        assertThat(mutated, is(expected));
+    }
+
+    private void givenMutatorRegistered(final Type type, final Mutator mutator) {
         when(config.getMutator(type)).thenReturn(mutator);
+    }
+
+    private Mutator mutatorThatReturns(final Object value) {
+        return (type, currentValue, parent, config1) -> value;
     }
 }

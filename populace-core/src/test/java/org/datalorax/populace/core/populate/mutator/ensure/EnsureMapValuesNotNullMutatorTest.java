@@ -87,7 +87,7 @@ public class EnsureMapValuesNotNullMutatorTest {
     }
 
     @Test
-    public void shouldUseObjectValueTypeForRawTypes() throws Exception {
+    public void shouldUseValueTypeTypeVariableForRawTypes() throws Exception {
         // Given:
         when(config.createInstance(any(Type.class), anyObject())).thenReturn("value");
         final Map currentValue = new HashMap<String, String>() {{
@@ -98,7 +98,7 @@ public class EnsureMapValuesNotNullMutatorTest {
         mutator.mutate(Map.class, currentValue, null, config);
 
         // Then:
-        verify(config).createInstance(eq(Object.class), anyObject());
+        verify(config).createInstance(eq(Map.class.getTypeParameters()[1]), anyObject());
     }
 
     @Test

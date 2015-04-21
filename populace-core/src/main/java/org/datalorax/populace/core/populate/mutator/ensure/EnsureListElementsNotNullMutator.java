@@ -37,16 +37,6 @@ public class EnsureListElementsNotNullMutator implements Mutator {
     public static final EnsureListElementsNotNullMutator INSTANCE = new EnsureListElementsNotNullMutator();
     private static final TypeVariable<Class<List>> LIST_TYPE_VARIABLE = List.class.getTypeParameters()[0];
 
-    @SuppressWarnings("unchecked")
-    private static List<Object> ensureList(final Type type, final Object currentValue) {
-        Validate.isAssignableFrom(List.class, TypeUtils.getRawType(type, null), "Unsupported type %s", type);
-        return (List<Object>) currentValue;
-    }
-
-    private static Type getComponentType(Type type) {
-        return TypeUtils.getTypeArgument(type, List.class, LIST_TYPE_VARIABLE);
-    }
-
     @Override
     public List<?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         final List<Object> list = ensureList(type, currentValue);
@@ -81,5 +71,15 @@ public class EnsureListElementsNotNullMutator implements Mutator {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Object> ensureList(final Type type, final Object currentValue) {
+        Validate.isAssignableFrom(List.class, TypeUtils.getRawType(type, null), "Unsupported type %s", type);
+        return (List<Object>) currentValue;
+    }
+
+    private static Type getComponentType(Type type) {
+        return TypeUtils.getTypeArgument(type, LIST_TYPE_VARIABLE);
     }
 }

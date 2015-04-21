@@ -23,6 +23,9 @@ import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.util.TypeUtils;
 
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
+import java.util.Optional;
 
 /**
  * Holds details of a populator's configuration
@@ -46,8 +49,15 @@ public class PopulatorContext {
     }
 
     public Object createInstance(final Type type, final Object parent) {
-        final InstanceFactory factory = instanceFactories.get(type);
+        if (type instanceof WildcardType) {
+            return createInstanceFromWildcard((WildcardType) type, parent);
+        }
+        if (type instanceof TypeVariable) {
+            return createInstance(Object.class, parent);
+        }
+
         final Class<?> rawType = TypeUtils.getRawType(type, null);
+        final InstanceFactory factory = instanceFactories.get(type);
         return factory.createInstance(rawType, parent, instanceFactories);
     }
 
@@ -73,5 +83,21 @@ public class PopulatorContext {
             "mutators=" + mutators +
             ", instanceFactories=" + instanceFactories +
             '}';
+    }
+
+    private Object createInstanceFromWildcard(final WildcardType type, final Object parent) {
+        final Type[] upperBounds = type.getUpperBounds();
+        final Optional<InstanceFactory> factory = upperBounds.length == 1 ? instanceFactories.getSpecific(type) : Optional.empty();
+        final Class<?> rawType = factory.isPresent() ? TypeUtils.getRawType(upperBounds[0], null) : null;
+
+        if (rawType != null) {
+            return factory.get().createInstance(rawType, parent, instanceFactories);
+        }
+
+        if (upperBounds.length == 1) {
+            return createInstance(upperBounds[0], parent);
+        }
+
+        return createInstance(Object.class, parent);
     }
 }

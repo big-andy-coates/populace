@@ -136,9 +136,12 @@ types. If your code contains collection types, or those of third-party libraries
 implement you own custom `Inspector` to handle the type.
 
 #### Null `Object` fields
-There is not enough type information to populate fields of type `Object` that are null - what object should be created?
- By default, Populace will just log a warning when a null `Object` field is encountered. However, this is customisable:
- you can install your own `NullObjectStrategy` into the `InstanceFactories` collection used by Populace.
+There is not enough type information to populate fields that have a `null` value and are of type `Object`, or types that
+are equivalent to `Object` at runtime such as `WildcardType`s without upper bounds or unresolvable `TypeVariable`s,
+- what object should be created?
+
+By default, Populace will just log a warning when a null `Object` field is encountered. However, this is customisable:
+you can install your own `NullObjectStrategy` into the `InstanceFactories` collection used by Populace.
 
 ## Download
 

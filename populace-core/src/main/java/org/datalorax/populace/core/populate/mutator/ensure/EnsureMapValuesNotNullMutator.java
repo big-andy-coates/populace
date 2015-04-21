@@ -37,16 +37,6 @@ public class EnsureMapValuesNotNullMutator implements Mutator {
     public static final EnsureMapValuesNotNullMutator INSTANCE = new EnsureMapValuesNotNullMutator();
     private static final TypeVariable<Class<Map>>[] MAP_TYPE_VARIABLES = Map.class.getTypeParameters();
 
-    @SuppressWarnings("unchecked")
-    private static Map<Object, Object> ensureMap(final Type type, final Object currentValue) {
-        Validate.isAssignableFrom(Map.class, TypeUtils.getRawType(type, Map.class), "Mutator only supports map types");
-        return (Map<Object, Object>) currentValue;
-    }
-
-    private static Type getValueType(Type type) {
-        return TypeUtils.getTypeArgument(type, Map.class, MAP_TYPE_VARIABLES[1]);
-    }
-
     @Override
     public Map<?, ?> mutate(Type type, Object currentValue, final Object parent, PopulatorContext config) {
         final Map<Object, Object> map = ensureMap(type, currentValue);
@@ -80,5 +70,15 @@ public class EnsureMapValuesNotNullMutator implements Mutator {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<Object, Object> ensureMap(final Type type, final Object currentValue) {
+        Validate.isAssignableFrom(Map.class, TypeUtils.getRawType(type, Map.class), "Mutator only supports map types");
+        return (Map<Object, Object>) currentValue;
+    }
+
+    private static Type getValueType(Type type) {
+        return TypeUtils.getTypeArgument(type, MAP_TYPE_VARIABLES[1]);
     }
 }

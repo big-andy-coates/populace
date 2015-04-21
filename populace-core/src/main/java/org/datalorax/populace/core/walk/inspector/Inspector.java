@@ -53,4 +53,5 @@ public interface Inspector {
     default Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
         return Collections.emptyIterator();
     }
+    // Todo(aC): getElements should probably take either a RawField or a FieldInfo object, rather than instance, as this would allow elements to know their container type, and maintain the link to the field.  Might want a base class here, rather than an interface, to ensure the field is maintained etc.
 }

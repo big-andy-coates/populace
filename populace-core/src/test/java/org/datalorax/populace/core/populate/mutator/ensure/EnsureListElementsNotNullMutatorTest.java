@@ -90,7 +90,7 @@ public class EnsureListElementsNotNullMutatorTest {
     }
 
     @Test
-    public void shouldUseObjectValueTypeForRawTypes() throws Exception {
+    public void shouldUseValueTypeTypeVariableForRawTypes() throws Exception {
         // Given:
         when(config.createInstance(any(Type.class), anyObject())).thenReturn("value");
         final List currentValue = new ArrayList<String>() {{
@@ -98,10 +98,26 @@ public class EnsureListElementsNotNullMutatorTest {
         }};
 
         // When:
-        mutator.mutate(List.class, currentValue, null, config);
+        mutator.mutate(ArrayList.class, currentValue, null, config);
 
         // Then:
-        verify(config).createInstance(eq(Object.class), anyObject());
+        verify(config).createInstance(eq(ArrayList.class.getTypeParameters()[0]), anyObject());
+    }
+
+    @Test
+    public void shouldUseValueTypeForParameterizedTypes() throws Exception {
+        // Given:
+        when(config.createInstance(any(Type.class), anyObject())).thenReturn("value");
+        final Type pt = TypeUtils.parameterise(ArrayList.class, String.class);
+        final List currentValue = new ArrayList<String>() {{
+            add(null);
+        }};
+
+        // When:
+        mutator.mutate(pt, currentValue, null, config);
+
+        // Then:
+        verify(config).createInstance(eq(String.class), anyObject());
     }
 
     @Test

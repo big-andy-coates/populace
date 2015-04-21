@@ -86,6 +86,17 @@ public class TypeResolverTest {
     }
 
     @Test
+    public void shouldResolveTypeVariablesRecursively() throws Exception {
+        // Given:
+        final TypeVariable typeVar = mock(TypeVariable.class);
+        when(typeTable.resolveTypeVariable(List.class.getTypeParameters()[0])).thenReturn(typeVar);
+        when(typeTable.resolveTypeVariable(typeVar)).thenReturn(Integer.class);
+
+        // Then:
+        assertThat(resolver.resolve(List.class), is(typeEqualTo(TypeUtils.parameterise(List.class, Integer.class))));
+    }
+
+    @Test
     public void shouldResolveUsingInheritedInterfaceGenericInfo() throws Exception {
         // Given:
         class SomeType<T> implements SomeInterface<T> {
@@ -127,9 +138,9 @@ public class TypeResolverTest {
     }
 
     @Test
-    public void shouldNotUseResolveSuperClassTypeVariables() throws Exception {
+    public void shouldNotUseUnrelatedSuperClassTypeVariables() throws Exception {
         // Given:
-        class SuperClass<ST> {
+        class SuperClass<T> {
         }
         class SomeType<T> extends SuperClass<String> {
         }

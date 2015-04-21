@@ -213,3 +213,4 @@ tasks.coveralls {
 }
 
 defaultTasks 'clean', 'jar'
+

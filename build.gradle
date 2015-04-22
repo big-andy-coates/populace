@@ -16,6 +16,8 @@
 
 
 
+
+
 apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'jacoco'
 
@@ -69,8 +71,6 @@ subprojects {
         testCompile 'org.testng:testng:6.8.+'
         testCompile 'org.mockito:mockito-all:1.10.+'
     }
-
-    javadoc.destinationDir = new File("${projectDir}/docs/javadoc/")
 
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked"

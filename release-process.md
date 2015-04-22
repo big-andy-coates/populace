@@ -45,3 +45,17 @@ Follow these [Sonatype OSS release instructions](http://central.sonatype.org/pag
 ### Release on Github
 Create a release on Github. The release description should include details of all issues resolved, any breaking changes
 and anything else relevant to the release.
+
+### Releasing the javadocs
+Aside from the javadocs jar releassed to maven central, the javadocs for the released version should also be made
+available on the projects website i.e. <http://datalorax.github.io/populace>. This is currently a manual process.
+
+1. Switch to the release branch: `git checkout release/<release-number>`
+1. Build the javadocs: `gradlew javadoc`
+1. Copy the contents of `/populace/populace-core/build/docs/javadoc` and
+`/populace/populace-module-jaxb-annotations/build/docs/javadoc` somewhere outside the repository
+1. Switch to the gh-pages branch `git checkout gh-pages`
+1. Copy the contents of the core module's javadoc directory into `javadocs/v<release-number>/populace-core`
+1. Copy the contents of the jaxb module's javadoc directory into `javadocs/v<release-number>/populace-module-jaxb-annotations`
+1. Update the downloads section of `/javadocs/index/html` to include buttons for the new core and jaxb versions.
+1. Add, commit and push your changes.

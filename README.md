@@ -176,9 +176,8 @@ libraryDependencies += "com.github.datalorax.populace" % "populace-core" % "1.0.
 ```
 
 ## Javadocs
-Javadocs for each release can be pulled down from maven central and are available on git hub:
-[populace-core](https://github.com/datalorax/populace/populace-core/docs/javadoc/index.html)
-[populace-module-jaxb-annotations](https://github.com/datalorax/populace/populace-module-jaxb-annotations/docs/javadoc/index.html)
+Javadocs for each release can be pulled down from maven central and are available
+[here](http://datalorax.github.io/populace/javadocs/).
 
 ## License
 

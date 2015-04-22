@@ -70,6 +70,8 @@ subprojects {
         testCompile 'org.mockito:mockito-all:1.10.+'
     }
 
+    javadoc.destinationDir = new File("${projectDir}/docs/javadoc/")
+
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked"
     }
@@ -104,6 +106,7 @@ subprojects {
         archives sourcesJar
     }
 
+    // Todo(ac): Move out and test as part of next release.
     if (hasRequiredProperties()) {
         signing {
             sign configurations.archives
@@ -177,36 +180,6 @@ private boolean hasRequiredProperties() {
             project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
 }
 
-task coverage(type: JacocoReport, group: 'Coverage reports') {
-    description = 'Generates an aggregate report from all subprojects'
-    dependsOn(subprojects.test)
-
-    additionalSourceDirs = files(subprojects.sourceSets.main.allSource.srcDirs)
-    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories = files(subprojects.sourceSets.main.output)
-    executionData = files(subprojects.jacocoTestReport.executionData)
-
-    reports {
-        html.enabled = true
-        xml.enabled = true
-    }
-
-    doFirst {
-        executionData = files(executionData.findAll { it.exists() })
-    }
-}
-
-coveralls {
-    sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
-    jacocoReportPath = "${buildDir}/reports/jacoco/coverage/coverage.xml"
-}
-
-tasks.coveralls {
-    group = 'Coverage reports'
-    description = 'Uploads the aggregated coverage report to Coveralls'
-
-    dependsOn coverage
-    onlyIf { System.env.'CI' }
-}
+apply from: "${rootProject.projectDir}/coverage.gradle"
 
 defaultTasks 'clean', 'jar'

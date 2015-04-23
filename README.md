@@ -123,6 +123,8 @@ GraphPopulator populator = GraphPopulator.newBuilder().build();
 Contacts contacts = populator.populate(new Contacts());
 ```
 
+<!--- Todo(ac): Add intro to customisation, leading on to how it calculates runtime type info --->
+
 ### Known limitations
 #### `Collection` fields
 Due to the restrictions of the `Collection` API it is not possible to mutate collections of immutable types,

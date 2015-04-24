@@ -18,6 +18,8 @@
 
 
 
+
+
 apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'jacoco'
 
@@ -70,6 +72,7 @@ subprojects {
         testCompile group: 'org.hamcrest', name: 'hamcrest-all', version: '1.+'
         testCompile 'org.testng:testng:6.8.+'
         testCompile 'org.mockito:mockito-all:1.10.+'
+        testCompile 'com.google.guava:guava-testlib:18.+'
     }
 
     tasks.withType(JavaCompile) {

@@ -25,13 +25,9 @@ package org.datalorax.populace.core.populate.instance;
 public class EnumInstanceFactory implements InstanceFactory {
     public static final InstanceFactory INSTANCE = new EnumInstanceFactory();
 
-    private static boolean notSupportedType(final Class<?> rawType) {
-        return !rawType.isEnum();
-    }
-
     @Override
     public <T> T createInstance(Class<? extends T> rawType, final Object parent, final InstanceFactories instanceFactories) {
-        if (notSupportedType(rawType)) {
+        if (unSupportedType(rawType)) {
             return null;
         }
 
@@ -52,5 +48,9 @@ public class EnumInstanceFactory implements InstanceFactory {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    private static boolean unSupportedType(final Class<?> rawType) {
+        return !rawType.isEnum();
     }
 }

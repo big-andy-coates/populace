@@ -17,6 +17,8 @@
 package org.datalorax.populace.core.util;
 
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.GenericArrayType;
@@ -403,7 +405,38 @@ public class ImmutableTypeMapTest {
         assertThat(value, is("specific"));
     }
 
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        final Map<Type, String> specificVs = Collections.singletonMap(Integer.class, "specific");
+        final Map<Class<?>, String> superVs = Collections.singletonMap(List.class, "super");
+        final Map<String, String> packageVs = Collections.singletonMap("some.package", "package");
+        final String arrayDefaultV = "array-default";
+        final String defaultV = "default";
+
+        new EqualsTester()
+            .addEqualityGroup(
+                new ImmutableTypeMap<>(specificVs, superVs, packageVs, arrayDefaultV, defaultV),
+                new ImmutableTypeMap<>(specificVs, superVs, packageVs, arrayDefaultV, defaultV))
+            .addEqualityGroup(
+                new ImmutableTypeMap<>(Collections.singletonMap(Map.class, "other"), superVs, packageVs, arrayDefaultV, defaultV))
+            .addEqualityGroup(
+                new ImmutableTypeMap<>(specificVs, Collections.singletonMap(Map.class, "other"), packageVs, arrayDefaultV, defaultV))
+            .addEqualityGroup(
+                new ImmutableTypeMap<>(specificVs, superVs, Collections.singletonMap("some.package", "other"), arrayDefaultV, defaultV))
+            .addEqualityGroup(
+                new ImmutableTypeMap<>(specificVs, superVs, packageVs, "other", defaultV))
+            .addEqualityGroup(
+                new ImmutableTypeMap<>(specificVs, superVs, packageVs, arrayDefaultV, "other"))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester().testAllPublicConstructors(ImmutableTypeMap.class);
+    }
+
     private static class ClassComparator implements Comparator<Class<?>> {
+
         @Override
         public int compare(final Class<?> c1, final Class<?> c2) {
             return c1.getCanonicalName().compareTo(c2.getCanonicalName());

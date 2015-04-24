@@ -22,6 +22,7 @@ import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector
 import org.datalorax.populace.core.walk.inspector.annotation.ChainedAnnotationInspector;
 
 import java.lang.reflect.Type;
+import java.util.Optional;
 
 /**
  * Helper functions for working with {@link Inspector inspectors}
@@ -79,13 +80,67 @@ public class Inspectors {
     }
 
     /**
-     * Get the inspector with the collection that handles the supplied {@code type}.
+     * Get the inspector most specific to the provided {@code type}.
      *
-     * @param type the tye an inspector is required for
-     * @return the inspector that handles the supplied {@code type}.
+     * @param type the specific type to find
+     * @return the inspector
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#get(java.lang.reflect.Type) for details
      */
     public Inspector get(final Type type) {
         return inspectors.get(type);
+    }
+
+    /**
+     * Get the inspector registered against the specific {@code type} provided, is present.
+     *
+     * @param type the specific type to find.
+     * @return the inspector if found, else Optional.empty()
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getSpecific(java.lang.reflect.Type)
+     */
+    public Optional<Inspector> getSpecific(final Type type) {
+        return Optional.ofNullable(inspectors.getSpecific(type));
+    }
+
+    /**
+     * Get the specific super inspector registered for the {@code type} provided, is present.
+     *
+     * @param type the super type to find.
+     * @return the inspector if found, else Optional.empty()
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getSuper(Class)
+     */
+    public Optional<Inspector> getSuper(final Class<?> type) {
+        return Optional.ofNullable(inspectors.getSuper(type));
+    }
+
+    /**
+     * Get the most specific inspector registered for the {@code packageName} provided, is present.
+     *
+     * @param packageName the name of the package.
+     * @return the inspector if found, else Optional.empty()
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getPackage(String)
+     */
+    public Optional<Inspector> getPackage(final String packageName) {
+        return Optional.ofNullable(inspectors.getPackage(packageName));
+    }
+
+    /**
+     * Get the default inspector for array types.
+     *
+     * @return the inspector
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getArrayDefault()
+     */
+    public Inspector getArrayDefault() {
+        return inspectors.getArrayDefault();
+    }
+
+    /**
+     * Get the default inspector for none-array types.
+     *
+     * @return the inspector
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getDefault()
+     */
+    public Inspector getDefault() {
+        return inspectors.getDefault();
     }
 
     /**
@@ -103,12 +158,14 @@ public class Inspectors {
         if (o == null || getClass() != o.getClass()) return false;
 
         final Inspectors that = (Inspectors) o;
-        return inspectors.equals(that.inspectors);
+        return annotationInspector.equals(that.annotationInspector) && inspectors.equals(that.inspectors);
     }
 
     @Override
     public int hashCode() {
-        return inspectors.hashCode();
+        int result = inspectors.hashCode();
+        result = 31 * result + annotationInspector.hashCode();
+        return result;
     }
 
     @Override

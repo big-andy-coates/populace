@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.walk.field.filter;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -33,21 +35,11 @@ public class OrFieldFilterTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        first = mock(FieldFilter.class);
-        second = mock(FieldFilter.class);
+        first = mock(FieldFilter.class, "first");
+        second = mock(FieldFilter.class, "second");
         field = mock(FieldInfo.class);
 
         filter = new OrFieldFilter(first, second);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfFirstFilterIsNull() throws Exception {
-        new OrFieldFilter(null, second);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfSecondFilterIsNull() throws Exception {
-        new OrFieldFilter(first, null);
     }
 
     @Test
@@ -88,5 +80,21 @@ public class OrFieldFilterTest {
 
         // Then:
         assertThat(filter.include(field), is(true));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(new OrFieldFilter(first, second), new OrFieldFilter(first, second))
+            .addEqualityGroup(new OrFieldFilter(mock(FieldFilter.class), second))
+            .addEqualityGroup(new OrFieldFilter(first, mock(FieldFilter.class)))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(FieldFilter.class, mock(FieldFilter.class))
+            .testAllPublicConstructors(OrFieldFilter.class);
     }
 }

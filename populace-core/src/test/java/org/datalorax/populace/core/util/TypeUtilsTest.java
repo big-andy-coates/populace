@@ -21,6 +21,7 @@ import org.testng.annotations.Test;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -113,5 +114,40 @@ public class TypeUtilsTest {
         assertThat(TypeUtils.getBoxedTypeForPrimitive(long.class), is(equalTo(Long.class)));
         assertThat(TypeUtils.getBoxedTypeForPrimitive(float.class), is(equalTo(Float.class)));
         assertThat(TypeUtils.getBoxedTypeForPrimitive(double.class), is(equalTo(Double.class)));
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldThrowFromEnsureConsistentTypeForUnsupportedType() throws Exception {
+        TypeUtils.ensureConsistentType(mock(Type.class));
+    }
+
+    @Test
+    public void shouldCreateWildcardTypeWithNoLowerBounds() throws Exception {
+        // When:
+        final WildcardType wildcardType = TypeUtils.wildcardTypeWithUpperBounds(String.class);
+
+        // Then:
+        assertThat(wildcardType.getLowerBounds().length, is(0));
+    }
+
+    @Test
+    public void shouldCreateWildcardTypeWithSuppliedUpperBounds() throws Exception {
+        // When:
+        final WildcardType wildcardType = TypeUtils.wildcardTypeWithUpperBounds(String.class, Integer.class);
+
+        // Then:
+        assertThat(wildcardType.getUpperBounds().length, is(2));
+        assertThat(wildcardType.getUpperBounds()[0], is(equalTo(String.class)));
+        assertThat(wildcardType.getUpperBounds()[1], is(equalTo(Integer.class)));
+    }
+
+    @Test
+    public void shouldDefaultToWildcardTypeWithObjectUpperBounds() throws Exception {
+        // When:
+        final WildcardType wildcardType = TypeUtils.wildcardTypeWithUpperBounds();
+
+        // Then:
+        assertThat(wildcardType.getUpperBounds().length, is(1));
+        assertThat(wildcardType.getUpperBounds()[0], is(equalTo(Object.class)));
     }
 }

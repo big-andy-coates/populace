@@ -14,39 +14,27 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.populate.mutator.ensure;
+package org.datalorax.populace.core.populate.instance;
 
 import com.google.common.testing.EqualsTester;
-import org.datalorax.populace.core.populate.Mutator;
-import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.testng.annotations.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 
-public class EnsureNullMutatorTest {
+public class LoggingInstanceFactoryTest {
     @Test
-    public void shouldMostCertainlyReturnNull() throws Exception {
-        // Given:
-        final Mutator mutator = EnsureNullMutator.INSTANCE;
-
-        // When:
-        final Object mutated = mutator.mutate(String.class, "hello", null, null);
-
-        // Then:
-        assertThat(mutated, is(nullValue()));
+    public void shouldNotBlowUp() throws Exception {
+        new LoggingInstanceFactory().onNullObject(null);
     }
 
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                EnsureNullMutator.INSTANCE,
-                new EnsureNullMutator())
+                LoggingInstanceFactory.INSTANCE,
+                new LoggingInstanceFactory())
             .addEqualityGroup(
-                mock(Inspector.class))
+                mock(InstanceFactory.class))
             .testEquals();
     }
 }

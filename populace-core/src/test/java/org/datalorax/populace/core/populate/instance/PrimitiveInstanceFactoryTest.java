@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.populate.instance;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -24,17 +25,9 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.mock;
 
 public class PrimitiveInstanceFactoryTest {
-    private static Object[][] asObjectArray(final List<Class<?>> types) {
-        final Object[][] data = new Object[types.size()][];
-        int i = 0;
-        for (Class<?> type : types) {
-            data[i++] = new Object[]{type};
-        }
-        return data;
-    }
-
     @Test(dataProvider = "primitive")
     public void shouldSupportPrimitiveType(Class<?> type) throws Exception {
         // Given:
@@ -62,6 +55,17 @@ public class PrimitiveInstanceFactoryTest {
         assertThat(PrimitiveInstanceFactory.INSTANCE.createInstance(String.class, null, null), is(nullValue()));
     }
 
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                PrimitiveInstanceFactory.INSTANCE,
+                new PrimitiveInstanceFactory())
+            .addEqualityGroup(
+                mock(InstanceFactory.class))
+            .testEquals();
+    }
+
     @DataProvider(name = "primitive")
     public Object[][] getPrimitives() {
         return asObjectArray(TypeUtils.getPrimitiveTypes());
@@ -70,5 +74,14 @@ public class PrimitiveInstanceFactoryTest {
     @DataProvider(name = "boxed")
     public Object[][] getBoxedPrimitives() {
         return asObjectArray(TypeUtils.getBoxedPrimitiveTypes());
+    }
+
+    private static Object[][] asObjectArray(final List<Class<?>> types) {
+        final Object[][] data = new Object[types.size()][];
+        int i = 0;
+        for (Class<?> type : types) {
+            data[i++] = new Object[]{type};
+        }
+        return data;
     }
 }

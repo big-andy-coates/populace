@@ -124,17 +124,7 @@ public final class TypeUtils {
      */
     @Deprecated     // Todo(ac): remove in v2.x
     public static <T> Type getTypeArgument(final Type type, final Class<T> toClass, final TypeVariable<Class<T>> typeVariable) {
-        if (toClass.equals(type)) {
-            return typeVariable;
-        }
-
-        final Map<TypeVariable<?>, Type> typeArguments = org.apache.commons.lang3.reflect.TypeUtils.getTypeArguments(type, toClass);
-        if (typeArguments == null) {
-            throw new IllegalArgumentException(type + " is not assignable to " + toClass);
-        }
-
-        final Type typeArg = typeArguments.get(typeVariable);
-        return typeArg == null ? Object.class : typeArg;
+        return getTypeArgument(type, typeVariable);
     }
 
     /**
@@ -297,7 +287,7 @@ public final class TypeUtils {
             return ensureConsistentGenericArrayType((GenericArrayType) type);
         }
 
-        throw new UnsupportedOperationException("Unsupported type: " + type.getClass());
+        throw new IllegalArgumentException("Unexpected type: " + type.getClass());
     }
 
     private static Type ensureConsistentParameterisedType(final ParameterizedType type) {

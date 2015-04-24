@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.walk.field.filter;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -42,11 +44,6 @@ public class AllFieldFilterTest {
         filter = new AllFieldFilter(first, second, third);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfAnyFilterIsNull() throws Exception {
-        new AllFieldFilter(first, null, third);
-    }
-
     @Test
     public void shouldExcludeIfAnyFilterExclude() throws Exception {
         // Given:
@@ -67,5 +64,23 @@ public class AllFieldFilterTest {
 
         // Then:
         assertThat(filter.include(field), is(true));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(new AllFieldFilter(first, second, third), new AllFieldFilter(first, second, third))
+            .addEqualityGroup(new AllFieldFilter(first, second, third, mock(FieldFilter.class)))
+            .addEqualityGroup(new AllFieldFilter(first, second))
+            .addEqualityGroup(new AllFieldFilter(mock(FieldFilter.class), second, third))
+            .addEqualityGroup(new AllFieldFilter(first, mock(FieldFilter.class), third))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(FieldFilter.class, mock(FieldFilter.class))
+            .testAllPublicConstructors(AllFieldFilter.class);
     }
 }

@@ -27,13 +27,17 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
+ * TypeResolver is capable of resolving {@link java.lang.reflect.TypeVariable TypeVariables} using the provided
+ * {@code typeTable} for the different flavours of {@link java.lang.reflect.Type}. The constituent type arguments and
+ * bounds are resolved in a recursive manner using the type information available in the type table.
+ *
  * @author Andrew Coates - 02/04/2015.
  */
 public class TypeResolver {
     private final TypeTable typeTable;
 
     /**
-     * Creates a resolver that will use the type available in the supplied {@code typeTable} to resolve types
+     * Creates a resolver that will use the information available in the supplied {@code typeTable} to resolve types
      *
      * @param typeTable the type table to use to resolve type variables
      */
@@ -44,17 +48,22 @@ public class TypeResolver {
 
     /**
      * Resolve the provided {@code type} using the type information available
-     * <p>
-     * if {@code type} is a {@link Class} with type parameters, then it will return a {@link ParameterizedType} where the
-     * type parameters have been as resolved as much as is possible.
-     * <p>
-     * if {@code type} is a {@link Class} without type parameters, then the class is returned unchanged.
-     * <p>
-     * if {@code type} is a {@link ParameterizedType}, then it will return the parameterized type with its type parameters
-     * resolved as much as is possible.
-     *
+     * <ul>
+     * <li>if {@code type} is a {@link java.lang.Class} with type parameters, then it will return a {@link ParameterizedType} where the
+     * type parameters have been as resolved as far as is possible.</li>
+     * <li>if {@code type} is a {@link java.lang.Class} without type parameters, then the class is returned unchanged.</li>
+     * <li>if {@code type} is a {@link java.lang.reflect.ParameterizedType}, then it will return the type with its type parameters
+     * resolved as much as is possible.</li>
+     * <li>if {@code type} is a {@link java.lang.reflect.TypeVariable}, then it will recursively resolve the type using the type table,
+     * returning the final state</li>
+     * <li>if {@code type} is a {@link java.lang.reflect.WildcardType}, then it will return the type with any
+     * bounds resolved as far as is possible</li>
+     * <li>if {@code type} is a {@link java.lang.reflect.GenericArrayType}, then it will return the type with its component
+     * type resolved as far as is possible</li>
+     * </ul>
      * @param type the type to resolve
      * @return the resolved type.
+     * @throws java.lang.UnsupportedOperationException on unsupported implementation of {@link java.lang.reflect.Type}
      */
     public Type resolve(final Type type) {
         return resolve(type, null);

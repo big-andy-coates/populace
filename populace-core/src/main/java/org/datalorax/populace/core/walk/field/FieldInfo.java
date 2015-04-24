@@ -23,6 +23,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 /**
+ * Represents the information and operations available for a particular field on a particular instance.
+ *
  * @author Andrew Coates - 04/03/2015.
  */
 public class FieldInfo {
@@ -31,6 +33,14 @@ public class FieldInfo {
     private final TypeResolver typeResolver;
     private final PathProvider pathProvider;
 
+    /**
+     * Construct a new FieldInfo object
+     *
+     * @param field          the raw field this instance should augment
+     * @param owningInstance the instance from which to get / set the current value of this field
+     * @param typeResolver   the resolver to use to resolve generic types
+     * @param pathProvider   the provider of the path to this instance.
+     */
     public FieldInfo(final RawField field, final Object owningInstance, final TypeResolver typeResolver, final PathProvider pathProvider) {
         Validate.notNull(field, "field null");
         Validate.notNull(owningInstance, "owningInstance null");
@@ -67,7 +77,14 @@ public class FieldInfo {
     }
 
     /**
-     * Todo(ac): Document the steps it uses to determine generic type info in the readme.
+     * Returns the generic type of the field, resolved using all available type information e.g. type variables are resolved
+     * where type information higher up the stack is available.
+     *
+     * <ul>
+     * <li>For <b>primitive types</b> this method returns the type of the field.</li>
+     * <li>For <b>non-primitive types with a null value</b> this method returns the resolved generic type of the field</li>
+     * <li>For <b>non-primitive types with a non-null value</b> this method returns the resolved generic type of the value</li>
+     * </ul>
      * @return the generic type of the field
      * @see RawField#getGenericType()
      */

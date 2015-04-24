@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.populate.instance;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.populate.PopulatorException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -23,6 +24,7 @@ import org.testng.annotations.Test;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 
 public class DefaultConstructorInstanceFactoryTest {
     private InstanceFactory factory;
@@ -78,6 +80,12 @@ public class DefaultConstructorInstanceFactoryTest {
     }
 
     @Test(expectedExceptions = PopulatorException.class)
+    public void shouldThrowIfNoInnerTypeWithNoDefaultConstructor() throws Exception {
+        // When:
+        factory.createInstance(InnerTypeWithNoDefaultConstructor.class, this, null);
+    }
+
+    @Test(expectedExceptions = PopulatorException.class)
     public void shouldThrowIfInterface() throws Exception {
         // When:
         factory.createInstance(InterfaceType.class, null, null);
@@ -87,6 +95,17 @@ public class DefaultConstructorInstanceFactoryTest {
     public void shouldThrowIfAbstract() throws Exception {
         // When:
         factory.createInstance(AbstractType.class, null, null);
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                DefaultConstructorInstanceFactory.INSTANCE,
+                new DefaultConstructorInstanceFactory())
+            .addEqualityGroup(
+                mock(InstanceFactory.class))
+            .testEquals();
     }
 
     public interface InterfaceType {
@@ -115,5 +134,11 @@ public class DefaultConstructorInstanceFactoryTest {
     }
 
     public static abstract class AbstractType {
+    }
+
+    public final class InnerTypeWithNoDefaultConstructor {
+        @SuppressWarnings("UnusedParameters")
+        public InnerTypeWithNoDefaultConstructor(String s) {
+        }
     }
 }

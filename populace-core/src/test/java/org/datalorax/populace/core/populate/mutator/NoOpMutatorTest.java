@@ -16,12 +16,15 @@
 
 package org.datalorax.populace.core.populate.mutator;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.populate.Mutator;
+import org.datalorax.populace.core.populate.instance.InstanceFactory;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.mock;
 
 public class NoOpMutatorTest {
     @Test
@@ -35,5 +38,16 @@ public class NoOpMutatorTest {
 
         // Then:
         assertThat(mutated, is(sameInstance(original)));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                NoOpMutator.INSTANCE,
+                new NoOpMutator())
+            .addEqualityGroup(
+                mock(InstanceFactory.class))
+            .testEquals();
     }
 }

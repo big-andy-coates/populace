@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.walk.inspector;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.walk.element.RawElement;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -24,17 +25,10 @@ import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.mock;
 
 public class SetInspectorTest {
     private SetInspector inspector;
-
-    private static List<RawElement> collectAll(Iterator<RawElement> it) {
-        final List<RawElement> elements = new ArrayList<>();
-        while (it.hasNext()) {
-            elements.add(it.next());
-        }
-        return elements;
-    }
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -199,5 +193,24 @@ public class SetInspectorTest {
         // Then:
         assertThat(element.getValue(), is(nullValue()));
         assertThat(set, contains(nullValue()));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                SetInspector.INSTANCE,
+                new SetInspector())
+            .addEqualityGroup(
+                mock(Inspector.class))
+            .testEquals();
+    }
+
+    private static List<RawElement> collectAll(Iterator<RawElement> it) {
+        final List<RawElement> elements = new ArrayList<>();
+        while (it.hasNext()) {
+            elements.add(it.next());
+        }
+        return elements;
     }
 }

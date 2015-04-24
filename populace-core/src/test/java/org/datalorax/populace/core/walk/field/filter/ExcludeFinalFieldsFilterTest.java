@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.walk.field.filter;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.testng.annotations.Test;
 
@@ -43,5 +44,13 @@ public class ExcludeFinalFieldsFilterTest {
 
         // Then:
         assertThat(ExcludeFinalFieldsFilter.INSTANCE.include(fieldInfo), is(true));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(ExcludeFinalFieldsFilter.INSTANCE, new ExcludeFinalFieldsFilter())
+            .addEqualityGroup(mock(FieldFilter.class))
+            .testEquals();
     }
 }

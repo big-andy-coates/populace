@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.populate;
+package org.datalorax.populace.core.populate.mutator;
 
-import org.datalorax.populace.core.populate.mutator.Mutators;
+import com.google.common.testing.EqualsTester;
+import org.datalorax.populace.core.populate.Mutator;
+import org.datalorax.populace.core.util.ImmutableTypeMap;
 import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -33,10 +33,12 @@ import static org.mockito.Mockito.mock;
 
 public class MutatorsTest {
     private Mutators.Builder builder;
+    private Mutators mutators;
 
     @BeforeMethod
     public void setUp() throws Exception {
         builder = Mutators.newBuilder();
+        mutators = builder.build();
     }
 
     @Test
@@ -127,20 +129,28 @@ public class MutatorsTest {
 
     @Test
     public void shouldHaveDefaultMutator() throws Exception {
+        // When:
+        final Mutator mutator = mutators.getDefault();
+
+        // Then:
+        assertThat(mutator, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldReturnDefaultMutatorForUnregisteredNonArrayType() throws Exception {
         // Given:
         final Type unregisteredType = getClass();
 
         // When:
-        final Mutators mutators = builder.build();
+        final Mutator mutator = mutators.get(unregisteredType);
 
         // Then:
-        assertThat(mutators.get(unregisteredType), is(notNullValue()));
+        assertThat(mutator, is(mutators.getDefault()));
     }
 
     @Test
     public void shouldBeAbleToOverrideTheDefault() throws Exception {
         // Given:
-        final Type unregisteredType = getClass();
         final Mutator newDefaultMutator = mock(Mutator.class, "default");
 
         // When:
@@ -149,7 +159,7 @@ public class MutatorsTest {
             .build();
 
         // Then:
-        assertThat(mutators.get(unregisteredType), is(newDefaultMutator));
+        assertThat(mutators.getDefault(), is(newDefaultMutator));
     }
 
     @Test
@@ -158,16 +168,27 @@ public class MutatorsTest {
         final Type arrayType = TypeUtils.genericArrayType(int.class);
 
         // When:
-        final Mutators mutators = builder.build();
+        final Mutator mutator = mutators.get(arrayType);
 
         // Then:
-        assertThat(mutators.get(arrayType), is(notNullValue()));
+        assertThat(mutator, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldReturnDefaultArrayMutatorIfArrayTypeNotRegistered() throws Exception {
+        // Given:
+        final Type unregistered = TypeUtils.genericArrayType(int.class);
+
+        // When:
+        final Mutator mutator = mutators.get(unregistered);
+
+        // Then:
+        assertThat(mutator, is(mutators.getArrayDefault()));
     }
 
     @Test
     public void shouldBeAbleToOverrideDefaultArrayMutator() throws Exception {
         // Given:
-        final Type arrayType = TypeUtils.genericArrayType(int.class);
         final Mutator newDefaultMutator = mock(Mutator.class, "array default");
 
         // When:
@@ -176,6 +197,92 @@ public class MutatorsTest {
             .build();
 
         // Then:
-        assertThat(mutators.get(arrayType), is(newDefaultMutator));
+        assertThat(mutators.getArrayDefault(), is(newDefaultMutator));
+    }
+
+    @Test
+    public void shouldReturnNotPresentFromGetSpecificIfNoSpecificRegistered() throws Exception {
+        // Given:
+        final Type unregistered = TypeUtils.parameterise(Collection.class, Integer.class);
+
+        // When:
+        final Optional<Mutator> mutator = mutators.getSpecific(unregistered);
+
+        // Then:
+        assertThat(mutator, is(Optional.<Mutator>empty()));
+    }
+
+    @Test
+    public void shouldReturnSpecificMutatorFromGetSpecificIfRegistered() throws Exception {
+        // Given:
+        final Mutator expected = mock(Mutator.class);
+        final Type registered = TypeUtils.parameterise(Collection.class, Integer.class);
+        mutators = builder.withSpecificMutator(registered, expected).build();
+
+        // When:
+        final Optional<Mutator> mutator = mutators.getSpecific(registered);
+
+        // Then:
+        assertThat(mutator, is(Optional.of(expected)));
+    }
+
+    @Test
+    public void shouldReturnNotPresentFromGetSuperIfNoSuperRegistered() throws Exception {
+        // When:
+        final Optional<Mutator> mutator = mutators.getSuper(String.class);
+
+        // Then:
+        assertThat(mutator, is(Optional.<Mutator>empty()));
+    }
+
+    @Test
+    public void shouldReturnSuperMutatorFromGetSuperIfRegistered() throws Exception {
+        // Given:
+        final Mutator expected = mock(Mutator.class);
+        mutators = builder.withSuperMutator(String.class, expected).build();
+
+        // When:
+        final Optional<Mutator> mutator = mutators.getSuper(String.class);
+
+        // Then:
+        assertThat(mutator, is(Optional.of(expected)));
+    }
+
+    @Test
+    public void shouldSupportSpecificMutatorForBigDecimal() throws Exception {
+        // When:
+        final Mutator mutator = mutators.get(BigDecimal.class);
+
+        // Then:
+        assertThat(mutator, is(not(mutators.getDefault())));
+    }
+
+    @Test
+    public void shouldGetMutatorForNonClassOrParameterizedTypeIfSpecificRegistered() throws Exception {
+        // Given:
+        final Type wildcardType = TypeUtils.wildcardType();
+        final Mutator mutator = mock(Mutator.class, "specific");
+
+        // When:
+        final Mutators mutators = builder
+            .withSpecificMutator(wildcardType, mutator)
+            .build();
+
+        // Then:
+        assertThat(mutators.get(wildcardType), is(mutator));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        final ImmutableTypeMap<Mutator> rawMutators = mock(ImmutableTypeMap.class, "1");
+
+        new EqualsTester()
+            .addEqualityGroup(
+                new Mutators(rawMutators),
+                new Mutators(rawMutators))
+            .addEqualityGroup(
+                new Mutators(mock(ImmutableTypeMap.class, "2")))
+            .testEquals();
     }
 }

@@ -22,6 +22,7 @@ package org.datalorax.populace.core.populate.instance;
  *
  * @author Andrew Coates - 02/03/2015.
  */
+// Todo(ac): rename to ThrowingNullObjectStrategy in v2.x
 public class ThrowingInstanceFactory implements NullObjectStrategy {
     public static final ThrowingInstanceFactory INSTANCE = new ThrowingInstanceFactory();
 

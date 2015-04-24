@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.walk.field.filter;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -38,16 +40,6 @@ public class AndFieldFilterTest {
         field = mock(FieldInfo.class);
 
         filter = new AndFieldFilter(first, second);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfFirstFilterIsNull() throws Exception {
-        new AndFieldFilter(null, second);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfSecondFilterIsNull() throws Exception {
-        new AndFieldFilter(first, null);
     }
 
     @Test
@@ -88,5 +80,21 @@ public class AndFieldFilterTest {
 
         // Then:
         assertThat(filter.include(field), is(true));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(new AndFieldFilter(first, second), new AndFieldFilter(first, second))
+            .addEqualityGroup(new AndFieldFilter(mock(FieldFilter.class), second))
+            .addEqualityGroup(new AndFieldFilter(first, mock(FieldFilter.class)))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(FieldFilter.class, mock(FieldFilter.class))
+            .testAllPublicConstructors(AndFieldFilter.class);
     }
 }

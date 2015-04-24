@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.populate.instance;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
@@ -26,11 +28,6 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 
 public class BigDecimalInstanceFactoryTest {
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowOnNullConstructorArg() throws Exception {
-        new BigDecimalInstanceFactory(null);
-    }
-
     @Test
     public void shouldReturnDefaultProvided() throws Exception {
         // Given:
@@ -42,5 +39,25 @@ public class BigDecimalInstanceFactoryTest {
 
         // Then:
         assertThat(instance, is(sameInstance(defaultValue)));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        final BigDecimal defaultValue = new BigDecimal(1.234);
+
+        new EqualsTester()
+            .addEqualityGroup(
+                new BigDecimalInstanceFactory(defaultValue),
+                new BigDecimalInstanceFactory(defaultValue),
+                new BigDecimalInstanceFactory(new BigDecimal(1.234)))
+            .addEqualityGroup(
+                new BigDecimalInstanceFactory(new BigDecimal(1.233)))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .testAllPublicConstructors(BigDecimalInstanceFactory.class);
     }
 }

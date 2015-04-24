@@ -16,8 +16,10 @@
 
 package org.datalorax.populace.core.populate.mutator;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.populate.Mutator;
 import org.datalorax.populace.core.populate.PopulatorContext;
+import org.datalorax.populace.core.populate.instance.InstanceFactory;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -64,5 +66,16 @@ public class DateMutatorTest {
 
         // Then:
         assertThat(populated, is(not(nullValue())));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                DateMutator.INSTANCE,
+                new DateMutator())
+            .addEqualityGroup(
+                mock(InstanceFactory.class))
+            .testEquals();
     }
 }

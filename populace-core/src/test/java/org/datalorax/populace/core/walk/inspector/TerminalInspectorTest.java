@@ -16,10 +16,12 @@
 
 package org.datalorax.populace.core.walk.inspector;
 
+import com.google.common.testing.EqualsTester;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 
 public class TerminalInspectorTest {
     @Test
@@ -30,6 +32,17 @@ public class TerminalInspectorTest {
     @Test
     public void shouldReturnNoChildren() throws Exception {
         assertThat(TerminalInspector.INSTANCE.getElements(new SomeType(), null).hasNext(), is(false));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                TerminalInspector.INSTANCE,
+                new TerminalInspector())
+            .addEqualityGroup(
+                mock(Inspector.class))
+            .testEquals();
     }
 
     @SuppressWarnings("UnusedDeclaration")

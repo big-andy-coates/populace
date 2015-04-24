@@ -16,8 +16,10 @@
 
 package org.datalorax.populace.core.populate.mutator.ensure;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.populate.PopulatorContext;
 import org.datalorax.populace.core.util.TypeUtils;
+import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -121,6 +123,17 @@ public class EnsureArrayElementsNotNullMutatorTest {
 
         // Then:
         verify(config).createInstance(any(Type.class), eq(null));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                EnsureArrayElementsNotNullMutator.INSTANCE,
+                new EnsureArrayElementsNotNullMutator())
+            .addEqualityGroup(
+                mock(Inspector.class))
+            .testEquals();
     }
 
     private static Type arrayType(final Class<?> componentType) {

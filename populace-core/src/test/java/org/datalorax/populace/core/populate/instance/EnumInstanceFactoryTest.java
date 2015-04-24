@@ -16,12 +16,14 @@
 
 package org.datalorax.populace.core.populate.instance;
 
+import com.google.common.testing.EqualsTester;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.mock;
 
 public class EnumInstanceFactoryTest {
     private InstanceFactory factory;
@@ -56,6 +58,17 @@ public class EnumInstanceFactoryTest {
 
         // Then:
         assertThat(instance, is(nullValue()));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                EnumInstanceFactory.INSTANCE,
+                new EnumInstanceFactory())
+            .addEqualityGroup(
+                mock(InstanceFactory.class))
+            .testEquals();
     }
 
     private static enum NonEmptyEnum {

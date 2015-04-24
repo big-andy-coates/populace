@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Andrew Coates - 02/03/2015.
  */
+// Todo(ac): rename to LoggingNullObjectStrategy in v2.x
 public class LoggingInstanceFactory implements NullObjectStrategy {
     public static final LoggingInstanceFactory INSTANCE = new LoggingInstanceFactory();
     private static final Log LOG = LogFactory.getLog(LoggingInstanceFactory.class);

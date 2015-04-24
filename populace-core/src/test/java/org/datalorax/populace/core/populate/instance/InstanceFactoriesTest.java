@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.populate.instance;
 
+import com.google.common.testing.EqualsTester;
+import org.datalorax.populace.core.util.ImmutableTypeMap;
 import org.datalorax.populace.core.util.TypeUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -30,7 +32,6 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
 public class InstanceFactoriesTest {
-
     private InstanceFactories.Builder builder;
     private InstanceFactories factories;
 
@@ -263,5 +264,35 @@ public class InstanceFactoriesTest {
 
         // Then:
         assertThat(string, containsString("Fork Handles"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        final NullObjectStrategy nullObjectStrategy = mock(NullObjectStrategy.class, "1");
+        final ImmutableTypeMap<InstanceFactory> rawFactories = mock(ImmutableTypeMap.class, "1");
+
+        new EqualsTester()
+            .addEqualityGroup(
+                new InstanceFactories(nullObjectStrategy, rawFactories),
+                new InstanceFactories(nullObjectStrategy, rawFactories))
+            .addEqualityGroup(
+                new InstanceFactories(mock(NullObjectStrategy.class, "2"), rawFactories))
+            .addEqualityGroup(
+                new InstanceFactories(nullObjectStrategy, mock(ImmutableTypeMap.class, "2")))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCodeOfNullObjectInstanceFactory() throws Exception {
+        final NullObjectStrategy nullObjectStrategy = mock(NullObjectStrategy.class, "1");
+
+        new EqualsTester()
+            .addEqualityGroup(
+                new InstanceFactories.NullObjectInstanceFactory(nullObjectStrategy),
+                new InstanceFactories.NullObjectInstanceFactory(nullObjectStrategy))
+            .addEqualityGroup(
+                new InstanceFactories.NullObjectInstanceFactory(mock(NullObjectStrategy.class, "2")))
+            .testEquals();
     }
 }

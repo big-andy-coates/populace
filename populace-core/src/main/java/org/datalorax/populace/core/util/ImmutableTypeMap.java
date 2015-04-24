@@ -81,11 +81,14 @@ public class ImmutableTypeMap<V> {
 
     /**
      * Returns the most specific value for the provided key. Matches are found in the following priority:
-     * specific, super, default, where default is either array or non-array depending on if the key is an array type.
+     *
+     * For <b>non-array key types</b>: specific, super, package, default
+     * For <b>array key types</b>: specific, array-default
      *
      * @param key to look up
      * @return the most specific value found, or null if no value found.
      */
+    // Todo(ac): If this can return null change to return optional in v2.x
     public V get(final Type key) {
         V value = getSpecific(key);
         if (value != null) {
@@ -113,7 +116,7 @@ public class ImmutableTypeMap<V> {
     }
 
     /**
-     * Return the value matching this specific key. Only a type registered with this specific key will be found.
+     * Returns the value matching this specific key. Only a type registered with this exact key will be found.
      *
      * @param key the key to lookup
      * @return the value matching this specific key, if found, else null.
@@ -126,7 +129,11 @@ public class ImmutableTypeMap<V> {
     }
 
     /**
-     * Return the best match for this super key. The value for the most specific super key will be returned.
+     * Returns the best match for this super key. The value for the most specific super key will be returned.
+     *
+     * For example, if {@code key} was {@code ArrayList.class} and values were registered for both {@code List} and
+     * {@code Collection}, then this method would return the value associated with the {@code List} entry, as this has
+     * a closer relationship
      *
      * @param key the key to lookup
      * @return the most value for the most specific super key, if found, else null.
@@ -150,6 +157,16 @@ public class ImmutableTypeMap<V> {
         return bestMatch == null ? null : bestMatch.getValue();
     }
 
+    /**
+     * Returns the best match for the {@code packageName} provided.
+     * <p>
+     * For example, if {@code packgeName} was {@code org.someone.p1.p2} and values were were registered for both
+     * {@code org.someone} and {@code org.someone.p1}, then this method would return the value associated with the
+     * {@code org.someone.p1} entry, as this is a closer match.
+     *
+     * @param packageName the package name to look up
+     * @return the most value of the most specific package key, if found, else null.
+     */
     // Todo(ac): Switch to Optional in v2.x
     public V getPackage(final String packageName) {
         Validate.notEmpty(packageName, "packageName empty");
@@ -171,16 +188,19 @@ public class ImmutableTypeMap<V> {
     }
 
     /**
+     * Returns the value that will be used for array types, if no specific type is registered.
      * @return the default value for array types if one is present, else null. If present, this will override the
      * {@link ImmutableTypeMap#getDefault() default value} for any array types.
      */
+    // Todo(ac): switch to Optional in v2.x
     public V getArrayDefault() {
         return arrayDefaultValue;
     }
 
     /**
-     * @return the default value for non-array types, if there is a specific array default installed, or all types.
-     * This will never return null.
+     * Returns the default value that will be used if no others are registered to handle a specific type.
+     *
+     * @return the default value.
      */
     public V getDefault() {
         return defaultValue;

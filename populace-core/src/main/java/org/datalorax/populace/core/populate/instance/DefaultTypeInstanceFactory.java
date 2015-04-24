@@ -51,10 +51,6 @@ public class DefaultTypeInstanceFactory implements InstanceFactory {
         this.concreteFactory = concreteFactory;
     }
 
-    private static boolean isConcrete(final Class<?> rawType) {
-        return !rawType.isInterface() && !Modifier.isAbstract(rawType.getModifiers());
-    }
-
     @Override
     public <T> T createInstance(final Class<? extends T> type, final Object parent, final InstanceFactories instanceFactories) {
         if (notSupported(type)) {
@@ -111,5 +107,9 @@ public class DefaultTypeInstanceFactory implements InstanceFactory {
     @SuppressWarnings("unchecked")
     private <T> T createDefaultType(final Object parent, final InstanceFactories instanceFactories) {
         return (T) concreteFactory.createInstance(defaultType, parent, instanceFactories);
+    }
+
+    private static boolean isConcrete(final Class<?> rawType) {
+        return !rawType.isInterface() && !Modifier.isAbstract(rawType.getModifiers());
     }
 }

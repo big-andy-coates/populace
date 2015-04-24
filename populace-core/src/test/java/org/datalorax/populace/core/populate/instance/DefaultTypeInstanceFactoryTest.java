@@ -16,13 +16,12 @@
 
 package org.datalorax.populace.core.populate.instance;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.AbstractSequentialList;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -44,21 +43,6 @@ public class DefaultTypeInstanceFactoryTest {
         instanceFactories = mock(InstanceFactories.class);
 
         factory = new DefaultTypeInstanceFactory(baseType, defaultType, concreteFactory);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfNullBaseType() throws Exception {
-        new DefaultTypeInstanceFactory(null, defaultType, concreteFactory);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfNullDefaultType() throws Exception {
-        new DefaultTypeInstanceFactory(baseType, null, concreteFactory);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfNullConcreteFactory() throws Exception {
-        new DefaultTypeInstanceFactory(baseType, defaultType, null);
     }
 
     @Test
@@ -125,5 +109,32 @@ public class DefaultTypeInstanceFactoryTest {
 
         // Then:
         assertThat(instance, is(expected));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        final Class<Map> baseType = Map.class;
+        final Class<HashMap> defaultType = HashMap.class;
+        final InstanceFactory concreteFactory = mock(InstanceFactory.class, "1");
+        final InstanceFactory concreteFactory2 = mock(InstanceFactory.class, "2");
+
+        new EqualsTester()
+            .addEqualityGroup(
+                new DefaultTypeInstanceFactory(baseType, defaultType, concreteFactory),
+                new DefaultTypeInstanceFactory(baseType, defaultType, concreteFactory))
+            .addEqualityGroup(
+                new DefaultTypeInstanceFactory(HashMap.class, defaultType, concreteFactory))
+            .addEqualityGroup(
+                new DefaultTypeInstanceFactory(baseType, TreeMap.class, concreteFactory))
+            .addEqualityGroup(
+                new DefaultTypeInstanceFactory(baseType, defaultType, concreteFactory2))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(InstanceFactory.class, mock(InstanceFactory.class))
+            .testAllPublicConstructors(DefaultTypeInstanceFactory.class);
     }
 }

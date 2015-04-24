@@ -98,16 +98,18 @@ public class InstanceFactories {
      *
      * @param type the specific type to find.
      * @return the instance factory if found, else Optional.empty()
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getSpecific(java.lang.reflect.Type)
      */
     public Optional<InstanceFactory> getSpecific(final Type type) {
         return Optional.ofNullable(factories.getSpecific(type));
     }
 
     /**
-     * Get the instance factory registered against the super {@code type} provided, is present.
+     * Get the most specific super instance factory registered for the {@code type} provided, is present.
      *
      * @param type the super type to find.
      * @return the instance factory if found, else Optional.empty()
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getSuper(Class)
      */
     public Optional<InstanceFactory> getSuper(final Class<?> type) {
         return Optional.ofNullable(factories.getSuper(type));
@@ -117,6 +119,7 @@ public class InstanceFactories {
      * Get the default instance factory for array types.
      *
      * @return the instance factory
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getArrayDefault()
      */
     public InstanceFactory getArrayDefault() {
         return factories.getArrayDefault();
@@ -126,12 +129,11 @@ public class InstanceFactories {
      * Get the default instance factory for none-array types.
      *
      * @return the instance factory
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getDefault()
      */
     public InstanceFactory getDefault() {
         return factories.getDefault();
     }
-
-    // Todo(ac): expose the same accessors across mutators & inspectors?
 
     @Override
     public boolean equals(final Object o) {

@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.walk.inspector;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.walk.field.RawField;
 import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;
 import org.testng.annotations.BeforeMethod;
@@ -113,5 +114,16 @@ public class FieldInspectorTest {
 
         // Then:
         assertThat("should not have field containing reference to outer class", fields.iterator().hasNext(), is(false));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                FieldInspector.INSTANCE,
+                new FieldInspector())
+            .addEqualityGroup(
+                mock(Inspector.class))
+            .testEquals();
     }
 }

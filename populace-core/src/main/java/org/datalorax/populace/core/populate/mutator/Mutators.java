@@ -22,6 +22,7 @@ import org.datalorax.populace.core.populate.mutator.commbination.ChainedMutator;
 import org.datalorax.populace.core.util.ImmutableTypeMap;
 
 import java.lang.reflect.Type;
+import java.util.Optional;
 
 /**
  * Helper functions for working with {@link org.datalorax.populace.core.populate.Mutator mutators}
@@ -71,8 +72,57 @@ public class Mutators {
         return ChainedMutator.chain(first, second, additional);
     }
 
-    public Mutator get(final Type key) {
-        return mutators.get(key);
+    /**
+     * Get the mutator most specific to the provided {@code type}.
+     *
+     * @param type the specific type to find
+     * @return the mutator
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#get(java.lang.reflect.Type) for details
+     */
+    public Mutator get(final Type type) {
+        return mutators.get(type);
+    }
+
+    /**
+     * Get the mutator registered against the specific {@code type} provided, is present.
+     *
+     * @param type the specific type to find.
+     * @return the mutator if found, else Optional.empty()
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getSpecific(java.lang.reflect.Type)
+     */
+    public Optional<Mutator> getSpecific(final Type type) {
+        return Optional.ofNullable(mutators.getSpecific(type));
+    }
+
+    /**
+     * Get the most specific super mutator registered for the {@code type} provided, is present.
+     *
+     * @param type the super type to find.
+     * @return the mutator if found, else Optional.empty()
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getSuper(Class)
+     */
+    public Optional<Mutator> getSuper(final Class<?> type) {
+        return Optional.ofNullable(mutators.getSuper(type));
+    }
+
+    /**
+     * Get the default mutator for array types.
+     *
+     * @return the mutator
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getArrayDefault()
+     */
+    public Mutator getArrayDefault() {
+        return mutators.getArrayDefault();
+    }
+
+    /**
+     * Get the default mutator for none-array types.
+     *
+     * @return the mutator
+     * @see org.datalorax.populace.core.util.ImmutableTypeMap#getDefault()
+     */
+    public Mutator getDefault() {
+        return mutators.getDefault();
     }
 
     @Override

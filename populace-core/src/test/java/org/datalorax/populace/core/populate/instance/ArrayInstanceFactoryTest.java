@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.populate.instance;
 
+import com.google.common.testing.EqualsTester;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -65,5 +66,16 @@ public class ArrayInstanceFactoryTest {
         assertThat(instance, is(notNullValue()));
         assertThat(instance.length, is(1));
         assertThat(instance[0], is(nullValue()));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                ArrayInstanceFactory.INSTANCE,
+                new ArrayInstanceFactory())
+            .addEqualityGroup(
+                mock(InstanceFactory.class))
+            .testEquals();
     }
 }

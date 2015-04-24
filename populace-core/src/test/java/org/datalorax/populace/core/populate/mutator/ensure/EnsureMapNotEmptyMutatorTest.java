@@ -16,9 +16,11 @@
 
 package org.datalorax.populace.core.populate.mutator.ensure;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.populate.Mutator;
 import org.datalorax.populace.core.populate.PopulatorContext;
 import org.datalorax.populace.core.util.TypeUtils;
+import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -116,6 +118,17 @@ public class EnsureMapNotEmptyMutatorTest {
 
         // Then:
         assertThat(mutated, is(expected));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                EnsureMapNotEmptyMutator.INSTANCE,
+                new EnsureMapNotEmptyMutator())
+            .addEqualityGroup(
+                mock(Inspector.class))
+            .testEquals();
     }
 
     private void givenMutatorRegistered(final Type type, final Mutator mutator) {

@@ -14,39 +14,28 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.populate.mutator.ensure;
+package org.datalorax.populace.core.populate.instance;
 
 import com.google.common.testing.EqualsTester;
-import org.datalorax.populace.core.populate.Mutator;
-import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.testng.annotations.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 
-public class EnsureNullMutatorTest {
-    @Test
-    public void shouldMostCertainlyReturnNull() throws Exception {
+public class ThrowingInstanceFactoryTest {
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void shouldThrowOnNullObject() throws Exception {
         // Given:
-        final Mutator mutator = EnsureNullMutator.INSTANCE;
+        final Object parent = new Object();
 
         // When:
-        final Object mutated = mutator.mutate(String.class, "hello", null, null);
-
-        // Then:
-        assertThat(mutated, is(nullValue()));
+        new ThrowingInstanceFactory().onNullObject(parent);
     }
 
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
-            .addEqualityGroup(
-                EnsureNullMutator.INSTANCE,
-                new EnsureNullMutator())
-            .addEqualityGroup(
-                mock(Inspector.class))
+            .addEqualityGroup(new ThrowingInstanceFactory(), new ThrowingInstanceFactory())
+            .addEqualityGroup(mock(NullObjectStrategy.class))
             .testEquals();
     }
 }

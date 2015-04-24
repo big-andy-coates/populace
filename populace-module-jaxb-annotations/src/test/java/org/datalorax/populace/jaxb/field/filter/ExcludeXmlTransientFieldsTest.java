@@ -16,7 +16,9 @@
 
 package org.datalorax.populace.jaxb.field.filter;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
+import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -76,6 +78,14 @@ public class ExcludeXmlTransientFieldsTest {
 
         // Then:
         assertThat(filter.include(field), is(true));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(ExcludeXmlTransientFields.INSTANCE, new ExcludeXmlTransientFields())
+            .addEqualityGroup(mock(FieldFilter.class))
+            .testEquals();
     }
 
     private void givenFieldNotMarkedTransient() {

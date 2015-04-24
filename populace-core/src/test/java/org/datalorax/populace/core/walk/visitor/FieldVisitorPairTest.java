@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.walk.visitor;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.mockito.InOrder;
 import org.testng.annotations.BeforeMethod;
@@ -38,16 +40,6 @@ public class FieldVisitorPairTest {
         visitor = new FieldVisitorPair(first, second);
     }
 
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfFirstVisitorIsNull() throws Exception {
-        new FieldVisitorPair(null, second);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowIfSecondVisitorIsNull() throws Exception {
-        new FieldVisitorPair(first, null);
-    }
-
     @Test
     public void shouldCalledBothVisitorsInOrder() throws Exception {
         // When:
@@ -67,5 +59,28 @@ public class FieldVisitorPairTest {
         // Then:
         verify(first).visit(field);
         verify(second).visit(field);
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                new FieldVisitorPair(first, second),
+                new FieldVisitorPair(first, second),
+                FieldVisitors.chain(first, second))
+            .addEqualityGroup(
+                new FieldVisitorPair(second, first))
+            .addEqualityGroup(
+                new FieldVisitorPair(mock(FieldVisitor.class, "2"), second))
+            .addEqualityGroup(
+                new FieldVisitorPair(first, mock(FieldVisitor.class, "2")))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(FieldVisitor.class, mock(FieldVisitor.class))
+            .testAllPublicConstructors(FieldVisitorPair.class);
     }
 }

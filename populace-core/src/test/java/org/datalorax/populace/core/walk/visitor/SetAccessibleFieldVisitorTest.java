@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.walk.visitor;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.testng.annotations.Test;
 
@@ -36,5 +37,16 @@ public class SetAccessibleFieldVisitorTest {
 
         // Then:
         verify(fieldInfo).ensureAccessible();
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                SetAccessibleFieldVisitor.INSTANCE,
+                new SetAccessibleFieldVisitor())
+            .addEqualityGroup(
+                mock(FieldVisitor.class))
+            .testEquals();
     }
 }

@@ -14,39 +14,38 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.walk.visitor;
+package org.datalorax.populace.core.walk;
 
 import com.google.common.testing.EqualsTester;
-import org.datalorax.populace.core.walk.field.FieldInfo;
+import com.google.common.testing.NullPointerTester;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
-public class SetAccessibleFieldVisitorTest {
-    @SuppressWarnings("UnusedDeclaration")  // Accessed via reflection
-    private String inaccessibleField;
+public class GraphWalkerTest {
+    private WalkerContext context;
 
-    @Test
-    public void shouldSetFieldAccessible() throws Exception {
-        // Given:
-        final FieldInfo fieldInfo = mock(FieldInfo.class);
-
-        // When:
-        SetAccessibleFieldVisitor.INSTANCE.visit(fieldInfo);
-
-        // Then:
-        verify(fieldInfo).ensureAccessible();
+    @BeforeMethod
+    public void setUp() throws Exception {
+        context = mock(WalkerContext.class);
     }
 
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                SetAccessibleFieldVisitor.INSTANCE,
-                new SetAccessibleFieldVisitor())
+                new GraphWalker(context),
+                new GraphWalker(context))
             .addEqualityGroup(
-                mock(FieldVisitor.class))
+                new GraphWalker(mock(WalkerContext.class, "other")))
             .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(WalkerContext.class, context)
+            .testAllPublicConstructors(GraphWalker.class);
     }
 }

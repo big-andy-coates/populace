@@ -16,13 +16,13 @@
 
 package org.datalorax.populace.core.populate;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.GraphWalker;
 import org.datalorax.populace.core.walk.visitor.ElementVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.lang.reflect.Type;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -41,11 +41,6 @@ public class GraphPopulatorTest {
         walker = mock(GraphWalker.class);
 
         populator = new GraphPopulator(walker, config);
-    }
-
-    @Test(expectedExceptions = NullPointerException.class)
-    public void shouldThrowOnNullConfig() {
-        new GraphPopulator(null, null);
     }
 
     @Test
@@ -70,13 +65,24 @@ public class GraphPopulatorTest {
         populator.populate(InnerClass.class);
     }
 
-    // Todo(ac): how about some tests?
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                new GraphPopulator(walker, config),
+                new GraphPopulator(walker, config))
+            .addEqualityGroup(
+                new GraphPopulator(mock(GraphWalker.class, "other"), config))
+            .addEqualityGroup(
+                new GraphPopulator(walker, mock(PopulatorContext.class, "other")))
+            .testEquals();
+    }
 
-    private Mutator givenMutatorRegistered(Type... types) {
-        final Mutator mutator = mock(Mutator.class);
-        for (Type type : types) {
-            when(config.getMutator(type)).thenReturn(mutator);
-        }
-        return mutator;
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(GraphWalker.class, walker)
+            .setDefault(PopulatorContext.class, config)
+            .testAllPublicConstructors(GraphPopulator.class);
     }
 }

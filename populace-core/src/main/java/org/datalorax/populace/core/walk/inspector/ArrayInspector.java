@@ -31,7 +31,7 @@ import java.util.NoSuchElementException;
  * @author Andrew Coates - 27/02/2015.
  */
 public class ArrayInspector implements Inspector {
-    public static final Inspector INSTANCE = new ArrayInspector();
+    public static final ArrayInspector INSTANCE = new ArrayInspector();
 
     @Override
     public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {

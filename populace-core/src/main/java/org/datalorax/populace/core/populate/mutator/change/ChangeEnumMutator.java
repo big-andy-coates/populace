@@ -58,10 +58,6 @@ public class ChangeEnumMutator implements Mutator {
 
     private Object changeEnum(final Enum currentValue) {
         final Object[] allValues = currentValue.getDeclaringClass().getEnumConstants();
-        if (allValues.length <= 1) {
-            return currentValue;
-        }
-
         final int newOrdinal = (currentValue.ordinal() + 1) % allValues.length;
         return allValues[newOrdinal];
     }

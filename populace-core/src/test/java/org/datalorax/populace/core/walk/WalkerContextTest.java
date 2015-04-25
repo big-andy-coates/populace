@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.walk;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspector;
@@ -80,5 +82,24 @@ public class WalkerContextTest {
         assertThat(inspector, is(expected));
     }
 
-    // Todo(ac): more tests
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                new WalkerContext(fieldFilter, inspectors),
+                new WalkerContext(fieldFilter, inspectors))
+            .addEqualityGroup(
+                new WalkerContext(mock(FieldFilter.class), inspectors))
+            .addEqualityGroup(
+                new WalkerContext(fieldFilter, mock(Inspectors.class)))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(FieldFilter.class, fieldFilter)
+            .setDefault(Inspectors.class, inspectors)
+            .testAllPublicConstructors(WalkerContext.class);
+    }
 }

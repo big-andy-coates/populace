@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.walk.field;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.util.TypeResolver;
 import org.datalorax.populace.core.util.TypeUtils;
 import org.mockito.Mock;
@@ -345,6 +347,33 @@ public class FieldInfoTest {
 
         // Then:
         verify(field).ensureAccessible();
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        final PathProvider otherPathProvider = mock(PathProvider.class, "other");
+        when(pathProvider.getPath()).thenReturn("somePath");
+        when(otherPathProvider.getPath()).thenReturn("differentPath");
+
+        new EqualsTester()
+            .addEqualityGroup(
+                new FieldInfo(field, owningInstance, typeResolver, pathProvider),
+                new FieldInfo(field, owningInstance, typeResolver, pathProvider),
+                new FieldInfo(mock(RawField.class, "other"), owningInstance, typeResolver, pathProvider),
+                new FieldInfo(field, new Object(), typeResolver, pathProvider),
+                new FieldInfo(field, owningInstance, mock(TypeResolver.class, "other"), pathProvider))
+            .addEqualityGroup(
+                new FieldInfo(field, owningInstance, typeResolver, otherPathProvider))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(RawField.class, field)
+            .setDefault(TypeResolver.class, typeResolver)
+            .setDefault(PathProvider.class, pathProvider)
+            .testAllPublicConstructors(FieldInfo.class);
     }
 
     private void givenFieldHasValue(final Object value) throws IllegalAccessException {

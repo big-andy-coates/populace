@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.jaxb.instance;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.populate.instance.InstanceCreationException;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.instance.InstanceFactory;
@@ -144,6 +145,17 @@ public class JaxbInstanceFactoryTest {
 
         // Then:
         verify(instanceFactories).get(valueType);
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                JaxbInstanceFactory.INSTANCE,
+                new JaxbInstanceFactory())
+            .addEqualityGroup(
+                mock(InstanceFactory.class))
+            .testEquals();
     }
 
     @SuppressWarnings("unchecked")

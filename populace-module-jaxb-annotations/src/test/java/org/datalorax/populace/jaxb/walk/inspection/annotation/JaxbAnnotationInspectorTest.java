@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.jaxb.walk.inspection.annotation;
 
+import com.google.common.testing.EqualsTester;
+import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -27,6 +29,7 @@ import java.lang.reflect.Field;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("ALL")
 public class JaxbAnnotationInspectorTest {
@@ -265,6 +268,16 @@ public class JaxbAnnotationInspectorTest {
         assertThat(inspector.getAnnotation(smallField, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterTwo.class)));
     }
 
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                JaxbAnnotationInspector.INSTANCE,
+                new JaxbAnnotationInspector())
+            .addEqualityGroup(
+                mock(AnnotationInspector.class))
+            .testEquals();
+    }
 
     private class TypeAdapterOne extends XmlAdapter {
         @Override

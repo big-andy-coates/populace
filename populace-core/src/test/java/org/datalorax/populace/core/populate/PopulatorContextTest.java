@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.populate;
 
+import com.google.common.testing.EqualsTester;
+import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.instance.InstanceFactory;
 import org.datalorax.populace.core.populate.mutator.Mutators;
@@ -277,6 +279,27 @@ public class PopulatorContextTest {
 
         // Then:
         verify(factory).createInstance(eq(Object.class), anyObject(), any(InstanceFactories.class));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                new PopulatorContext(mutators, instanceFactories),
+                new PopulatorContext(mutators, instanceFactories))
+            .addEqualityGroup(
+                new PopulatorContext(mock(Mutators.class, "other"), instanceFactories))
+            .addEqualityGroup(
+                new PopulatorContext(mutators, mock(InstanceFactories.class, "other")))
+            .testEquals();
+    }
+
+    @Test
+    public void shouldThrowNPEsOnConstructorParams() throws Exception {
+        new NullPointerTester()
+            .setDefault(Mutators.class, mutators)
+            .setDefault(InstanceFactories.class, instanceFactories)
+            .testAllPublicConstructors(PopulatorContext.class);
     }
 
     private InstanceFactory givenInstanceFactoryInstalled() {

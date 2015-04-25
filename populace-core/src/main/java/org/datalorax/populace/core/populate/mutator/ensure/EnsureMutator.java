@@ -27,7 +27,7 @@ import java.lang.reflect.Type;
  * @author Andrew Coates - 01/03/2015.
  */
 public class EnsureMutator implements Mutator {
-    public static final Mutator INSTANCE = new EnsureMutator();
+    public static final EnsureMutator INSTANCE = new EnsureMutator();
 
     @Override
     public Object mutate(final Type type, final Object currentValue, final Object parent, final PopulatorContext config) {

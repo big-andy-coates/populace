@@ -22,6 +22,7 @@ import org.datalorax.populace.core.populate.instance.InstanceFactory;
 import org.datalorax.populace.core.populate.instance.NullObjectStrategy;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.populate.mutator.NoOpMutator;
+import org.datalorax.populace.core.walk.WalkerException;
 import org.hamcrest.Matchers;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -1055,6 +1056,36 @@ public class GraphPopulatorFunctionTest {
         // Then:
         assertThat(populated._list, is(not(nullValue())));
         assertThat(populated._list, is(not(original._list)));
+    }
+
+    @Test(expectedExceptions = WalkerException.class)
+    public void shouldWrapExceptionsThrownDuringFieldVisit() throws Exception {
+        // Given:
+        class SomeType {
+            SomeType field;
+        }
+        final Mutator mutator = givenMutatorRegistered(SomeType.class);
+        when(mutator.mutate(any(Type.class), anyObject(), anyObject(), any(PopulatorContext.class)))
+            .thenThrow(new RuntimeException("boom"));
+
+        // When:
+        populator.populate(new SomeType());
+    }
+
+    @Test(expectedExceptions = WalkerException.class)
+    public void shouldWrapExceptionsThrownDuringElementVisit() throws Exception {
+        // Given:
+        class SomeType {
+            List<String> field = new ArrayList<String>() {{
+                add("bob");
+            }};
+        }
+        final Mutator mutator = givenMutatorRegistered(String.class);
+        when(mutator.mutate(any(Type.class), anyObject(), anyObject(), any(PopulatorContext.class)))
+            .thenThrow(new RuntimeException("boom"));
+
+        // When:
+        populator.populate(new SomeType());
     }
 
     // Todo(ac): Add tests to ensure we're not mutating any field more than once - think arrays, collections, etc.

@@ -18,60 +18,57 @@ package org.datalorax.populace.core.populate.mutator.change;
 
 import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.populate.Mutator;
+import org.datalorax.populace.core.populate.PopulatorContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.math.BigDecimal;
-import java.util.Map;
-
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 
-public class ChangeBigDecimalMutatorTest {
-    private Mutator mutator;
+public class ChangeEnumMutatorTest {
+    private ChangeEnumMutator mutator;
+    private PopulatorContext context;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        mutator = ChangeBigDecimalMutator.INSTANCE;
+        context = mock(PopulatorContext.class);
+
+        mutator = ChangeEnumMutator.INSTANCE;
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
-    public void shouldThrowOnUnsupportedType() throws Exception {
-        // When:
-        mutator.mutate(Map.class, null, null, null);
+    public void shouldThrowOnNonEnumType() throws Exception {
+        mutator.mutate(String.class, null, null, context);
     }
 
     @Test
-    public void shouldReturnNullOnNullInput() throws Exception {
+    public void shouldReturnNullIfCurrentValueNull() throws Exception {
         // When:
-        final Object mutated = mutator.mutate(BigDecimal.class, null, null, null);
+        final Object result = mutator.mutate(SomeEnum.class, null, null, context);
 
         // Then:
-        assertThat(mutated, is(nullValue()));
+        assertThat(result, is(nullValue()));
     }
 
     @Test
-    public void shouldMutateExistingValue() throws Exception {
-        // Given:
-        final BigDecimal original = new BigDecimal("1.3456");
-
-        // When:
-        final Object mutated = mutator.mutate(BigDecimal.class, original, null, null);
-
-        // Then:
-        assertThat(mutated, is(instanceOf(BigDecimal.class)));
-        assertThat((BigDecimal) mutated, is(not(comparesEqualTo(original))));
+    public void shouldReturnTheNextEnumValue() throws Exception {
+        assertThat(mutator.mutate(SomeEnum.class, SomeEnum.One, null, context), is(SomeEnum.Two));
+        assertThat(mutator.mutate(SomeEnum.class, SomeEnum.Two, null, context), is(SomeEnum.Three));
+        assertThat(mutator.mutate(SomeEnum.class, SomeEnum.Three, null, context), is(SomeEnum.One));
     }
 
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                ChangeBigDecimalMutator.INSTANCE,
-                new ChangeBigDecimalMutator())
+                ChangeEnumMutator.INSTANCE,
+                new ChangeEnumMutator())
             .addEqualityGroup(
                 mock(Mutator.class))
             .testEquals();
     }
+
+    private enum SomeEnum {One, Two, Three}
 }

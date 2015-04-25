@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * @author Andrew Coates - 01/03/2015.
  */
 public class MapValueInspector implements Inspector {
-    public static final Inspector INSTANCE = new MapValueInspector();
+    public static final MapValueInspector INSTANCE = new MapValueInspector();
     private static final TypeVariable<Class<Map>> MAP_VALUE_TYPE_VARIABLE = Map.class.getTypeParameters()[1];
 
     @Override

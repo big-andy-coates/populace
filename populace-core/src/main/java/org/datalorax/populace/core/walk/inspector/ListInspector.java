@@ -25,6 +25,7 @@ import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * An inspector that exposes {@link java.util.List} as having no fields, just a collection of child elements
@@ -32,7 +33,7 @@ import java.util.List;
  * @author Andrew Coates - 01/03/2015.
  */
 public class ListInspector implements Inspector {
-    public static final Inspector INSTANCE = new ListInspector();
+    public static final ListInspector INSTANCE = new ListInspector();
     private static final TypeVariable<Class<List>> LIST_TYPE_VARIABLE = List.class.getTypeParameters()[0];
     private static final TypeVariable<Class<Collection>> COLLECTION_TYPE_VARIABLE = Collection.class.getTypeParameters()[0];
 
@@ -71,6 +72,9 @@ public class ListInspector implements Inspector {
 
             @Override
             public RawElement next() {
+                if (index >= size) {
+                    throw new NoSuchElementException();
+                }
                 return new ListElement(index++, list);
             }
         };

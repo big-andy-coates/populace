@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.populate.mutator.change;
+package org.datalorax.populace.core.populate.mutator.ensure;
 
 import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.populate.Mutator;
@@ -22,67 +22,65 @@ import org.datalorax.populace.core.populate.PopulatorContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.mock;
+import java.lang.reflect.Type;
 
-/**
- * @author Andrew Coates - 27/02/2015.
- */
-public class ChangeStringMutatorTest {
-    private Mutator mutator;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.*;
+
+public class EnsureMutatorTest {
+    private EnsureMutator mutator;
     private PopulatorContext config;
 
     @BeforeMethod
     public void setUp() throws Exception {
         config = mock(PopulatorContext.class);
-        mutator = ChangeStringMutator.INSTANCE;
-    }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
-    public void shouldThrowOnUnsupportedType() throws Exception {
-        mutator.mutate(Integer.class, null, null, config);
+        mutator = EnsureMutator.INSTANCE;
     }
 
     @Test
-    public void shouldReturnNullOnNullInput() throws Exception {
+    public void shouldDoNothingIfValueAlreadyNotNull() throws Exception {
         // When:
-        final String mutated = (String) mutator.mutate(String.class, null, null, config);
+        final Object mutated = mutator.mutate(String.class, "current", null, config);
 
         // Then:
-        assertThat(mutated, is(nullValue()));
+        assertThat(mutated, is("current"));
+        verify(config, never()).createInstance(any(Type.class), anyObject());
     }
 
     @Test
-    public void shouldMutateString() throws Exception {
+    public void shouldInstantiateIfValueNull() throws Exception {
         // Given:
-        final String original = "hello";
+        final Object parent = new Object();
 
         // When:
-        final String mutated = (String) mutator.mutate(String.class, original, null, config);
+        mutator.mutate(String.class, null, parent, config);
 
         // Then:
-        assertThat(mutated, is(not(original)));
+        verify(config).createInstance(String.class, parent);
     }
 
     @Test
-    public void shouldMutateASecondTime() throws Exception {
+    public void shouldReturnNewValue() throws Exception {
         // Given:
-        final String mutated = (String) mutator.mutate(String.class, "hello", null, config);
+        when(config.createInstance(any(Type.class), anyObject())).thenReturn("new");
 
         // When:
-        final String mutatedAgain = (String) mutator.mutate(String.class, mutated, null, config);
+        final Object mutated = mutator.mutate(String.class, null, null, config);
 
         // Then:
-        assertThat(mutatedAgain, is(not(mutated)));
+        assertThat(mutated, is("new"));
     }
 
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                ChangeStringMutator.INSTANCE,
-                new ChangeStringMutator())
+                EnsureMutator.INSTANCE,
+                new EnsureMutator())
             .addEqualityGroup(
                 mock(Mutator.class))
             .testEquals();

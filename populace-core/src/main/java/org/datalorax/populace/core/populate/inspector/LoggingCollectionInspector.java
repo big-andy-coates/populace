@@ -36,7 +36,7 @@ import java.util.Iterator;
  * @author Andrew Coates - 30/03/2015.
  */
 public class LoggingCollectionInspector implements Inspector {
-    public static final Inspector INSTANCE = new LoggingCollectionInspector();
+    public static final LoggingCollectionInspector INSTANCE = new LoggingCollectionInspector();
     private static final Log LOG = LogFactory.getLog(LoggingCollectionInspector.class);
 
     @SuppressWarnings("unchecked")

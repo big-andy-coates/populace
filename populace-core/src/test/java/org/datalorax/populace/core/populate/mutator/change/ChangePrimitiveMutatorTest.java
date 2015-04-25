@@ -16,6 +16,7 @@
 
 package org.datalorax.populace.core.populate.mutator.change;
 
+import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.populate.Mutator;
 import org.datalorax.populace.core.populate.PopulatorContext;
 import org.testng.annotations.BeforeMethod;
@@ -154,6 +155,17 @@ public class ChangePrimitiveMutatorTest {
         // Then:
         assertThat(mutated, is(instanceOf(trait.type)));
         assertThat(mutated, is(not(currentValue)));
+    }
+
+    @Test
+    public void shouldTestEqualsAndHashCode() throws Exception {
+        new EqualsTester()
+            .addEqualityGroup(
+                ChangePrimitiveMutator.INSTANCE,
+                new ChangePrimitiveMutator())
+            .addEqualityGroup(
+                mock(Mutator.class))
+            .testEquals();
     }
 
     @DataProvider

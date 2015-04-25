@@ -23,7 +23,8 @@ import org.mockito.InOrder;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 
 public class FieldVisitorPairTest {
     private FieldVisitor first;
@@ -49,16 +50,6 @@ public class FieldVisitorPairTest {
         InOrder inOrder = inOrder(first, second);
         inOrder.verify(first).visit(field);
         inOrder.verify(second).visit(field);
-    }
-
-    @Test
-    public void shouldPassIsCollectionToBoth() throws Exception {
-        // When:
-        visitor.visit(field);
-
-        // Then:
-        verify(first).visit(field);
-        verify(second).visit(field);
     }
 
     @Test

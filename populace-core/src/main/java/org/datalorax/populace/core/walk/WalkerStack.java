@@ -46,8 +46,8 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
         return new RootFrame(root);
     }
 
-    public WalkerStack push(final RawField field) {
-        return new FieldFrame(this, field);
+    public WalkerStack push(final RawField field, final Object owningInstance) {
+        return new FieldFrame(this, field, owningInstance);
     }
 
     public WalkerStack push(final Object element) {
@@ -65,6 +65,8 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
     public TypeResolver getTypeResolver() {
         return new TypeResolver(this);
     }
+
+    public abstract boolean contains(final Object instance);
 
     protected WalkerStack getParent() { return parent; }
 
@@ -95,6 +97,11 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
         }
 
         @Override
+        public boolean contains(final Object instance) {
+            return root == instance;
+        }
+
+        @Override
         protected String getToken() {
             return root.getClass().getSimpleName();
         }
@@ -102,11 +109,13 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
 
     private static final class FieldFrame extends WalkerStack {
         private final RawField field;
+        private final Object owningInstance;
         private TypeToken<?> type;
 
-        public FieldFrame(final WalkerStack parent, final RawField field) {
+        public FieldFrame(final WalkerStack parent, final RawField field, final Object owningInstance) {
             super(parent);
             this.field = field;
+            this.owningInstance = owningInstance;
             this.type = TypeToken.of(field.getGenericType());
         }
 
@@ -118,6 +127,17 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
             }
 
             return typeToken.getType();
+        }
+
+        @Override
+        public boolean contains(final Object instance) {
+            try {
+                field.ensureAccessible();   // Todo(ac): Calling this here basically makes this a requirement i.e. that all fields should be accessible. Hence should only call it once...
+                // Todo(ac): Think about a redesign in v2.x, or at least remove ensureAccessible calls from everyone and just do it once.
+                return field.getValue(owningInstance) == instance || getParent().contains(instance);
+            } catch (IllegalAccessException e) {
+                throw new WalkerException("Failed to get value from field", this, e);
+            }
         }
 
         @Override
@@ -137,6 +157,11 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
         @Override
         public Type resolveTypeVariable(final TypeVariable variable) {
             return getParent().resolveTypeVariable(variable);
+        }
+
+        @Override
+        public boolean contains(final Object instance) {
+            return instance == element || getParent().contains(instance);
         }
 
         @Override

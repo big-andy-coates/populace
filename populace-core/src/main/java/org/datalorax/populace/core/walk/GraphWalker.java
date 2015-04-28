@@ -118,7 +118,7 @@ public class GraphWalker {
         }
 
         for (RawField field : fields) {
-            final WalkerStack fieldStack = instanceStack.push(field);
+            final WalkerStack fieldStack = instanceStack.push(field, instance);
             final FieldInfo fieldInfo = new FieldInfo(field, instance, fieldStack.getTypeResolver(), fieldStack);
 
             if (context.isExcludedField(fieldInfo)) {
@@ -137,6 +137,11 @@ public class GraphWalker {
             final Object value = fieldInfo.getValue();
             if (value == null) {
                 logDebug("Skipping null field: " + fieldInfo.getName(), fieldStack);
+                continue;
+            }
+
+            if (seenBefore(value, instanceStack)) {
+                logDebug("Skipping field previously visited: " + fieldInfo.getName(), fieldStack);
                 continue;
             }
 
@@ -164,14 +169,27 @@ public class GraphWalker {
             }
 
             final Object value = elementInfo.getValue();
-            if (value == null) {
-                logDebug("Skipping null child", stack);
-            } else {
-                walk(value.getClass(), value, visitors, elementStack);
-            }
 
-            element.postWalk();
+            try {
+                if (value == null) {
+                    logDebug("Skipping null child", stack);
+                    continue;
+                }
+
+                if (seenBefore(value, stack)) {
+                    logDebug("Skipping element previously visited", elementStack);
+                    continue;
+                }
+
+                walk(value.getClass(), value, visitors, elementStack);
+            } finally {
+                element.postWalk();
+            }
         }
+    }
+
+    private static boolean seenBefore(final Object instance, final WalkerStack stack) {
+        return instance != null && stack.contains(instance);
     }
 
     private static void logDebug(String message, PathProvider path) {

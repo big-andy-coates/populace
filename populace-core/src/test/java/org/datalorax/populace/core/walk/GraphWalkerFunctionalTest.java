@@ -602,6 +602,27 @@ public class GraphWalkerFunctionalTest {
         verify(fieldVisitor).visit(argThat(fieldInfo("_superField", SuperType.class)));
     }
 
+    @Test
+    public void shouldNotStackOverflowWithCircularReference() throws Exception {
+        // Given:
+        class TypeWithCircularReference {
+            Object child;
+        }
+        class AnotherType {
+            TypeWithCircularReference parent;
+        }
+        final TypeWithCircularReference instance = new TypeWithCircularReference();
+        final AnotherType anotherType = new AnotherType();
+        instance.child = anotherType;
+        anotherType.parent = instance;
+
+        // When:
+        walker.walk(instance, accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        // It didn't stack overflow.
+    }
+
     @SuppressWarnings("UnusedDeclaration")
     public static class TypeWithNestedObject {
         public NestedType _nested = new NestedType();

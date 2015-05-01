@@ -17,6 +17,8 @@
 package org.datalorax.populace.core.walk;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.walk.element.ElementInfo;
+import org.datalorax.populace.core.walk.element.filter.ElementFilter;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspector;
@@ -30,17 +32,24 @@ import java.lang.reflect.Type;
  */
 public class WalkerContext {
     private final FieldFilter fieldFilter;
+    private final ElementFilter elementFilter;
     private final Inspectors inspectors;
 
-    public WalkerContext(final FieldFilter fieldFilter, final Inspectors inspectors) {
+    public WalkerContext(final FieldFilter fieldFilter, final ElementFilter elementFilter, final Inspectors inspectors) {
         Validate.notNull(fieldFilter, "fieldFilter null");
+        Validate.notNull(elementFilter, "elementFilter null");
         Validate.notNull(inspectors, "inspector null");
         this.fieldFilter = fieldFilter;
+        this.elementFilter = elementFilter;
         this.inspectors = inspectors;
     }
 
     public boolean isExcludedField(final FieldInfo field) {
         return !fieldFilter.include(field);
+    }
+
+    public boolean isExcludedElement(final ElementInfo element) {
+        return !elementFilter.include(element);
     }
 
     public Inspector getInspector(final Type type) {

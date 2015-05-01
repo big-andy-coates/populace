@@ -19,6 +19,7 @@ package org.datalorax.populace.core.populate;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.walk.GraphWalker;
+import org.datalorax.populace.core.walk.element.filter.ElementFilter;
 import org.datalorax.populace.core.walk.field.filter.ExcludeStaticFieldsFilter;
 import org.datalorax.populace.core.walk.field.filter.ExcludeTransientFieldsFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
@@ -34,14 +35,6 @@ import static org.mockito.Mockito.mock;
 
 public class GraphPopulatorBuilderTest {
     private GraphPopulatorBuilder builder;
-
-    private static FieldFilter defaultFieldFilter() {
-        return FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
-    }
-
-    private static Mutators defaultMutatorConfig() {
-        return Mutators.defaults();
-    }
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -121,6 +114,19 @@ public class GraphPopulatorBuilderTest {
     }
 
     @Test
+    public void shouldGetElementFilterBackFromBuilder() throws Exception {
+        // Given:
+        final ElementFilter filter = mock(ElementFilter.class);
+        builder.withElementFilter(filter);
+
+        // When:
+        final ElementFilter returned = builder.getElementFilter();
+
+        // Then:
+        assertThat(returned, is(sameInstance(filter)));
+    }
+
+    @Test
     public void shouldGetInspectorsBuilderBackFromBuilder() throws Exception {
         // Given:
         final Inspector packageInspector = mock(Inspector.class);
@@ -154,5 +160,13 @@ public class GraphPopulatorBuilderTest {
 
     private PopulatorContext defaultPopulatorContext() {
         return new PopulatorContext(defaultMutatorConfig(), defaultInstanceFactories());
+    }
+
+    private static FieldFilter defaultFieldFilter() {
+        return FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
+    }
+
+    private static Mutators defaultMutatorConfig() {
+        return Mutators.defaults();
     }
 }

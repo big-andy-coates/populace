@@ -18,6 +18,8 @@ package org.datalorax.populace.core.walk;
 
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
+import org.datalorax.populace.core.walk.element.ElementInfo;
+import org.datalorax.populace.core.walk.element.filter.ElementFilter;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspector;
@@ -38,17 +40,20 @@ public class WalkerContextTest {
     @Mock
     private FieldFilter fieldFilter;
     @Mock
+    private ElementFilter elementFilter;
+    @Mock
     private Inspectors inspectors;
+    @Mock
     private FieldInfo field;
+    @Mock
+    private ElementInfo element;
     private WalkerContext context;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        field = mock(FieldInfo.class);
-
-        context = new WalkerContext(fieldFilter, inspectors);
+        context = new WalkerContext(fieldFilter, elementFilter, inspectors);
     }
 
     @Test
@@ -61,7 +66,25 @@ public class WalkerContextTest {
     }
 
     @Test
-    public void shouldNotExcludeFieldIfFilterReturnsTrue() throws Exception {
+    public void shouldIncludeFieldIfFilterReturnsTrue() throws Exception {
+        // Given:
+        when(elementFilter.include(element)).thenReturn(true);
+
+        // Then:
+        assertThat(context.isExcludedElement(element), is(false));
+    }
+
+    @Test
+    public void shouldExcludeElementIfFilterReturnsFalse() throws Exception {
+        // Given:
+        when(elementFilter.include(element)).thenReturn(false);
+
+        // Then:
+        assertThat(context.isExcludedElement(element), is(true));
+    }
+
+    @Test
+    public void shouldIncludeElementIfFilterReturnsTrue() throws Exception {
         // Given:
         when(fieldFilter.include(field)).thenReturn(true);
 
@@ -86,12 +109,14 @@ public class WalkerContextTest {
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                new WalkerContext(fieldFilter, inspectors),
-                new WalkerContext(fieldFilter, inspectors))
+                new WalkerContext(fieldFilter, elementFilter, inspectors),
+                new WalkerContext(fieldFilter, elementFilter, inspectors))
             .addEqualityGroup(
-                new WalkerContext(mock(FieldFilter.class), inspectors))
+                new WalkerContext(mock(FieldFilter.class), elementFilter, inspectors))
             .addEqualityGroup(
-                new WalkerContext(fieldFilter, mock(Inspectors.class)))
+                new WalkerContext(fieldFilter, mock(ElementFilter.class), inspectors))
+            .addEqualityGroup(
+                new WalkerContext(fieldFilter, elementFilter, mock(Inspectors.class)))
             .testEquals();
     }
 

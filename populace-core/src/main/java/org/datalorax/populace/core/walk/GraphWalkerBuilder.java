@@ -17,6 +17,8 @@
 package org.datalorax.populace.core.walk;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.walk.element.filter.ElementFilter;
+import org.datalorax.populace.core.walk.element.filter.ElementFilters;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
@@ -26,6 +28,7 @@ import org.datalorax.populace.core.walk.inspector.Inspectors;
  */
 public class GraphWalkerBuilder implements GraphWalker.Builder {
     private FieldFilter fieldFilter = FieldFilters.defaults();
+    private ElementFilter elementFilter = ElementFilters.defaults();
     private Inspectors inspectors = Inspectors.defaults();
 
     @Override
@@ -38,6 +41,18 @@ public class GraphWalkerBuilder implements GraphWalker.Builder {
     @Override
     public FieldFilter getFieldFilter() {
         return fieldFilter;
+    }
+
+    @Override
+    public GraphWalker.Builder withElementFilter(final ElementFilter filter) {
+        Validate.notNull(filter, "filter null");
+        elementFilter = filter;
+        return this;
+    }
+
+    @Override
+    public ElementFilter getElementFilter() {
+        return elementFilter;
     }
 
     @Override
@@ -58,6 +73,6 @@ public class GraphWalkerBuilder implements GraphWalker.Builder {
     }
 
     private WalkerContext buildConfig() {
-        return new WalkerContext(fieldFilter, inspectors);
+        return new WalkerContext(fieldFilter, elementFilter, inspectors);
     }
 }

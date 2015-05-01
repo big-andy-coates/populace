@@ -69,6 +69,6 @@ public class AllFieldFilter implements FieldFilter {
 
     @Override
     public String toString() {
-        return "ALL {" +  StringUtils.join(filters, ',') + "}";
+        return "(" + StringUtils.join(filters, " && ") + ")";
     }
 }

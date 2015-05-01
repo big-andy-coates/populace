@@ -59,6 +59,8 @@ public class AndFieldFilter implements FieldFilter {
 
     @Override
     public String toString() {
-        return "AND {" +  first + ", " + second + "}";
+        return "(" + first + " && " + second + ")";
     }
 }
+
+// Todo(ac): What about a prettier toString that was multiline and indented.

@@ -58,6 +58,6 @@ public class OrFieldFilter implements FieldFilter {
 
     @Override
     public String toString() {
-        return "OR {" +  first + ", " + second + "}";
+        return "(" + first + " || " + second + ")";
     }
 }

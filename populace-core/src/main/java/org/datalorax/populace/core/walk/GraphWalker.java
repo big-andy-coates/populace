@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.datalorax.populace.core.walk.element.ElementInfo;
 import org.datalorax.populace.core.walk.element.RawElement;
+import org.datalorax.populace.core.walk.element.filter.ElementFilter;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.PathProvider;
 import org.datalorax.populace.core.walk.field.RawField;
@@ -153,6 +154,11 @@ public class GraphWalker {
             final WalkerStack elementStack = stack.push(element);
             final ElementInfo elementInfo = new ElementInfo(element, containerType, elementStack.getTypeResolver(), elementStack);
 
+            if (context.isExcludedElement(elementInfo)) {
+                logDebug("Skipping excluded element", elementStack);
+                continue;
+            }
+
             logInfo("Visiting element: " + elementInfo, elementStack);
 
             element.preWalk();
@@ -188,13 +194,13 @@ public class GraphWalker {
 
     public interface Builder {
         /**
-         * Install a filter to exclude some types of fields from the walk.
-         * <p>
+         * Install a filter to control what fields are included and excluded from the walk.
+         *
          * This replaces the currently installed filter. The existing filter can be obtained by calling
          * {@link #getFieldFilter()}. Filters can be combined using the functions in
          * {@link org.datalorax.populace.core.walk.field.filter.FieldFilters}, such as logical
          * {@link org.datalorax.populace.core.walk.field.filter.FieldFilters#and AND} and
-         * {@link org.datalorax.populace.core.walk.field.filter.FieldFilters#or OR}
+         * {@link org.datalorax.populace.core.walk.field.filter.FieldFilters#or OR}, etc.
          *
          * @param filter the filter to install.
          * @return the builder
@@ -202,10 +208,31 @@ public class GraphWalker {
         Builder withFieldFilter(final FieldFilter filter);
 
         /**
-         * Get the currently installed field filter
+         * Get the currently installed {@link org.datalorax.populace.core.walk.field.filter.FieldFilter}
          * @return the currently installed field filter.
          */
         FieldFilter getFieldFilter();
+
+        /**
+         * Install a filter to control what elements are included and excluded from the walk.
+         *
+         * This replaces the currently installed filter. The existing filter can be obtained by calling
+         * {@link #getElementFilter()}. Filters can be combined using the functions in
+         * {@link org.datalorax.populace.core.walk.element.filter.ElementFilters}, such as logical
+         * {@link org.datalorax.populace.core.walk.element.filter.ElementFilters#and AND} and
+         * {@link org.datalorax.populace.core.walk.element.filter.ElementFilters#or OR}, etc.
+         *
+         * @param filter the filter to install
+         * @return the builder
+         */
+        Builder withElementFilter(final ElementFilter filter);
+
+        /**
+         * Get the currently installed {@link org.datalorax.populace.core.walk.element.filter.ElementFilter}
+         *
+         * @return the currently installed element filter.
+         */
+        ElementFilter getElementFilter();
 
         /**
          * Install the inspectors that will be used to inspect each object that is encountered when walking the graph.
@@ -213,8 +240,8 @@ public class GraphWalker {
          * an object has and, for container types, the child objects it contains.
          * <p>
          * This call replaces the currently installer set of
-         * {@link org.datalorax.populace.core.walk.inspector.Inspector inspectors}. A builder to manipulate the existing
-         * {@link org.datalorax.populace.core.walk.inspector.Inspectors} can be obtained by calling {@link #inspectorsBuilder()}
+         * {@link org.datalorax.populace.core.walk.inspector.Inspector inspectors}. A builder initialised with the
+         * currently configured inspectors can be obtained by calling {@link #inspectorsBuilder()}
          *
          * @param inspectors the set of inspectors to install.
          * @return the builder itself

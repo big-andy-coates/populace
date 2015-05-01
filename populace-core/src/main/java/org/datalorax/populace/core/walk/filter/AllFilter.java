@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.walk.field.filter;
+package org.datalorax.populace.core.walk.filter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.core.walk.field.FieldInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,19 +25,19 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A combination field filter that includes the field is anny of the child filters includes it
+ * A combination filter that only evaluates to true if all child filters evaluate true
  *
- * @author Andrew Coates - 28/02/2015.
+ * @author Andrew Coates - 01/05/2015.
  */
-public class AnyFieldFilter implements FieldFilter {
-    private final List<FieldFilter> filters;
+public class AllFilter<T> implements Filter<T> {
+    private final List<Filter<T>> filters;
 
-    public AnyFieldFilter(final FieldFilter first, final FieldFilter... theRest) {
-        final List<FieldFilter> fieldFilters = new ArrayList<>();
+    public AllFilter(final Filter<T> first, final Filter<T>... theRest) {
+        final List<Filter<T>> fieldFilters = new ArrayList<>();
         fieldFilters.add(first);
         fieldFilters.addAll(Arrays.asList(theRest));
 
-        for (FieldFilter filter : fieldFilters) {
+        for (Filter<T> filter : fieldFilters) {
             Validate.notNull(filter, "at least one filter was null");
         }
 
@@ -46,20 +45,20 @@ public class AnyFieldFilter implements FieldFilter {
     }
 
     @Override
-    public boolean include(final FieldInfo field) {
-        for (FieldFilter filter : filters) {
-            if (filter.include(field)) {
-                return true;
+    public boolean include(final T instance) {
+        for (Filter<T> filter : filters) {
+            if (!filter.include(instance)) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final AnyFieldFilter that = (AnyFieldFilter) o;
+        final AllFilter that = (AllFilter) o;
         return this.filters.size() == that.filters.size() && this.filters.containsAll(that.filters);
     }
 
@@ -70,6 +69,6 @@ public class AnyFieldFilter implements FieldFilter {
 
     @Override
     public String toString() {
-        return "(" + StringUtils.join(filters, " || ") + ")";
+        return "(" + StringUtils.join(filters, " && ") + ")";
     }
 }

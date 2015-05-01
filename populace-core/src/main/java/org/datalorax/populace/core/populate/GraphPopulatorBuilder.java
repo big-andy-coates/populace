@@ -21,6 +21,7 @@ import org.datalorax.populace.core.populate.inspector.LoggingCollectionInspector
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.walk.GraphWalker;
+import org.datalorax.populace.core.walk.element.filter.ElementFilter;
 import org.datalorax.populace.core.walk.field.filter.ExcludeStaticFieldsFilter;
 import org.datalorax.populace.core.walk.field.filter.ExcludeTransientFieldsFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
@@ -55,6 +56,17 @@ final class GraphPopulatorBuilder implements GraphPopulator.Builder {
     @Override
     public FieldFilter getFieldFilter() {
         return walkerBuilder.getFieldFilter();
+    }
+
+    @Override
+    public GraphPopulator.Builder withElementFilter(final ElementFilter filter) {
+        walkerBuilder.withElementFilter(filter);
+        return this;
+    }
+
+    @Override
+    public ElementFilter getElementFilter() {
+        return walkerBuilder.getElementFilter();
     }
 
     @Override

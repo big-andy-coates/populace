@@ -24,6 +24,7 @@ import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.datalorax.populace.core.walk.inspector.TerminalInspector;
+import org.datalorax.populace.core.walk.instance.InstanceTracker;
 import org.datalorax.populace.core.walk.visitor.ElementVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitors;
@@ -90,6 +91,28 @@ public class GraphWalkerFunctionalTest {
 
         // Then:
         verify(fieldVisitor, never()).visit(argThat(fieldInfo("_static", TypeWithStaticField.class)));
+    }
+
+    @Test
+    public void shouldObeyElementFilter() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithElements {
+            List<String> elements = new ArrayList<String>() {{
+                add("first");
+                add("second");
+            }};
+        }
+
+        walker = GraphWalker.newBuilder()
+            .withElementFilter(e -> e.getValue() != "first")
+            .build();
+
+        // When:
+        walker.walk(new TypeWithElements(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(elementVisitor, never()).visit(argThat(elementWithValue("first")));
     }
 
     @Test
@@ -600,6 +623,34 @@ public class GraphWalkerFunctionalTest {
 
         // Then:
         verify(fieldVisitor).visit(argThat(fieldInfo("_superField", SuperType.class)));
+    }
+
+    @Test
+    public void shouldNotStackOverflowWithCircularReference() throws Exception {
+        // Given:
+        class TypeWithCircularReference {
+            Object child;
+        }
+        class AnotherType {
+            TypeWithCircularReference parent;
+        }
+        final TypeWithCircularReference instance = new TypeWithCircularReference();
+        final AnotherType anotherType = new AnotherType();
+        instance.child = anotherType;
+        anotherType.parent = instance;
+
+        final InstanceTracker tracker = new InstanceTracker();
+        final GraphWalker.Builder builder = GraphWalker.newBuilder();
+        walker = builder
+            .withFieldFilter(FieldFilters.and(builder.getFieldFilter(), tracker))
+            .withElementFilter(tracker) // Todo(ac): .withElementFilter(ElementFilters.and(builder.getElementFilter(), tracker))
+            .build();
+
+        // When:
+        walker.walk(instance, accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        // It didn't stack overflow.
     }
 
     @SuppressWarnings("UnusedDeclaration")

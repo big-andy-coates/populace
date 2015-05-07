@@ -123,7 +123,8 @@ GraphPopulator populator = GraphPopulator.newBuilder().build();
 Contacts contacts = populator.populate(new Contacts());
 ```
 
-<!--- Todo(ac): Add intro to customisation, leading on to how it calculates runtime type info --->
+More information on the configuration and use of the core Populace graph walking and mutation can be found
+[here](populace-core/README.md).
 
 ### Known limitations
 #### `Collection` fields

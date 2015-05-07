@@ -31,7 +31,7 @@ If you don't have a OSSRH account, then [sign up for one](https://issues.sonatyp
 ### Create release branch:
 1. `git checkout master`
 1. `git pull`
-1. `git checkout -b release/<new version number>` e.g. `git checkout -b release/1.2.3`
+1. `git checkout -b release/<new version number>` e.g. `git checkout -b release/1.2`
 1. `git push origin release/<new version number>`
 
 ### Packaging release

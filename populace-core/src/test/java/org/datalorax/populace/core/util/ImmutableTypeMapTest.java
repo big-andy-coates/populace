@@ -245,7 +245,8 @@ public class ImmutableTypeMapTest {
         // Given:
         final ImmutableTypeMap<String> collection = ImmutableTypeMap.newBuilder("default")
             .withPackageType("org", "no cigar")
-            .withPackageType("org.datalorax", "most specific")
+            .withPackageType("org.datalorax.populace", "most specific")
+            .withPackageType("org.datalorax", "still no cigar")
             .build();
 
         // When:

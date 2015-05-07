@@ -2,24 +2,24 @@
 
 This page will, in time, cover how to use the core graph walking and populating features of populace.
 
-## <a name="GraphWalking"/>Graph Walking
+## Graph Walking
 
 Put simply, you can use `GraphWalker` to walk the fields and (container) elements of an object graph.
 
-You provide [`Visitor`s](#Visitors) that will be called back as each field/element that is encountered. You can
- optionally control what fields and elements are included / excluded from the walk by installing [`Filter`s](#Filters),
- and you can control what fields and elements are exposed from custom types by installing [`Inspector`s](#Inspectors).
+You provide [`Visitors`](#Visitors) that will be called back as each field/element that is encountered. You can
+ optionally control what fields and elements are included / excluded from the walk by installing [`Filters`](#Filters),
+ and you can control what fields and elements are exposed from custom types by installing [`Inspectors`](#Inspectors).
 
-### <a name="Visitors"/>Visitors
+### Visitors
 
 Coming soon.
 
-### <a name="Filters"/>Filters
+### Filters
 
 Coming soon.
 <!--- Todo(ac): --->
 
-#### <a name="InstanceTracker"/>Instance tracking
+#### Instance tracking
 
 Populace also comes with a special field and element filter implementation that can be used to avoid circular-references
 causing a stack-overflow and to stop the same instance, which may be set on multiple fields or elements, being visited
@@ -40,32 +40,32 @@ GraphWalker walker = builder
     .build();
 ```
 
-### <a name="Inspectors"/>Inspectors
+### Inspectors
 
 Coming soon.
 <!--- Todo(ac): --->
 
-## <a name="GraphPopulating"/>Graph Populating
+## Graph Populating
 
 Graph population builds on the graph walking functionality, adding the ability to populate and/or mutate existing fields
  and elements as they are encountered.
 
-You can control this process by installing [`Mutator`s](#Mutators), which are responsible for populating/mutating values,
- and [`InstanceFactory`s](#InstanceFactories), which are responsible for providing instances of types where needed.
+You can control this process by installing [`Mutators`](#Mutators), which are responsible for populating/mutating values,
+ and [`InstanceFactories`](#Instance-Factories), which are responsible for providing instances of types where needed.
 
-### <a name="Mutators"/>Mutators
-
-Coming soon.
-<!--- Todo(ac): --->
-
-### <a name="InstanceFactories"/>Instance Factories
+### Mutators
 
 Coming soon.
 <!--- Todo(ac): --->
 
-## <a name="RegisteringCustomisations"/>Registering Customisations
+### Instance Factories
 
-Many of the customisations available in Populace, such as `Mutator`s, `Inspector`s etc, are registered at one of several
+Coming soon.
+<!--- Todo(ac): --->
+
+## Registering Customisations
+
+Many of the customisations available in Populace, such as `Mutators`, `Inspectors` etc, are registered at one of several
  levels. These levels are, from most specific to least, listed below:
 * **specific types** i.e. you can register a handler from a specific class e.g. `String`, or a specific parameterised type
 e.g. MyType<Integer>, or a specific array type e.g. `long[]`. Such handlers will be used in preference to any other handler.
@@ -78,15 +78,15 @@ used for any type that belongs to the package that do not have a more specific h
 handler is registered for an array type.
 
 To understand what type will be used at runtime to look up suitable handlers you will need to understand how Populace
- [determines runtime type information](#Runtime-typeResolution).
+ [determines runtime type information](#Runtime-type-resolution).
 
-# <a name="Runtime-typeResolution"/>Runtime-type resolution
+# Runtime-type resolution
 
 Populace determines the runtime type of a field or element by making use of all compile-time and runtime type information
 available.  Fields and elements with a null value are treated differently to non-null values, as non-null values have
 additional runtime type information.
 
-## <a name="NullFields"/>Null fields
+## Null fields
 When the value of the field is null the only information available is the compile type type of the field.
 
 If the compile time type of the field is a normal class, e.g. `long` or `List`, then Populace will use this type
@@ -112,7 +112,7 @@ class SomeClass<T> {
 }
 ```
 
-## <a name="NonNullFields"/>Non-null fields
+## Non-null fields
 When the value of the field is not null, then Populace has additional type information available to it, and it will use
 this information to resolve the type of the field to a more specific type, if possible.
 
@@ -130,17 +130,17 @@ class SomeClass {
 }
 ```
 
-## <a name="NullElements"/>Null elements
+## Null elements
 
 Coming soon.
 <!--- Todo(ac): --->
 
-## <a name="NonNullElements"/>Non-null elements
+## Non-null elements
 
 Coming soon.
 <!--- Todo(ac): --->
 
-## <a name="NullObjectHandling"/>Null Object handling
+## Null Object handling
 
 Coming soon.
 <!--- Todo(ac): --->

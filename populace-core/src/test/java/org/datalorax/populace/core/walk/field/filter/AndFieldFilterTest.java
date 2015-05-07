@@ -19,25 +19,31 @@ package org.datalorax.populace.core.walk.field.filter;
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.function.Predicate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("deprecation")
 public class AndFieldFilterTest {
-    private FieldFilter first;
-    private FieldFilter second;
+    @Mock
+    private Predicate<FieldInfo> first;
+    @Mock
+    private Predicate<FieldInfo> second;
+    @Mock
     private FieldInfo field;
-    private FieldFilter filter;
+    private Predicate<FieldInfo> filter;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        first = mock(FieldFilter.class);
-        second = mock(FieldFilter.class);
-        field = mock(FieldInfo.class);
+        MockitoAnnotations.initMocks(this);
 
         filter = new AndFieldFilter(first, second);
     }
@@ -45,41 +51,41 @@ public class AndFieldFilterTest {
     @Test
     public void shouldReturnFalseIfBothReturnFalse() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(false);
-        when(second.include(field)).thenReturn(false);
+        when(first.test(field)).thenReturn(false);
+        when(second.test(field)).thenReturn(false);
 
         // Then:
-        assertThat(filter.include(field), is(false));
+        assertThat(filter.test(field), is(false));
     }
 
     @Test
     public void shouldReturnFalseIfOnlyFirstReturnsTrue() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(true);
-        when(second.include(field)).thenReturn(false);
+        when(first.test(field)).thenReturn(true);
+        when(second.test(field)).thenReturn(false);
 
         // Then:
-        assertThat(filter.include(field), is(false));
+        assertThat(filter.test(field), is(false));
     }
 
     @Test
     public void shouldReturnFalseIfOnlySecondReturnsTrue() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(false);
-        when(second.include(field)).thenReturn(true);
+        when(first.test(field)).thenReturn(false);
+        when(second.test(field)).thenReturn(true);
 
         // Then:
-        assertThat(filter.include(field), is(false));
+        assertThat(filter.test(field), is(false));
     }
 
     @Test
     public void shouldReturnTrueOnlyIfBothReturnTrue() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(true);
-        when(second.include(field)).thenReturn(true);
+        when(first.test(field)).thenReturn(true);
+        when(second.test(field)).thenReturn(true);
 
         // Then:
-        assertThat(filter.include(field), is(true));
+        assertThat(filter.test(field), is(true));
     }
 
     @Test
@@ -94,7 +100,7 @@ public class AndFieldFilterTest {
     @Test
     public void shouldThrowNPEsOnConstructorParams() throws Exception {
         new NullPointerTester()
-            .setDefault(FieldFilter.class, mock(FieldFilter.class))
+            .setDefault(Predicate.class, mock(Predicate.class))
             .testAllPublicConstructors(AndFieldFilter.class);
     }
 }

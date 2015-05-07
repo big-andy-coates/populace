@@ -20,11 +20,14 @@ import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.testng.annotations.Test;
 
+import java.util.function.Predicate;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("deprecation")
 public class ExcludeTransientFieldsFilterTest {
     @Test
     public void shouldExcludeTransientField() throws Exception {
@@ -43,14 +46,14 @@ public class ExcludeTransientFieldsFilterTest {
         when(fieldInfo.isTransient()).thenReturn(false);
 
         // Then:
-        assertThat(ExcludeTransientFieldsFilter.INSTANCE.include(fieldInfo), is(true));
+        assertThat(ExcludeTransientFieldsFilter.INSTANCE.test(fieldInfo), is(true));
     }
 
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(ExcludeTransientFieldsFilter.INSTANCE, new ExcludeTransientFieldsFilter())
-            .addEqualityGroup(mock(FieldFilter.class))
+            .addEqualityGroup(mock(Predicate.class))
             .testEquals();
     }
 }

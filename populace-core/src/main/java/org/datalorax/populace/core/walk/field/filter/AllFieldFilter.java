@@ -17,28 +17,33 @@
 package org.datalorax.populace.core.walk.field.filter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * A combination field filter that only evaluates to true if all child filters evaluate true
+ *
  * @author Andrew Coates - 28/02/2015.
+ * @deprecated Use chained calls to {@link java.util.function.Predicate#and}.
  */
+@Deprecated
+@SuppressWarnings("deprecation")
 public class AllFieldFilter implements FieldFilter {
-    private final List<FieldFilter> filters;
+    private final List<Predicate<FieldInfo>> filters;
 
-    public AllFieldFilter(final FieldFilter first, final FieldFilter... theRest) {
-        final List<FieldFilter> fieldFilters = new ArrayList<>();
+    @SafeVarargs
+    public AllFieldFilter(final Predicate<FieldInfo> first, final Predicate<FieldInfo>... theRest) {
+        final List<Predicate<FieldInfo>> fieldFilters = new ArrayList<>();
         fieldFilters.add(first);
         fieldFilters.addAll(Arrays.asList(theRest));
 
-        for (FieldFilter filter : fieldFilters) {
-            Validate.notNull(filter, "at least one filter was null");
+        if (fieldFilters.stream().map(f -> f == null).filter(f -> f).findAny().isPresent()) {
+            throw new NullPointerException("at least one filter was null");
         }
 
         filters = Collections.unmodifiableList(fieldFilters);
@@ -46,8 +51,13 @@ public class AllFieldFilter implements FieldFilter {
 
     @Override
     public boolean include(final FieldInfo field) {
-        for (FieldFilter filter : filters) {
-            if (!filter.include(field)) {
+        return test(field);
+    }
+
+    @Override
+    public boolean test(final FieldInfo field) {
+        for (Predicate<FieldInfo> filter : filters) {
+            if (!filter.test(field)) {
                 return false;
             }
         }

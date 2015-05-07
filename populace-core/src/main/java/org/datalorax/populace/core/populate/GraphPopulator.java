@@ -21,7 +21,6 @@ import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.walk.GraphWalker;
 import org.datalorax.populace.core.walk.element.ElementInfo;
-import org.datalorax.populace.core.walk.element.filter.ElementFilter;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
@@ -32,6 +31,7 @@ import org.datalorax.populace.core.walk.visitor.SetAccessibleFieldVisitor;
 
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.function.Predicate;
 
 /**
  * Given an instance, it will populate all fields and elements, recursively, with values.
@@ -130,38 +130,39 @@ public final class GraphPopulator {
         // Todo(ac): v2.x these style interfaces should expose and accept builders, not built types
 
         /**
-         * Replace the {@link org.datalorax.populace.core.walk.field.filter.FieldFilter} to use to control the walk
+         * Replace the currently installed field filter to use to control the walk
          *
-         * @param filter the filter to install
+         * @param filter the field filter to install
          * @return the builder
-         * @see org.datalorax.populace.core.walk.GraphWalker.Builder#withFieldFilter(FieldFilter)
+         * @see org.datalorax.populace.core.walk.GraphWalker.Builder#withFieldFilter(java.util.function.Predicate)
          */
-        Builder withFieldFilter(final FieldFilter filter);
+        Builder withFieldFilter(final Predicate<FieldInfo> filter);
 
         /**
-         * Get the currently installed {@link org.datalorax.populace.core.walk.field.filter.FieldFilter}
+         * Get the currently installed field filter
          *
          * @return the currently installed filter
          * @see org.datalorax.populace.core.walk.GraphWalker.Builder#getFieldFilter()
          */
+        @SuppressWarnings("deprecation")
         FieldFilter getFieldFilter();
 
         /**
-         * Replace the {@link org.datalorax.populace.core.walk.element.filter.ElementFilter} used to control the walk
+         * Replace the element filter used to control the walk
          *
-         * @param filter the filter to install
+         * @param filter the element filter to install
          * @return the builder
-         * @see org.datalorax.populace.core.walk.GraphWalker.Builder#withElementFilter(ElementFilter)
+         * @see org.datalorax.populace.core.walk.GraphWalker.Builder#withElementFilter(java.util.function.Predicate)
          */
-        Builder withElementFilter(final ElementFilter filter);
+        Builder withElementFilter(final Predicate<ElementInfo> filter);
 
         /**
-         * Get the currently installed {@link org.datalorax.populace.core.walk.element.filter.ElementFilter}
+         * Get the currently installed element filter
          *
          * @return the currently installed filter
          * @see org.datalorax.populace.core.walk.GraphWalker.Builder#getElementFilter()
          */
-        ElementFilter getElementFilter();
+        Predicate<ElementInfo> getElementFilter();
 
         /**
          * Replace the {@link org.datalorax.populace.core.walk.inspector.Inspectors} used to inspect the types

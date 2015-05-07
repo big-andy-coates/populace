@@ -17,49 +17,49 @@
 package org.datalorax.populace.core.walk.instance;
 
 import org.datalorax.populace.core.walk.element.ElementInfo;
-import org.datalorax.populace.core.walk.element.filter.ElementFilter;
 import org.datalorax.populace.core.walk.field.FieldInfo;
-import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Tracks instances that have been walked and excludes them from being walked again.
- * <p>
- * If a single instance of this class is installed as both a
- * {@link org.datalorax.populace.core.walk.field.filter.FieldFilter field filter} and an
- * {@link org.datalorax.populace.core.walk.element.filter.ElementFilter element filter} for a
- * {@link org.datalorax.populace.core.walk.GraphWalker graph walker} then if the same instance is seen more than once
- * during the walk, it will be ignored and not walked again.
- * <p>
+ *
+ * If a single instance of this class is installed as both a field and instance filter for a
+ * {@link org.datalorax.populace.core.walk.GraphWalker graph walker} it will track each object visited, (i.e. field values
+ * and elements), and exclude them from the walk should they be encountered as second time.
+ *
  * The tracker can be installed like this:
- * <p>
+ *
  * <pre>
  *     {@code
  *     InstanceTracker tracker = new InstanceTracker();
  *     GraphWalker.Builder builder = GraphWalker.newBuilder();
  *     GraphWalker walker = builder
- *        .withFieldFilter(FieldFilters.and(builder.getFieldFilter(), tracker))
- *        .withElementFilter(ElementFilters.and(builder.getElementFilter(), tracker))
+ *        .withFieldFilter(builder.getFieldFilter().and(tracker.getFieldFilter()))
+ *        .withElementFilter(builder.getElementFilter().and(tracker.getElementFilter()))
  *        .build();
  *     }
  * </pre>
  *
+ * <b>Note:</b> InstanceTracker requires all fields to be accessible so that it can track their values. It therefore
+ * calls {@link org.datalorax.populace.core.walk.field.FieldInfo#ensureAccessible()} on all visited fields.
+ *
  * @author Andrew Coates - 29/04/2015.
  */
-public class InstanceTracker implements FieldFilter, ElementFilter {
+public class InstanceTracker {
     private final Set<InstanceIdentity> seen = new HashSet<>();
 
-    @Override
-    public boolean include(final FieldInfo field) {
-        field.ensureAccessible();           // Todo(ac): ... hummm... either document or just have this do this in one place!
-        return include(field.getValue());
+    public Predicate<FieldInfo> getFieldFilter() {
+        return f -> {
+            f.ensureAccessible();
+            return include(f.getValue());
+        };
     }
 
-    @Override
-    public boolean include(final ElementInfo element) {
-        return include(element.getValue());
+    public Predicate<ElementInfo> getElementFilter() {
+        return e -> include(e.getValue());
     }
 
     @Override

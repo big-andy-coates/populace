@@ -160,7 +160,7 @@ public class ImmutableTypeMap<V> {
     /**
      * Returns the best match for the {@code packageName} provided.
      * <p>
-     * For example, if {@code packgeName} was {@code org.someone.p1.p2} and values were were registered for both
+     * For example, if {@code packageName} was {@code org.someone.p1.p2} and values were were registered for both
      * {@code org.someone} and {@code org.someone.p1}, then this method would return the value associated with the
      * {@code org.someone.p1} entry, as this is a closer match.
      *

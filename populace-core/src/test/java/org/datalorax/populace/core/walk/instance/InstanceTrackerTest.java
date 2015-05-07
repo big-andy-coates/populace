@@ -23,6 +23,8 @@ import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.function.Predicate;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
@@ -30,10 +32,14 @@ import static org.mockito.Mockito.when;
 
 public class InstanceTrackerTest {
     private InstanceTracker tracker;
+    private Predicate<FieldInfo> fieldFilter;
+    private Predicate<ElementInfo> elementFilter;
 
     @BeforeMethod
     public void setUp() throws Exception {
         tracker = new InstanceTracker();
+        fieldFilter = tracker.getFieldFilter();
+        elementFilter = tracker.getElementFilter();
     }
 
     @Test
@@ -42,7 +48,7 @@ public class InstanceTrackerTest {
         final FieldInfo fieldInfo = givenFieldWithValue(new Object());
 
         // When:
-        final boolean include = tracker.include(fieldInfo);
+        final boolean include = fieldFilter.test(fieldInfo);
 
         // Then:
         assertThat("should include", include, is(true));
@@ -54,7 +60,7 @@ public class InstanceTrackerTest {
         final ElementInfo elementInfo = givenElementWithValue(new Object());
 
         // When:
-        final boolean include = tracker.include(elementInfo);
+        final boolean include = elementFilter.test(elementInfo);
 
         // Then:
         assertThat("should include", include, is(true));
@@ -68,7 +74,7 @@ public class InstanceTrackerTest {
         givenTrackerHasVisitedFieldContaining(tracker, value);
 
         // When:
-        final boolean include = tracker.include(fieldInfo);
+        final boolean include = fieldFilter.test(fieldInfo);
 
         // Then:
         assertThat("should exclude", include, is(false));
@@ -82,7 +88,7 @@ public class InstanceTrackerTest {
         givenTrackerHasVisitedElementContaining(tracker, value);
 
         // When:
-        final boolean include = tracker.include(fieldInfo);
+        final boolean include = fieldFilter.test(fieldInfo);
 
         // Then:
         assertThat("should exclude", include, is(false));
@@ -96,7 +102,7 @@ public class InstanceTrackerTest {
         givenTrackerHasVisitedFieldContaining(tracker, value);
 
         // When:
-        final boolean include = tracker.include(elementInfo);
+        final boolean include = elementFilter.test(elementInfo);
 
         // Then:
         assertThat("should exclude", include, is(false));
@@ -110,7 +116,7 @@ public class InstanceTrackerTest {
         givenTrackerHasVisitedElementContaining(tracker, value);
 
         // When:
-        final boolean include = tracker.include(elementInfo);
+        final boolean include = elementFilter.test(elementInfo);
 
         // Then:
         assertThat("should exclude", include, is(false));
@@ -124,7 +130,7 @@ public class InstanceTrackerTest {
         givenTrackerHasVisitedElementContaining(tracker, new String("value"));
 
         // When:
-        final boolean include = tracker.include(elementInfo);
+        final boolean include = elementFilter.test(elementInfo);
 
         // Then:
         assertThat("should include", include, is(true));
@@ -171,11 +177,11 @@ public class InstanceTrackerTest {
     }
 
     private void givenTrackerHasVisitedFieldContaining(final InstanceTracker tracker, final Object fieldValue) {
-        tracker.include(givenFieldWithValue(fieldValue));
+        tracker.getFieldFilter().test(givenFieldWithValue(fieldValue));
     }
 
     private void givenTrackerHasVisitedElementContaining(final InstanceTracker tracker, final Object elementValue) {
-        tracker.include(givenElementWithValue(elementValue));
+        tracker.getElementFilter().test(givenElementWithValue(elementValue));
     }
 
 }

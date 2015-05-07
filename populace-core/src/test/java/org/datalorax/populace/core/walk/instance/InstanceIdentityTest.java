@@ -30,6 +30,7 @@ public class InstanceIdentityTest {
             .addEqualityGroup(
                 new SomeType("value"),
                 new SomeType("value"))
+            .addEqualityGroup(new SomeType("other value"))
             .testEquals();
 
         // Then:

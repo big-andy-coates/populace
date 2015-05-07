@@ -16,29 +16,23 @@
 
 package org.datalorax.populace.jaxb.field.filter;
 
-import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.xml.bind.annotation.XmlTransient;
-import java.util.function.Predicate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("deprecation")
-public class ExcludeXmlTransientFieldsTest {
+public class FieldFiltersTest {
     private FieldInfo field;
-    private ExcludeXmlTransientFields filter;
 
     @BeforeMethod
     public void setUp() throws Exception {
         field = mock(FieldInfo.class);
-
-        filter = ExcludeXmlTransientFields.INSTANCE;
     }
 
     @Test
@@ -48,7 +42,7 @@ public class ExcludeXmlTransientFieldsTest {
         givenClassNotMarkedTransient();
 
         // Then:
-        assertThat(filter.include(field), is(false));
+        assertThat(FieldFilters.excludeXmlTransient().test(field), is(false));
     }
 
     @Test
@@ -58,7 +52,7 @@ public class ExcludeXmlTransientFieldsTest {
         givenClassMarkedTransient();
 
         // Then:
-        assertThat(filter.include(field), is(false));
+        assertThat(FieldFilters.excludeXmlTransient().test(field), is(false));
     }
 
     @Test
@@ -68,7 +62,7 @@ public class ExcludeXmlTransientFieldsTest {
         givenClassMarkedTransient();
 
         // Then:
-        assertThat(filter.include(field), is(false));
+        assertThat(FieldFilters.excludeXmlTransient().test(field), is(false));
     }
 
     @Test
@@ -78,15 +72,7 @@ public class ExcludeXmlTransientFieldsTest {
         givenClassNotMarkedTransient();
 
         // Then:
-        assertThat(filter.include(field), is(true));
-    }
-
-    @Test
-    public void shouldTestEqualsAndHashCode() throws Exception {
-        new EqualsTester()
-            .addEqualityGroup(ExcludeXmlTransientFields.INSTANCE, new ExcludeXmlTransientFields())
-            .addEqualityGroup(mock(Predicate.class))
-            .testEquals();
+        assertThat(FieldFilters.excludeXmlTransient().test(field), is(true));
     }
 
     private void givenFieldNotMarkedTransient() {

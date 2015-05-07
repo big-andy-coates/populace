@@ -26,12 +26,21 @@ import javax.xml.bind.annotation.XmlTransient;
  * {@link javax.xml.bind.annotation.XmlTransient @XmlTransient}
  *
  * @author Andrew Coates - 12/03/2015.
+ * @deprecated Use {@link FieldFilters#excludeXmlTransient()}
  */
+@SuppressWarnings("deprecation")
+@Deprecated
 public class ExcludeXmlTransientFields implements FieldFilter {
-    public static ExcludeXmlTransientFields INSTANCE = new ExcludeXmlTransientFields();
+    @SuppressWarnings("deprecation")
+    public static final ExcludeXmlTransientFields INSTANCE = new ExcludeXmlTransientFields();
 
     @Override
     public boolean include(final FieldInfo field) {
+        return test(field);
+    }
+
+    @Override
+    public boolean test(final FieldInfo field) {
         return fieldNotXmlTransient(field) && fieldTypeNotXmlTransient(field);
     }
 

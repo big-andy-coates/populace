@@ -108,7 +108,7 @@ field tells Populace to skip this field.
 1. @XmlTransient - the `ExcludeXmlTransientFields` filter excludes any fields annotated with `@XmlTransient`. It can
 detect the annotation on the field itself, either a valid getter or setter method, or on the field's type.
 1. @XmlJavaTypeAdapter - the `JaxBInstanceFactory` will attempt to instantiate any type is annotated with
-`@XmlJavaTypeAdatper` by first instantiating the `@XmlAdatper`s bound type and then using the `@XmlAdatper` to marshal
+`@XmlJavaTypeAdapter` by first instantiating the `@XmlAdapter`s bound type and then using the `@XmlAdapter` to marshal
 to the value type.
 
 ## Known limitations

@@ -16,13 +16,16 @@
 
 package org.datalorax.populace.core.walk.field.filter;
 
+import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@SuppressWarnings("deprecation")
 public class FieldFiltersTest {
     private FieldFilter filter1;
     private FieldFilter filter2;
@@ -33,6 +36,66 @@ public class FieldFiltersTest {
         filter1 = mock(FieldFilter.class, "1");
         filter2 = mock(FieldFilter.class, "2");
         filter3 = mock(FieldFilter.class, "3");
+    }
+
+    @Test
+    public void shouldExcludeStaticField() throws Exception {
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isStatic()).thenReturn(true);
+
+        // Then:
+        assertThat(FieldFilters.excludeStaticFields().test(fieldInfo), is(false));
+    }
+
+    @Test
+    public void shouldIncludeNonStaticField() throws Exception {
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isStatic()).thenReturn(false);
+
+        // Then:
+        assertThat(FieldFilters.excludeStaticFields().test(fieldInfo), is(true));
+    }
+
+    @Test
+    public void shouldExcludeTransientField() throws Exception {
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isTransient()).thenReturn(true);
+
+        // Then:
+        assertThat(FieldFilters.excludeTransientFields().test(fieldInfo), is(false));
+    }
+
+    @Test
+    public void shouldIncludeNonTransientField() throws Exception {
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isTransient()).thenReturn(false);
+
+        // Then:
+        assertThat(FieldFilters.excludeTransientFields().test(fieldInfo), is(true));
+    }
+
+    @Test
+    public void shouldExcludeFinalField() throws Exception {
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isFinal()).thenReturn(true);
+
+        // Then:
+        assertThat(FieldFilters.excludeFinalFields().test(fieldInfo), is(false));
+    }
+
+    @Test
+    public void shouldIncludeNonFinalField() throws Exception {
+        // Given:
+        final FieldInfo fieldInfo = mock(FieldInfo.class);
+        when(fieldInfo.isFinal()).thenReturn(false);
+
+        // Then:
+        assertThat(FieldFilters.excludeFinalFields().test(fieldInfo), is(true));
     }
 
     @Test

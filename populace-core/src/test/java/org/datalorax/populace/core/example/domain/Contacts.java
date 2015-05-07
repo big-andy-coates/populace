@@ -23,7 +23,7 @@ import java.util.List;
  * @author Andrew Coates - 20/03/2015.
  */
 public class Contacts {
-    private List<Person> people = new ArrayList<>();
+    private final List<Person> people = new ArrayList<>();
 
     public List<Person> getPeople() {
         return people;

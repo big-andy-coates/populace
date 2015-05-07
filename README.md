@@ -197,8 +197,8 @@ Before building the code you'll need:
 * JDK 1.8 or above
 * To clone this repo.
 
-### Howto: Compile and run the tests.
-Run the following commmand from the root directory of the project:
+### How to: Compile and run the tests.
+Run the following command from the root directory of the project:
 > `gradlew`
 
 The script automatically downloads the correct Gradle version, so you won't have to do anything else. Gradle will then
@@ -208,15 +208,15 @@ If everything runs successfully, each module's jar will be located under its bui
 To see a full list of tasks available run:
 > `gradlew tasks`
 
-### Howto: Create IntelliJ project files
-Gradle includes a task that creates all files required to develop populace in IntelliJ. Run the following command:
+### How to: Create Intellij project files
+Gradle includes a task that creates all files required to develop populace in Intellij. Run the following command:
 > `gradlew idea`
 
 Then import the project into your workspace or open the root populace.ipr project file.
 
-### Howto: Create Eclipse project files
+### How to: Create Eclipse project files
 Gradle includes a task that creates all files required to develop populace in Eclipse. Run the following command:
-> `gradlew ecplise`
+> `gradlew eclipse`
 
 Then import the project into your workspace.
 

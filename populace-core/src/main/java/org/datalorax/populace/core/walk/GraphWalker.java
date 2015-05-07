@@ -21,7 +21,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.datalorax.populace.core.walk.element.ElementInfo;
 import org.datalorax.populace.core.walk.element.RawElement;
-import org.datalorax.populace.core.walk.element.filter.ElementFilter;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.PathProvider;
 import org.datalorax.populace.core.walk.field.RawField;
@@ -33,6 +32,7 @@ import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 
 import java.lang.reflect.Type;
 import java.util.Iterator;
+import java.util.function.Predicate;
 
 import static org.datalorax.populace.core.util.TypeUtils.abbreviatedName;
 
@@ -198,41 +198,42 @@ public class GraphWalker {
          *
          * This replaces the currently installed filter. The existing filter can be obtained by calling
          * {@link #getFieldFilter()}. Filters can be combined using the functions in
-         * {@link org.datalorax.populace.core.walk.field.filter.FieldFilters}, such as logical
-         * {@link org.datalorax.populace.core.walk.field.filter.FieldFilters#and AND} and
-         * {@link org.datalorax.populace.core.walk.field.filter.FieldFilters#or OR}, etc.
+         * {@link java.util.function.Predicate}, such as logical
+         * {@link java.util.function.Predicate#and AND} and
+         * {@link java.util.function.Predicate#or OR}, etc.
          *
          * @param filter the filter to install.
          * @return the builder
          */
-        Builder withFieldFilter(final FieldFilter filter);
+        Builder withFieldFilter(final Predicate<FieldInfo> filter);
 
         /**
-         * Get the currently installed {@link org.datalorax.populace.core.walk.field.filter.FieldFilter}
+         * Get the currently installed field filter
          * @return the currently installed field filter.
          */
+        @SuppressWarnings("deprecation")
         FieldFilter getFieldFilter();
 
         /**
          * Install a filter to control what elements are included and excluded from the walk.
          *
          * This replaces the currently installed filter. The existing filter can be obtained by calling
-         * {@link #getElementFilter()}. Filters can be combined using the functions in
-         * {@link org.datalorax.populace.core.walk.element.filter.ElementFilters}, such as logical
-         * {@link org.datalorax.populace.core.walk.element.filter.ElementFilters#and AND} and
-         * {@link org.datalorax.populace.core.walk.element.filter.ElementFilters#or OR}, etc.
+         * {@link #getElementFilter()}. Filters can be combined using the functions on
+         * {@link java.util.function.Predicate}, such as logical
+         * {@link java.util.function.Predicate#and AND} and
+         * {@link java.util.function.Predicate#or OR}, etc.
          *
          * @param filter the filter to install
          * @return the builder
          */
-        Builder withElementFilter(final ElementFilter filter);
+        Builder withElementFilter(final Predicate<ElementInfo> filter);
 
         /**
-         * Get the currently installed {@link org.datalorax.populace.core.walk.element.filter.ElementFilter}
+         * Get the currently installed element filter
          *
          * @return the currently installed element filter.
          */
-        ElementFilter getElementFilter();
+        Predicate<ElementInfo> getElementFilter();
 
         /**
          * Install the inspectors that will be used to inspect each object that is encountered when walking the graph.

@@ -1149,4 +1149,4 @@ public class GraphPopulatorFunctionTest {
 
 }
 
-// Todo(ac): Add 'strict' Populator#strict() that returns a populator built with types that throw on error i.e. throw on null object, throw on immutable colleciton element, etc.
+// Todo(ac): Add 'strict' Populator#strict() that returns a populator built with types that throw on error i.e. throw on null object, throw on immutable collection element, etc.

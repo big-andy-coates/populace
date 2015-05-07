@@ -102,7 +102,7 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
 
     private static final class FieldFrame extends WalkerStack {
         private final RawField field;
-        private TypeToken<?> type;
+        private final TypeToken<?> type;
 
         public FieldFrame(final WalkerStack parent, final RawField field) {
             super(parent);

@@ -19,9 +19,7 @@ package org.datalorax.populace.core.walk;
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.element.ElementInfo;
-import org.datalorax.populace.core.walk.element.filter.ElementFilter;
 import org.datalorax.populace.core.walk.field.FieldInfo;
-import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.mockito.Mock;
@@ -30,6 +28,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
+import java.util.function.Predicate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -37,10 +36,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class WalkerContextTest {
-    @Mock
-    private FieldFilter fieldFilter;
-    @Mock
-    private ElementFilter elementFilter;
+    @Mock(name = "main")
+    private Predicate<FieldInfo> fieldFilter;
+    @Mock(name = "other")
+    private Predicate<FieldInfo> fieldFilter2;
+    @Mock(name = "main")
+    private Predicate<ElementInfo> elementFilter;
+    @Mock(name = "other")
+    private Predicate<ElementInfo> elementFilter2;
     @Mock
     private Inspectors inspectors;
     @Mock
@@ -59,7 +62,7 @@ public class WalkerContextTest {
     @Test
     public void shouldExcludeFieldIfFilterReturnsFalse() throws Exception {
         // Given:
-        when(fieldFilter.include(field)).thenReturn(false);
+        when(fieldFilter.test(field)).thenReturn(false);
 
         // Then:
         assertThat(context.isExcludedField(field), is(true));
@@ -68,7 +71,7 @@ public class WalkerContextTest {
     @Test
     public void shouldIncludeFieldIfFilterReturnsTrue() throws Exception {
         // Given:
-        when(elementFilter.include(element)).thenReturn(true);
+        when(elementFilter.test(element)).thenReturn(true);
 
         // Then:
         assertThat(context.isExcludedElement(element), is(false));
@@ -77,7 +80,7 @@ public class WalkerContextTest {
     @Test
     public void shouldExcludeElementIfFilterReturnsFalse() throws Exception {
         // Given:
-        when(elementFilter.include(element)).thenReturn(false);
+        when(elementFilter.test(element)).thenReturn(false);
 
         // Then:
         assertThat(context.isExcludedElement(element), is(true));
@@ -86,7 +89,7 @@ public class WalkerContextTest {
     @Test
     public void shouldIncludeElementIfFilterReturnsTrue() throws Exception {
         // Given:
-        when(fieldFilter.include(field)).thenReturn(true);
+        when(fieldFilter.test(field)).thenReturn(true);
 
         // Then:
         assertThat(context.isExcludedField(field), is(false));
@@ -112,9 +115,9 @@ public class WalkerContextTest {
                 new WalkerContext(fieldFilter, elementFilter, inspectors),
                 new WalkerContext(fieldFilter, elementFilter, inspectors))
             .addEqualityGroup(
-                new WalkerContext(mock(FieldFilter.class), elementFilter, inspectors))
+                new WalkerContext(fieldFilter2, elementFilter, inspectors))
             .addEqualityGroup(
-                new WalkerContext(fieldFilter, mock(ElementFilter.class), inspectors))
+                new WalkerContext(fieldFilter, elementFilter2, inspectors))
             .addEqualityGroup(
                 new WalkerContext(fieldFilter, elementFilter, mock(Inspectors.class)))
             .testEquals();
@@ -123,7 +126,6 @@ public class WalkerContextTest {
     @Test
     public void shouldThrowNPEsOnConstructorParams() throws Exception {
         new NullPointerTester()
-            .setDefault(FieldFilter.class, fieldFilter)
             .setDefault(Inspectors.class, inspectors)
             .testAllPublicConstructors(WalkerContext.class);
     }

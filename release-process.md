@@ -47,7 +47,7 @@ Create a release on Github. The release description should include details of al
 and anything else relevant to the release.
 
 ### Releasing the javadocs
-Aside from the javadocs jar releassed to maven central, the javadocs for the released version should also be made
+Aside from the javadocs jar released to maven central, the javadocs for the released version should also be made
 available on the projects website i.e. <http://datalorax.github.io/populace>. This is currently a manual process.
 
 1. Switch to the release branch: `git checkout release/<release-number>`

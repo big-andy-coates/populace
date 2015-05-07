@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class Contacts {
     @XmlElement
-    private List<Person> people = new ArrayList<>();
+    private final List<Person> people = new ArrayList<>();
 
     public List<Person> getPeople() {
         return people;

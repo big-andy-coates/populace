@@ -26,12 +26,12 @@ types are instantiated.
 
 Additional modules provide specialised extensions to the core Populace library:
 
-1. *[JaxB Annotations support](https://github.com/datalorax/populace/tree/master/populace-module-jaxb-annotations)* -
+1. *[JaxB Annotations support](populace-module-jaxb-annotations)* -
   provides support for the applicable subset of JaxB annotations. For example, it provides an `InstanceFactory` that
   recognises the [@XmlJavaTypeAdapter](http://docs.oracle.com/javase/8/docs/api/javax/xml/bind/annotation/adapters/XmlJavaTypeAdapter.html)
   annotation, which is commonly used to link interfaces to concrete types. The factory can then instantiate the appropriate
   concrete implementation when a interface field is encountered.
-  See the [read me](https://github.com/datalorax/populace/tree/master/populace-module-jaxb-annotations/README.md) for more info
+  See the [read me](populace-module-jaxb-annotations/README.md) for more info
 
 ### Examples
 

@@ -6,9 +6,9 @@ This page will, in time, cover how to use the core graph walking and populating 
 
 Put simply, you can use `GraphWalker` to walk the fields and (container) elements of an object graph.
 
-You provide [`Visitors`](#Visitors) that will be called back as each field/element that is encountered. You can
- optionally control what fields and elements are included / excluded from the walk by installing [`Filters`](#Filters),
- and you can control what fields and elements are exposed from custom types by installing [`Inspectors`](#Inspectors).
+You provide [`Visitors`](#visitors) that will be called back as each field/element that is encountered. You can
+ optionally control what fields and elements are included / excluded from the walk by installing [`Filters`](#filters),
+ and you can control what fields and elements are exposed from custom types by installing [`Inspectors`](#inspectors).
 
 ### Visitors
 
@@ -50,8 +50,8 @@ Coming soon.
 Graph population builds on the graph walking functionality, adding the ability to populate and/or mutate existing fields
  and elements as they are encountered.
 
-You can control this process by installing [`Mutators`](#Mutators), which are responsible for populating/mutating values,
- and [`InstanceFactories`](#Instance-Factories), which are responsible for providing instances of types where needed.
+You can control this process by installing [`Mutators`](#mutators), which are responsible for populating/mutating values,
+ and [`InstanceFactories`](#instance-factories), which are responsible for providing instances of types where needed.
 
 ### Mutators
 
@@ -78,7 +78,7 @@ used for any type that belongs to the package that do not have a more specific h
 handler is registered for an array type.
 
 To understand what type will be used at runtime to look up suitable handlers you will need to understand how Populace
- [determines runtime type information](#Runtime-type-resolution).
+ [determines runtime type information](#runtime-type-resolution).
 
 # Runtime-type resolution
 

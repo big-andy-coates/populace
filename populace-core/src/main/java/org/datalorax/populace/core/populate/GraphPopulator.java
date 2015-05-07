@@ -128,6 +128,7 @@ public final class GraphPopulator {
 
     public interface Builder {
         // Todo(ac): v2.x these style interfaces should expose and accept builders, not built types
+        // Todo(ac): v2.x use have a withWalker() here.
 
         /**
          * Replace the currently installed field filter to use to control the walk

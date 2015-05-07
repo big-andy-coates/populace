@@ -137,6 +137,24 @@ public class InstanceTrackerTest {
     }
 
     @Test
+    public void shouldClearState() throws Exception {
+        // Given:
+        final Object fieldValue = mock(Object.class, "field");
+        final Object elementValue = mock(Object.class, "element");
+        final FieldInfo fieldInfo = givenFieldWithValue(fieldValue);
+        final ElementInfo elementInfo = givenElementWithValue(elementValue);
+        givenTrackerHasVisitedFieldContaining(tracker, fieldValue);
+        givenTrackerHasVisitedElementContaining(tracker, elementValue);
+
+        // When:
+        tracker.clear();
+
+        // Then:
+        assertThat("should include", fieldFilter.test(fieldInfo), is(true));
+        assertThat("should include", elementFilter.test(elementInfo), is(true));
+    }
+
+    @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         // Given:
         final InstanceTracker one = new InstanceTracker();

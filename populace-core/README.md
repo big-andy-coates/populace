@@ -10,15 +10,22 @@ You provide [`Visitors`](#visitors) that will be called back as each field/eleme
  optionally control what fields and elements are included / excluded from the walk by installing [`Filters`](#filters),
  and you can control what fields and elements are exposed from custom types by installing [`Inspectors`](#inspectors).
 
-### Visitors
-
-Documentation coming soon.
-<!--- Todo(ac): and also link to java docs for all these types --->
-
 ### Filters
 
-Documentation coming soon.
-<!--- Todo(ac): --->
+Filters can be installed to stop specific fields or elements from being walked, (or visiting). Field and Element filters
+are installed when building a walker instance, as shown below:
+
+```java
+GraphWalker walker = GraphWalker.newBuilder()
+    .withFieldFilter(field -> field.getName().contains("includeMe")
+    .withElementFilter(element -> element.getValue() != null)
+    .build();
+```
+
+`FieldFilters` defines some common field filters e.g. to exclude certain types of fields. By default the
+walker excludes static and transient fields, though this can be overridden.
+
+Filters can be combined using the standard `Predicate` logical operators, e.g. AND, OR and NOT.
 
 #### Instance tracking
 
@@ -30,7 +37,7 @@ The `InstanceTracker` is not installed by default, but can be installed as shown
 
 **Note**: The instance tracker is stateful and mutable. Therefore, multiple calls to `walk` that re-use the same
 `InstanceTracker` will carry over the list of visited instances from one walk to the next.  This is generally not
- desired.  If not desired, install a fresh `InstanceTracker` for each walk.
+ desired.  If not desired, ensure you call `clear` on the instance tracker between each walk.
 
 ```java
 InstanceTracker tracker = new InstanceTracker();
@@ -43,8 +50,40 @@ GraphWalker walker = builder
 
 ### Inspectors
 
-Documentation coming soon.
-<!--- Todo(ac): --->
+`Inspectors` are similar to [`Filters`](#filters) in some ways. Where as [`Filters`](#filters) excludes/includes fields
+and elements from the set of exposed fields/elements, `Inspectors` actual define the set of exposed fields/elements for
+a particular type/instance.
+
+`Inspectors` should be generic, in that they should expose the fields and elements in a non-specific manner, so that they
+can be reused across many use-cases or applications. On the other hand, Filters can to be specific to the use-case.
+
+Populace defines a whole set of inspectors to cover most common types. (If you feel there is a inspector missing for
+some common type then please raise a ticket, or even better a PR). You may need to write your own inspectors, especially
+if you have custom container types, not derived from the standard `List`, `Set` or `Map` interfaces.
+
+Inspectors are installed when building a walker. Inspectors can be installed to handle specific types, any subtype of
+some type or any type within a package. See [Registering Customisations](#registering-customisations) for an
+explanation of the different levels. See below for an example:
+
+```java
+final GraphWalker.Builder builder = GraphWalker.newBuilder();
+final GraphWalker walker = builder.withInspectors(builder.inspectors()
+        .withPackageInspector("java.util", TerminalInspector.INSTANCE)  // Don't look inside java.until types
+        .build())
+    .build();
+```
+
+### Visitors
+
+The visitors you install will be called back as each non-filtered field and element visited. The visitor can mutate the
+value of the field/mutator if required, using the `setValue` methods on the supplied `FieldInfo`/`ElementInfo` parameters
+provided to the field / element visitor, respectively.
+
+Visitors are passed to the `walk` call itself, like so:
+
+```java
+walker.walk(typeToWalk, fieldVisitor, elementVisitor);
+```
 
 ## Graph Populating
 
@@ -56,13 +95,52 @@ You can control this process by installing [`Mutators`](#mutators), which are re
 
 ### Mutators
 
-Documentation coming soon.
-<!--- Todo(ac): --->
+Mutators allow you to install custom code to control how certain types are mutated, giving you complete control over how
+your object graphs are populated.
+
+Populace comes complete with a lot of standard Mutators that can be composed to achieve most tasks, and you are free to
+implement your own as needed. By default, a new populator comes pre-configured with a sensible set of mutators, that
+will handle most common types, though these can be overridden if needed.
+
+Mutators can be installed to mutate specific types, subtypes of some type, any type belonging to a package, and
+default mutators for array and non-array types can also be configured. See
+[Registering Customisations](#registering-customisations) for an explanation of the different levels. See below for an
+example:
+
+
+```java
+GraphPopulator.Builder builder = GraphPopulator.newBuilder();
+GraphPopulator populator = builder
+    .withMutators(builder.mutators().withSpecificMutator(String.class, new CustomStringMutator())
+    .build();
+```
 
 ### Instance Factories
 
-Documentation coming soon.
-<!--- Todo(ac): --->
+Instance Factories allow you to install custom code to control how certain types are created. Populace needs this to
+allow fields that are currently null, or container types that are currently empty, to be populated.
+
+Populace comes complete with a lot of factories for standard types and any type that can be constructed using its
+default constructor. For other types you will need to implement custom instance factories.
+
+Instance factories can be installed for specific types, subtypes of some type, any type belonging to a package, and
+default factories for array and non-array types can also be configured. See
+[Registering Customisations](#registering-customisations) for an explanation of the different levels.
+
+In addition, a special type of instance factory, called a `NullObjectStrategy`, can be installed to handle any null
+`Object` i.e. a field or element where no type information is available and the current value is null. Populace does not
+ have enough information to populate the element, but you may chose to do handle this however you like.
+
+Instance factories can be installed as shown below:
+
+```java
+GraphPopulator.Builder builder = GraphPopulator.newBuilder();
+GraphPopulator populator = builder
+   .withInstanceFactories(builder.instanceFactories()
+        .withSpecificFactory(MyType.class, new MyTypeFactory())
+        .withNullObjectStrategy(new CustomNullObjectStrategy()))
+   .build();
+```
 
 ## Registering Customisations
 
@@ -117,32 +195,20 @@ class SomeClass<T> {
 When the value of the field is not null, then Populace has additional type information available to it, and it will use
 this information to resolve the type of the field to a more specific type, if possible.
 
-If the runtime type of the field is a normal class that is a subtype of the compile time type, then the more specific
-runtime type will.
+If the runtime type of the field is a normal class, then the more specific runtime type will be used.
 
-If the runtime type of the field is a parameterised type that is a subtype of the compile time type, e.g. consider the
-field 'example' in the following code snippet below, then Populace will parameterise the runtime type using all available
-type information. So in the case of the example below, the type of the field would be resolved to
-`HashMap<String, Number>`. Populace will also attempt to resolve any type variables and bounds, as needed.
-
-```java
-class SomeClass {
-    private final Map<String, Number> example = new HashMap<>();
-}
-```
+If the runtime type of the field is a type that has type arguments, then Populace will parameterise the runtime type
+using all available type information, e.g. if a field type is `List<String>` and the field value is an instance of
+`ArrayList`, then Populace will resolve the type to `ArrayList<String>`. Populace will also attempt to resolve any type
+variables and bounds, as needed.
 
 ## Null elements
 
-Documentation coming soon.
-<!--- Todo(ac): --->
+Similar to [Null Fields](#null-fields), null elements have only the compile time type information of their container.
+Populace will attempt to resolve this type information as much as possible.
 
 ## Non-null elements
 
-Documentation coming soon.
-<!--- Todo(ac): --->
-
-## Null Object handling
-
-Documentation coming soon.
-<!--- Todo(ac): --->
+As per [Non-null Fields](#non-null-fields), non-null elements will also make use of the runtime type information
+available to build a more specific type.
 

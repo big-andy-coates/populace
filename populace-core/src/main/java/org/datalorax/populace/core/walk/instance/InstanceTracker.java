@@ -43,14 +43,31 @@ import java.util.function.Predicate;
  *     }
  * </pre>
  *
- * <b>Note:</b> InstanceTracker requires all fields to be accessible so that it can track their values. It therefore
+ * InstanceTracker requires all fields to be accessible so that it can track their values. It therefore
  * calls {@link org.datalorax.populace.core.walk.field.FieldInfo#ensureAccessible()} on all visited fields.
+ *
+ * InstanceTracker is stateful. If you don't want the result of one walk to affect another, then please call
+ * {@link InstanceTracker#clear()} between walks.
+ *
+ * InstanceTracker is not thread-safe. If you need a thread-safe tracker, then please implement your own using a
+ * thread-safe set implementation.
  *
  * @author Andrew Coates - 29/04/2015.
  */
 public class InstanceTracker {
     private final Set<InstanceIdentity> seen = new HashSet<>();
 
+    /**
+     * Get the field filter of the tracker.
+     * <p>
+     * The filter will add the value of all fields it encounters to the set of seen instances, and exclude any instances
+     * previously seen as either a field or element value.
+     * <p>
+     * <b>Note:</b> This method requires all fields to be accessible so that it can track their values. It therefore
+     * calls {@link org.datalorax.populace.core.walk.field.FieldInfo#ensureAccessible()} on all visited fields.
+     *
+     * @return the field filter of the tracker.
+     */
     public Predicate<FieldInfo> getFieldFilter() {
         return f -> {
             f.ensureAccessible();
@@ -58,8 +75,26 @@ public class InstanceTracker {
         };
     }
 
+    /**
+     * Get the element filter of the tracker.
+     *
+     * The filter will add the value of all elements it encounters to the set of seen instances, and exclude any instances
+     * previously seen as either a field or element value.
+     *
+     * @return the element filter of the tracker.
+     */
     public Predicate<ElementInfo> getElementFilter() {
         return e -> include(e.getValue());
+    }
+
+    /**
+     * Clear the state of the tracker.
+     * <p>
+     * This method can be useful to clear the state of the tracker between
+     * {@link org.datalorax.populace.core.walk.GraphWalker#walk} calls.
+     */
+    public void clear() {
+        seen.clear();
     }
 
     @Override

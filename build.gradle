@@ -106,78 +106,7 @@ subprojects {
         archives sourcesJar
     }
 
-    // Todo(ac): Move out and test as part of next release.
-    if (hasRequiredProperties()) {
-        signing {
-            sign configurations.archives
-        }
-
-        //noinspection GroovyAssignabilityCheck
-        uploadArchives {
-            repositories {
-                mavenDeployer {
-                    uniqueVersion = true
-
-                    // remove test dependencies from pom file
-                    conf2ScopeMappings.mappings.remove(configurations.testCompile)
-
-                    beforeDeployment { deployment -> signing.signPom(deployment) }
-
-                    repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                        authentication(userName: ossrhUsername, password: ossrhPassword)
-                    }
-
-                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                        authentication(userName: ossrhUsername, password: ossrhPassword)
-                    }
-
-                    pom.project {
-                        name 'Populace'
-                        inceptionYear '2014'
-                        packaging 'jar'
-                        description 'Object graph walker and populator'
-                        url 'https://github.com/datalorax/populace'
-
-                        scm {
-                            url 'git@github.com:datalorax/populace.git'
-                            connection 'scm:git:git@github.com:datalorax/populace.git'
-                            developerConnection 'scm:git:git@github.com:datalorax/populace.git'
-                        }
-
-                        issueManagement {
-                            url 'https://github.com/datalorax/populace/issues'
-                            system 'GitHub Issues'
-                        }
-
-                        licenses {
-                            license {
-                                name 'The Apache License, Version 2.0'
-                                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                                distribution 'repo'
-                            }
-                        }
-
-                        developers {
-                            developer {
-                                id 'datalorax'
-                                name 'Andrew Coates'
-                                url 'https://github.com/datalorax'
-                                email 'datalorax@gmail.com'
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Todo(aC): Add release task to upload to central and create draft release on GitHub.  Maybe pickup release notes from source... or even better, pick up all issues & PRs merged to master since last release!
-}
-
-private boolean hasRequiredProperties() {
-    // Properties optionally picked up from ~/.gradle/gradle.properties for signing and uploading to central
-    project.hasProperty('signing.keyId') && project.hasProperty('signing.password') && project.hasProperty('signing.secretKeyRingFile') &&
-            project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
+    apply from: "${rootProject.projectDir}/release.gradle"
 }
 
 apply from: "${rootProject.projectDir}/coverage.gradle"

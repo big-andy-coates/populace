@@ -1,0 +1,89 @@
+/*
+ * Copyright (c) 2015 Andrew Coates
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+
+if (hasRequiredProperties()) {
+    signing {
+        sign configurations.archives
+    }
+
+    //noinspection GroovyAssignabilityCheck
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                uniqueVersion = true
+
+                // remove test dependencies from pom file
+                conf2ScopeMappings.mappings.remove(configurations.testCompile)
+
+                beforeDeployment { deployment -> signing.signPom(deployment) }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                pom.project {
+                    name 'Populace'
+                    inceptionYear '2014'
+                    packaging 'jar'
+                    description 'Object graph walker and populator'
+                    url 'https://github.com/datalorax/populace'
+
+                    scm {
+                        url 'git@github.com:datalorax/populace.git'
+                        connection 'scm:git:git@github.com:datalorax/populace.git'
+                        developerConnection 'scm:git:git@github.com:datalorax/populace.git'
+                    }
+
+                    issueManagement {
+                        url 'https://github.com/datalorax/populace/issues'
+                        system 'GitHub Issues'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'datalorax'
+                            name 'Andrew Coates'
+                            url 'https://github.com/datalorax'
+                            email 'datalorax@gmail.com'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private boolean hasRequiredProperties() {
+    // Properties optionally picked up from ~/.gradle/gradle.properties for signing and uploading to central
+    project.hasProperty('signing.keyId') && project.hasProperty('signing.password') && project.hasProperty('signing.secretKeyRingFile') &&
+            project.hasProperty('ossrhUsername') && project.hasProperty('ossrhPassword')
+}
+
+// Todo(aC): Add release task to upload to central and create draft release on GitHub.  Maybe pickup release notes from source... or even better, pick up all issues & PRs merged to master since last release!

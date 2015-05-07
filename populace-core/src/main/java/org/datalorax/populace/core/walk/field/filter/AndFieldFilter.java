@@ -19,18 +19,23 @@ package org.datalorax.populace.core.walk.field.filter;
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 
+import java.util.function.Predicate;
+
 /**
  * Combine two field filters with logical AND.
  * Field will only be included if both child filters include the field i.e. they both return false from their
- * {@link FieldFilter#include(org.datalorax.populace.core.walk.field.FieldInfo)} call.
+ * {@link java.util.function.Predicate#test} call.
  *
  * @author Andrew Coates - 28/02/2015.
+ * @deprecated Use {@link java.util.function.Predicate#and}
  */
+@SuppressWarnings("deprecation")
+@Deprecated
 public class AndFieldFilter implements FieldFilter {
-    private final FieldFilter first;
-    private final FieldFilter second;
+    private final Predicate<FieldInfo> first;
+    private final Predicate<FieldInfo> second;
 
-    public AndFieldFilter(final FieldFilter first, final FieldFilter second) {
+    public AndFieldFilter(final Predicate<FieldInfo> first, final Predicate<FieldInfo> second) {
         Validate.notNull(first, "fist null");
         Validate.notNull(second, "second null");
         this.first = first;
@@ -39,7 +44,12 @@ public class AndFieldFilter implements FieldFilter {
 
     @Override
     public boolean include(final FieldInfo field) {
-        return first.include(field) && second.include(field);
+        return test(field);
+    }
+
+    @Override
+    public boolean test(final FieldInfo field) {
+        return first.test(field) && second.test(field);
     }
 
     @Override
@@ -59,6 +69,6 @@ public class AndFieldFilter implements FieldFilter {
 
     @Override
     public String toString() {
-        return "AND {" +  first + ", " + second + "}";
+        return "(" + first + " && " + second + ")";
     }
 }

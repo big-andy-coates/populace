@@ -23,7 +23,7 @@ import org.datalorax.populace.core.walk.field.FieldInfo;
  *
  * @author Andrew Coates - 28/02/2015.
  */
-public interface FieldVisitor {
+public interface FieldVisitor { // Todo(ac): If we're using predicates for filters, then do we want to use Consumer for visitors
     /**
      * Called on visiting a simple field
      * @param field the field being visited     *

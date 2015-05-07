@@ -241,7 +241,7 @@ public class FieldInfoTest {
     @Test
     public void shouldGetGenericTypeFromValueIfNotNull() throws Exception {
         // Given:
-        givenFieldHasValue("value");
+        givenFieldHasValue("some-value");
 
         // When:
         fieldInfo.getGenericType();
@@ -275,7 +275,7 @@ public class FieldInfoTest {
     }
 
     @Test
-    public void shouldNotGetCurrentValueForPimitiveTypes() throws Exception {
+    public void shouldNotGetCurrentValueForPrimitiveTypes() throws Exception {
         // Given:
         givenFieldHasValue(41L, long.class);
 

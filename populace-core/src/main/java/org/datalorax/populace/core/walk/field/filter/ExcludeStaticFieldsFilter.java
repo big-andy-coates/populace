@@ -21,12 +21,20 @@ import org.datalorax.populace.core.walk.field.FieldInfo;
 /**
  * A field filter to excludes any static fields
  * @author Andrew Coates - 28/02/2015.
+ * @deprecated Use {@link org.datalorax.populace.core.walk.field.filter.FieldFilters#excludeStaticFields()}
  */
+@SuppressWarnings("deprecation")
+@Deprecated
 public class ExcludeStaticFieldsFilter implements FieldFilter {
     public static final ExcludeStaticFieldsFilter INSTANCE = new ExcludeStaticFieldsFilter();
 
     @Override
     public boolean include(final FieldInfo field) {
+        return test(field);
+    }
+
+    @Override
+    public boolean test(final FieldInfo field) {
         return !field.isStatic();
     }
 

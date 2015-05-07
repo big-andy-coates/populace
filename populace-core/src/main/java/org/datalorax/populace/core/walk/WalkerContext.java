@@ -17,30 +17,40 @@
 package org.datalorax.populace.core.walk;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.walk.element.ElementInfo;
 import org.datalorax.populace.core.walk.field.FieldInfo;
-import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 
 import java.lang.reflect.Type;
+import java.util.function.Predicate;
 
 /**
  * Holds information about the configuration of the walker
  * @author Andrew Coates - 28/02/2015.
  */
 public class WalkerContext {
-    private final FieldFilter fieldFilter;
+    private final Predicate<FieldInfo> fieldFilter;
+    private final Predicate<ElementInfo> elementFilter;
     private final Inspectors inspectors;
 
-    public WalkerContext(final FieldFilter fieldFilter, final Inspectors inspectors) {
+    public WalkerContext(final Predicate<FieldInfo> fieldFilter,
+                         final Predicate<ElementInfo> elementFilter,
+                         final Inspectors inspectors) {
         Validate.notNull(fieldFilter, "fieldFilter null");
+        Validate.notNull(elementFilter, "elementFilter null");
         Validate.notNull(inspectors, "inspector null");
         this.fieldFilter = fieldFilter;
+        this.elementFilter = elementFilter;
         this.inspectors = inspectors;
     }
 
     public boolean isExcludedField(final FieldInfo field) {
-        return !fieldFilter.include(field);
+        return !fieldFilter.test(field);
+    }
+
+    public boolean isExcludedElement(final ElementInfo element) {
+        return !elementFilter.test(element);
     }
 
     public Inspector getInspector(final Type type) {
@@ -57,7 +67,9 @@ public class WalkerContext {
         if (o == null || getClass() != o.getClass()) return false;
 
         final WalkerContext that = (WalkerContext) o;
-        return fieldFilter.equals(that.fieldFilter) && inspectors.equals(that.inspectors);
+        return fieldFilter.equals(that.fieldFilter)
+            && elementFilter.equals(that.elementFilter)
+            && inspectors.equals(that.inspectors);
     }
 
     @Override

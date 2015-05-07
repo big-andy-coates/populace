@@ -108,10 +108,10 @@ public class DefaultConstructorInstanceFactoryTest {
             .testEquals();
     }
 
-    public interface InterfaceType {
+    private interface InterfaceType {
     }
 
-    public static final class PublicTypeWithPublicConstructor {
+    private static final class PublicTypeWithPublicConstructor {
     }
 
     public static final class PublicTypeWithPrivateConstructor {
@@ -133,7 +133,7 @@ public class DefaultConstructorInstanceFactoryTest {
         }
     }
 
-    public static abstract class AbstractType {
+    private static abstract class AbstractType {
     }
 
     public final class InnerTypeWithNoDefaultConstructor {

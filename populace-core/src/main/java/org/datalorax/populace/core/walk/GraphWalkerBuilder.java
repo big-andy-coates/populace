@@ -17,27 +17,46 @@
 package org.datalorax.populace.core.walk;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.walk.element.ElementInfo;
+import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
+
+import java.util.function.Predicate;
 
 /**
  * @author Andrew Coates - 01/03/2015.
  */
 public class GraphWalkerBuilder implements GraphWalker.Builder {
-    private FieldFilter fieldFilter = FieldFilters.defaults();
+    private Predicate<FieldInfo> fieldFilter = FieldFilters.excludeStaticFields()
+        .and(FieldFilters.excludeTransientFields());
+    private Predicate<ElementInfo> elementFilter = e -> true;
     private Inspectors inspectors = Inspectors.defaults();
 
     @Override
-    public GraphWalkerBuilder withFieldFilter(final FieldFilter filter) {
+    public GraphWalkerBuilder withFieldFilter(final Predicate<FieldInfo> filter) {
         Validate.notNull(filter, "filter null");
         fieldFilter = filter;
         return this;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public FieldFilter getFieldFilter() {
-        return fieldFilter;
+        return fieldFilter::test;
+    }
+
+    @Override
+    public GraphWalker.Builder withElementFilter(final Predicate<ElementInfo> filter) {
+        Validate.notNull(filter, "filter null");
+        elementFilter = filter;
+        return this;
+    }
+
+    @Override
+    public Predicate<ElementInfo> getElementFilter() {
+        return elementFilter;
     }
 
     @Override
@@ -58,6 +77,6 @@ public class GraphWalkerBuilder implements GraphWalker.Builder {
     }
 
     private WalkerContext buildConfig() {
-        return new WalkerContext(fieldFilter, inspectors);
+        return new WalkerContext(fieldFilter, elementFilter, inspectors);
     }
 }

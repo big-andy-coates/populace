@@ -19,27 +19,33 @@ package org.datalorax.populace.core.walk.field.filter;
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.function.Predicate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("deprecation")
 public class AllFieldFilterTest {
-    private FieldFilter first;
-    private FieldFilter second;
-    private FieldFilter third;
+    @Mock
+    private Predicate<FieldInfo> first;
+    @Mock
+    private Predicate<FieldInfo> second;
+    @Mock
+    private Predicate<FieldInfo> third;
+    @Mock
     private FieldInfo field;
-    private FieldFilter filter;
+    private Predicate<FieldInfo> filter;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        first = mock(FieldFilter.class, "first");
-        second = mock(FieldFilter.class, "second");
-        third = mock(FieldFilter.class, "third");
-        field = mock(FieldInfo.class);
+        MockitoAnnotations.initMocks(this);
 
         filter = new AllFieldFilter(first, second, third);
     }
@@ -47,23 +53,23 @@ public class AllFieldFilterTest {
     @Test
     public void shouldExcludeIfAnyFilterExclude() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(true);
-        when(second.include(field)).thenReturn(false);
-        when(third.include(field)).thenReturn(true);
+        when(first.test(field)).thenReturn(true);
+        when(second.test(field)).thenReturn(false);
+        when(third.test(field)).thenReturn(true);
 
         // Then:
-        assertThat(filter.include(field), is(false));
+        assertThat(filter.test(field), is(false));
     }
 
     @Test
     public void shouldIncludeOnlyIfAllFiltersInclude() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(true);
-        when(second.include(field)).thenReturn(true);
-        when(third.include(field)).thenReturn(true);
+        when(first.test(field)).thenReturn(true);
+        when(second.test(field)).thenReturn(true);
+        when(third.test(field)).thenReturn(true);
 
         // Then:
-        assertThat(filter.include(field), is(true));
+        assertThat(filter.test(field), is(true));
     }
 
     @Test
@@ -80,7 +86,7 @@ public class AllFieldFilterTest {
     @Test
     public void shouldThrowNPEsOnConstructorParams() throws Exception {
         new NullPointerTester()
-            .setDefault(FieldFilter.class, mock(FieldFilter.class))
+            .setDefault(Predicate.class, mock(Predicate.class))
             .testAllPublicConstructors(AllFieldFilter.class);
     }
 }

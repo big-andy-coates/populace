@@ -18,16 +18,40 @@ package org.datalorax.populace.core.walk.field.filter;
 
 import org.datalorax.populace.core.walk.field.FieldInfo;
 
+import java.util.function.Predicate;
+
 /**
  * Interface for 'pluggable' filtering of fields
+ *
  * @author Andrew Coates - 28/02/2015.
  */
-public interface FieldFilter {
+@FunctionalInterface
+public interface FieldFilter extends Predicate<FieldInfo> {
     /**
      * Called to determine if the {@code field} should be included or excluded
      *
      * @param field the field to evaluate
      * @return true if the field should be included, false for excluded.
+     * @deprecated From v1.1.
+     * Don't implement this class, instead use {@link java.util.function.Predicate Predicate&lt;FieldInfo&gt;} instead.
+     * Don't call this method, use {@link java.util.function.Predicate#test(Object)} instead.
      */
+    @Deprecated
+    // Todo(ac): v2.x remove type
     boolean include(final FieldInfo field);
+
+    /**
+     * Called to determine if the {@code field} should be included or excluded
+     *
+     * @param field the field to evaluate
+     * @return true if the field should be included, false for excluded.
+     * @deprecated From v1.1.
+     * Don't implement this class, instead use {@link java.util.function.Predicate Predicate&lt;FieldInfo&gt;} instead.
+     * Don't call this method, use {@link java.util.function.Predicate#test(Object)} instead.
+     */
+    @SuppressWarnings("deprecation")
+    @Deprecated // Todo(ac): v2.x remove type
+    default boolean test(final FieldInfo field) {
+        return include(field);
+    }
 }

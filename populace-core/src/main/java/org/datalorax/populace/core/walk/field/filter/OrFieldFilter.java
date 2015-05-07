@@ -19,17 +19,21 @@ package org.datalorax.populace.core.walk.field.filter;
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 
+import java.util.function.Predicate;
+
 /**
  * Combine two field filters with logical OR.
- * Field will be handled if either child filters return true from their
- * {@link FieldFilter#include(org.datalorax.populace.core.walk.field.FieldInfo)}  evaluate} call
+ * Field will be handled if either child filters return
  * @author Andrew Coates - 28/02/2015.
+ * @deprecated Use {@link java.util.function.Predicate#or}
  */
+@SuppressWarnings("deprecation")
+@Deprecated
 public class OrFieldFilter implements FieldFilter {
-    private final FieldFilter first;
-    private final FieldFilter second;
+    private final Predicate<FieldInfo> first;
+    private final Predicate<FieldInfo> second;
 
-    public OrFieldFilter(final FieldFilter first, final FieldFilter second) {
+    public OrFieldFilter(final Predicate<FieldInfo> first, final Predicate<FieldInfo> second) {
         Validate.notNull(first, "first null");
         Validate.notNull(second, "second null");
         this.first = first;
@@ -38,7 +42,12 @@ public class OrFieldFilter implements FieldFilter {
 
     @Override
     public boolean include(final FieldInfo field) {
-        return first.include(field) || second.include(field);
+        return test(field);
+    }
+
+    @Override
+    public boolean test(final FieldInfo field) {
+        return first.test(field) || second.test(field);
     }
 
     @Override
@@ -58,6 +67,6 @@ public class OrFieldFilter implements FieldFilter {
 
     @Override
     public String toString() {
-        return "OR {" +  first + ", " + second + "}";
+        return "(" + first + " || " + second + ")";
     }
 }

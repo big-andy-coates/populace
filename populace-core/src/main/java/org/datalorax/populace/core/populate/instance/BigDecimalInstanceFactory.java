@@ -30,7 +30,7 @@ import java.math.BigDecimal;
  * @author Andrew Coates - 09/03/2015.
  */
 public class BigDecimalInstanceFactory implements InstanceFactory {
-    public static final BigDecimal BIG_DECIMAL_TO_LARGE_FOR_DOUBLE = new BigDecimal("1")
+    private static final BigDecimal BIG_DECIMAL_TO_LARGE_FOR_DOUBLE = new BigDecimal("1")
         .setScale(10, BigDecimal.ROUND_HALF_EVEN)
         .divide(new BigDecimal("3"), BigDecimal.ROUND_HALF_EVEN);
 

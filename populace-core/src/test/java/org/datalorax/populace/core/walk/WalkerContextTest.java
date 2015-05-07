@@ -18,8 +18,8 @@ package org.datalorax.populace.core.walk;
 
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
+import org.datalorax.populace.core.walk.element.ElementInfo;
 import org.datalorax.populace.core.walk.field.FieldInfo;
-import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.mockito.Mock;
@@ -28,6 +28,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
+import java.util.function.Predicate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -35,35 +36,60 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class WalkerContextTest {
-    @Mock
-    private FieldFilter fieldFilter;
+    @Mock(name = "main")
+    private Predicate<FieldInfo> fieldFilter;
+    @Mock(name = "other")
+    private Predicate<FieldInfo> fieldFilter2;
+    @Mock(name = "main")
+    private Predicate<ElementInfo> elementFilter;
+    @Mock(name = "other")
+    private Predicate<ElementInfo> elementFilter2;
     @Mock
     private Inspectors inspectors;
+    @Mock
     private FieldInfo field;
+    @Mock
+    private ElementInfo element;
     private WalkerContext context;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        field = mock(FieldInfo.class);
-
-        context = new WalkerContext(fieldFilter, inspectors);
+        context = new WalkerContext(fieldFilter, elementFilter, inspectors);
     }
 
     @Test
     public void shouldExcludeFieldIfFilterReturnsFalse() throws Exception {
         // Given:
-        when(fieldFilter.include(field)).thenReturn(false);
+        when(fieldFilter.test(field)).thenReturn(false);
 
         // Then:
         assertThat(context.isExcludedField(field), is(true));
     }
 
     @Test
-    public void shouldNotExcludeFieldIfFilterReturnsTrue() throws Exception {
+    public void shouldIncludeFieldIfFilterReturnsTrue() throws Exception {
         // Given:
-        when(fieldFilter.include(field)).thenReturn(true);
+        when(elementFilter.test(element)).thenReturn(true);
+
+        // Then:
+        assertThat(context.isExcludedElement(element), is(false));
+    }
+
+    @Test
+    public void shouldExcludeElementIfFilterReturnsFalse() throws Exception {
+        // Given:
+        when(elementFilter.test(element)).thenReturn(false);
+
+        // Then:
+        assertThat(context.isExcludedElement(element), is(true));
+    }
+
+    @Test
+    public void shouldIncludeElementIfFilterReturnsTrue() throws Exception {
+        // Given:
+        when(fieldFilter.test(field)).thenReturn(true);
 
         // Then:
         assertThat(context.isExcludedField(field), is(false));
@@ -86,19 +112,20 @@ public class WalkerContextTest {
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                new WalkerContext(fieldFilter, inspectors),
-                new WalkerContext(fieldFilter, inspectors))
+                new WalkerContext(fieldFilter, elementFilter, inspectors),
+                new WalkerContext(fieldFilter, elementFilter, inspectors))
             .addEqualityGroup(
-                new WalkerContext(mock(FieldFilter.class), inspectors))
+                new WalkerContext(fieldFilter2, elementFilter, inspectors))
             .addEqualityGroup(
-                new WalkerContext(fieldFilter, mock(Inspectors.class)))
+                new WalkerContext(fieldFilter, elementFilter2, inspectors))
+            .addEqualityGroup(
+                new WalkerContext(fieldFilter, elementFilter, mock(Inspectors.class)))
             .testEquals();
     }
 
     @Test
     public void shouldThrowNPEsOnConstructorParams() throws Exception {
         new NullPointerTester()
-            .setDefault(FieldFilter.class, fieldFilter)
             .setDefault(Inspectors.class, inspectors)
             .testAllPublicConstructors(WalkerContext.class);
     }

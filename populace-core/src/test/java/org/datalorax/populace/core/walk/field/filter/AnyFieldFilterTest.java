@@ -19,27 +19,33 @@ package org.datalorax.populace.core.walk.field.filter;
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.function.Predicate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("deprecation")
 public class AnyFieldFilterTest {
-    private FieldFilter first;
-    private FieldFilter second;
-    private FieldFilter third;
+    @Mock(name = "first")
+    private Predicate<FieldInfo> first;
+    @Mock(name = "second")
+    private Predicate<FieldInfo> second;
+    @Mock(name = "third")
+    private Predicate<FieldInfo> third;
+    @Mock
     private FieldInfo field;
-    private FieldFilter filter;
+    private Predicate<FieldInfo> filter;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        first = mock(FieldFilter.class, "first");
-        second = mock(FieldFilter.class, "second");
-        third = mock(FieldFilter.class, "third");
-        field = mock(FieldInfo.class);
+        MockitoAnnotations.initMocks(this);
 
         filter = new AnyFieldFilter(first, second, third);
     }
@@ -47,40 +53,41 @@ public class AnyFieldFilterTest {
     @Test
     public void shouldExcludeOnlyIfAllExclude() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(false);
-        when(second.include(field)).thenReturn(false);
-        when(third.include(field)).thenReturn(false);
+        when(first.test(field)).thenReturn(false);
+        when(second.test(field)).thenReturn(false);
+        when(third.test(field)).thenReturn(false);
 
         // Then:
-        assertThat(filter.include(field), is(false));
+        assertThat(filter.test(field), is(false));
     }
 
     @Test
     public void shouldIncludeIfAnyInclude() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(false);
-        when(second.include(field)).thenReturn(true);
-        when(third.include(field)).thenReturn(false);
+        when(first.test(field)).thenReturn(false);
+        when(second.test(field)).thenReturn(true);
+        when(third.test(field)).thenReturn(false);
 
         // Then:
-        assertThat(filter.include(field), is(true));
+        assertThat(filter.test(field), is(true));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(new AnyFieldFilter(first, second, third), new AnyFieldFilter(first, second, third))
-            .addEqualityGroup(new AnyFieldFilter(first, second, third, mock(FieldFilter.class)))
+            .addEqualityGroup(new AnyFieldFilter(first, second, third, mock(Predicate.class)))
             .addEqualityGroup(new AnyFieldFilter(first, second))
-            .addEqualityGroup(new AnyFieldFilter(mock(FieldFilter.class), second, third))
-            .addEqualityGroup(new AnyFieldFilter(first, mock(FieldFilter.class), third))
+            .addEqualityGroup(new AnyFieldFilter(mock(Predicate.class), second, third))
+            .addEqualityGroup(new AnyFieldFilter(first, mock(Predicate.class), third))
             .testEquals();
     }
 
     @Test
     public void shouldThrowNPEsOnConstructorParams() throws Exception {
         new NullPointerTester()
-            .setDefault(FieldFilter.class, mock(FieldFilter.class))
+            .setDefault(Predicate.class, mock(Predicate.class))
             .testAllPublicConstructors(AnyFieldFilter.class);
     }
 }

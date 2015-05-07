@@ -16,10 +16,6 @@
 
 
 
-
-
-
-
 apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'jacoco'
 
@@ -77,6 +73,7 @@ subprojects {
 
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked"
+        options.compilerArgs << "-Xlint:deprecation"
     }
 
     //noinspection GroovyAssignabilityCheck
@@ -174,7 +171,7 @@ subprojects {
         }
     }
 
-    // Todo(aC): Add release task to upload to central and create draft release on GitHub.  Maybe pickup release notes from source... or even better, pick up all issues & PRs merged to master sinse last release!
+    // Todo(aC): Add release task to upload to central and create draft release on GitHub.  Maybe pickup release notes from source... or even better, pick up all issues & PRs merged to master since last release!
 }
 
 private boolean hasRequiredProperties() {

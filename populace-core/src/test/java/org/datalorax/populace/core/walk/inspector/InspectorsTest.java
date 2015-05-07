@@ -167,7 +167,7 @@ public class InspectorsTest {
     @Test
     public void shouldReturnNotPresentFromGetPackageIfNoPackageRegistered() throws Exception {
         // When:
-        final Optional<Inspector> factory = inspectors.getPackage("some.package");
+        final Optional<Inspector> factory = inspectors.getPackage("a.package");
 
         // Then:
         assertThat(factory, is(Optional.<Inspector>empty()));

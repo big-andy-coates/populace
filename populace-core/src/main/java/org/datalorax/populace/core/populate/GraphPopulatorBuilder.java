@@ -21,13 +21,14 @@ import org.datalorax.populace.core.populate.inspector.LoggingCollectionInspector
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.walk.GraphWalker;
-import org.datalorax.populace.core.walk.field.filter.ExcludeStaticFieldsFilter;
-import org.datalorax.populace.core.walk.field.filter.ExcludeTransientFieldsFilter;
+import org.datalorax.populace.core.walk.element.ElementInfo;
+import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 
 /**
  * Builder implementation for the GraphPopulator
@@ -35,26 +36,38 @@ import java.util.Collection;
  * @author Andrew Coates - 28/02/2015.
  */
 final class GraphPopulatorBuilder implements GraphPopulator.Builder {
-    private static final FieldFilter DEFAULT_FIELD_FILTER = FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
-
-    private Mutators mutators = Mutators.defaults();
-    private InstanceFactories instanceFactories = InstanceFactories.defaults();
-    private GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder()
+    static final Predicate<FieldInfo> DEFAULT_FIELD_FILTER = FieldFilters.excludeStaticFields()
+        .and(FieldFilters.excludeTransientFields());
+    private final GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder()
         .withFieldFilter(DEFAULT_FIELD_FILTER)
         .withInspectors(Inspectors.newBuilder()
             .withSuperInspector(Collection.class, LoggingCollectionInspector.INSTANCE)  // Log on immutable elements
             .build());
+    private Mutators mutators = Mutators.defaults();
+    private InstanceFactories instanceFactories = InstanceFactories.defaults();
 
     @Override
-    public GraphPopulatorBuilder withFieldFilter(final FieldFilter filter) {
+    public GraphPopulatorBuilder withFieldFilter(final Predicate<FieldInfo> filter) {
         Validate.notNull(filter, "filter null");
         walkerBuilder.withFieldFilter(filter);
         return this;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public FieldFilter getFieldFilter() {
         return walkerBuilder.getFieldFilter();
+    }
+
+    @Override
+    public GraphPopulator.Builder withElementFilter(final Predicate<ElementInfo> filter) {
+        walkerBuilder.withElementFilter(filter);
+        return this;
+    }
+
+    @Override
+    public Predicate<ElementInfo> getElementFilter() {
+        return walkerBuilder.getElementFilter();
     }
 
     @Override

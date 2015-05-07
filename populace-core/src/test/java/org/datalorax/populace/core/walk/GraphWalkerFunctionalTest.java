@@ -19,19 +19,21 @@ package org.datalorax.populace.core.walk;
 import org.datalorax.populace.core.CustomCollection;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.FieldInfoMatcher;
-import org.datalorax.populace.core.walk.field.filter.ExcludeStaticFieldsFilter;
-import org.datalorax.populace.core.walk.field.filter.FieldFilter;
-import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.datalorax.populace.core.walk.inspector.TerminalInspector;
+import org.datalorax.populace.core.walk.instance.InstanceTracker;
 import org.datalorax.populace.core.walk.visitor.ElementVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitor;
 import org.datalorax.populace.core.walk.visitor.FieldVisitors;
 import org.datalorax.populace.core.walk.visitor.SetAccessibleFieldVisitor;
+import org.hamcrest.Matchers;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 import static org.datalorax.populace.core.walk.element.ElementInfoMatcher.elementOfType;
 import static org.datalorax.populace.core.walk.element.ElementInfoMatcher.elementWithValue;
@@ -46,19 +48,20 @@ import static org.mockito.Mockito.*;
 import static org.testng.Assert.fail;
 
 public class GraphWalkerFunctionalTest {
-    private GraphWalker walker;
-    private FieldFilter filter;
+    @Mock
+    private Predicate<FieldInfo> filter;
+    @Mock
     private FieldVisitor fieldVisitor;
-    private FieldVisitor accessibleFieldVisitor;
+    @Mock
     private ElementVisitor elementVisitor;
+    private FieldVisitor accessibleFieldVisitor;
+    private GraphWalker walker;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        filter = mock(FieldFilter.class);
-        fieldVisitor = mock(FieldVisitor.class);
-        elementVisitor = mock(ElementVisitor.class);
+        MockitoAnnotations.initMocks(this);
 
-        when(filter.include(any(FieldInfo.class))).thenReturn(true);
+        when(filter.test(any(FieldInfo.class))).thenReturn(true);
 
         accessibleFieldVisitor = FieldVisitors.chain(SetAccessibleFieldVisitor.INSTANCE, fieldVisitor);
         walker = GraphWalker.newBuilder().build();
@@ -81,15 +84,44 @@ public class GraphWalkerFunctionalTest {
     @Test
     public void shouldObeyFieldFilter() throws Exception {
         // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class SomeType {
+            String included = "value";
+            String excluded = "value";
+        }
+
         walker = GraphWalker.newBuilder()
-            .withFieldFilter(FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, filter))  // Skip statics
+            .withFieldFilter(f -> f.getName().equals("included"))
             .build();
 
         // When:
-        walker.walk(new TypeWithStaticField(), accessibleFieldVisitor, elementVisitor);
+        walker.walk(new SomeType(), accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(fieldVisitor, never()).visit(argThat(fieldInfo("_static", TypeWithStaticField.class)));
+        verify(fieldVisitor).visit(argThat(fieldInfo("included", SomeType.class)));
+        verify(fieldVisitor, never()).visit(argThat(fieldInfo("excluded", SomeType.class)));
+    }
+
+    @Test
+    public void shouldObeyElementFilter() throws Exception {
+        // Given:
+        @SuppressWarnings("UnusedDeclaration")
+        class TypeWithElements {
+            List<String> elements = new ArrayList<String>() {{
+                add("first");
+                add("second");
+            }};
+        }
+
+        walker = GraphWalker.newBuilder()
+            .withElementFilter(e -> e.getValue() != "first")
+            .build();
+
+        // When:
+        walker.walk(new TypeWithElements(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(elementVisitor, never()).visit(argThat(elementWithValue("first")));
     }
 
     @Test
@@ -602,6 +634,50 @@ public class GraphWalkerFunctionalTest {
         verify(fieldVisitor).visit(argThat(fieldInfo("_superField", SuperType.class)));
     }
 
+    @Test
+    public void shouldNotStackOverflowWithCircularReference() throws Exception {
+        // Given:
+        class TypeWithCircularReference {
+            Object child;
+        }
+        class AnotherType {
+            TypeWithCircularReference parent;
+        }
+        final TypeWithCircularReference instance = new TypeWithCircularReference();
+        final AnotherType anotherType = new AnotherType();
+        instance.child = anotherType;
+        anotherType.parent = instance;
+
+        final InstanceTracker tracker = new InstanceTracker();
+        final GraphWalker.Builder builder = GraphWalker.newBuilder();
+        walker = builder
+            .withFieldFilter(builder.getFieldFilter().and(tracker.getFieldFilter()))
+            .withElementFilter(builder.getElementFilter().and(tracker.getElementFilter()))
+            .build();
+
+        // When:
+        walker.walk(instance, accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        // It didn't stack overflow.
+    }
+
+    @Test
+    public void shouldNotWalkSyntheticFields() throws Exception {
+        // Given:
+        class InnerClassType {
+            // Synthetic field to parent instance
+            Object child;
+        }
+
+        // When:
+        walker.walk(new InnerClassType(), accessibleFieldVisitor, elementVisitor);
+
+        // Then:
+        verify(fieldVisitor, never()).visit(argThat(fieldInfo(Matchers.containsString("$"), Matchers.equalTo(Class.class))));
+        verify(fieldVisitor).visit(argThat(fieldInfo("child", InnerClassType.class)));
+    }
+
     @SuppressWarnings("UnusedDeclaration")
     public static class TypeWithNestedObject {
         public NestedType _nested = new NestedType();
@@ -702,8 +778,4 @@ public class GraphWalkerFunctionalTest {
                 '}';
         }
     }
-
-    // Todo(ac): Add field filter types to include circular references and to not follow parent reference in inner class.
-
-
 }

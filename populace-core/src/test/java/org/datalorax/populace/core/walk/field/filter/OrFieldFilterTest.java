@@ -19,25 +19,31 @@ package org.datalorax.populace.core.walk.field.filter;
 import com.google.common.testing.EqualsTester;
 import com.google.common.testing.NullPointerTester;
 import org.datalorax.populace.core.walk.field.FieldInfo;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.function.Predicate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("deprecation")
 public class OrFieldFilterTest {
-    private FieldFilter first;
-    private FieldFilter second;
+    @Mock(name = "first")
+    private Predicate<FieldInfo> first;
+    @Mock(name = "second")
+    private Predicate<FieldInfo> second;
+    @Mock
     private FieldInfo field;
-    private FieldFilter filter;
+    private OrFieldFilter filter;
 
     @BeforeMethod
     public void setUp() throws Exception {
-        first = mock(FieldFilter.class, "first");
-        second = mock(FieldFilter.class, "second");
-        field = mock(FieldInfo.class);
+        MockitoAnnotations.initMocks(this);
 
         filter = new OrFieldFilter(first, second);
     }
@@ -45,8 +51,8 @@ public class OrFieldFilterTest {
     @Test
     public void shouldExcludeIfBothExclude() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(false);
-        when(second.include(field)).thenReturn(false);
+        when(first.test(field)).thenReturn(false);
+        when(second.test(field)).thenReturn(false);
 
         // Then:
         assertThat(filter.include(field), is(false));
@@ -55,31 +61,31 @@ public class OrFieldFilterTest {
     @Test
     public void shouldIncludeIfOnlyFirstIncludes() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(true);
-        when(second.include(field)).thenReturn(false);
+        when(first.test(field)).thenReturn(true);
+        when(second.test(field)).thenReturn(false);
 
         // Then:
-        assertThat(filter.include(field), is(true));
+        assertThat(filter.test(field), is(true));
     }
 
     @Test
     public void shouldIncludeIfOnlySecondIncludes() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(false);
-        when(second.include(field)).thenReturn(true);
+        when(first.test(field)).thenReturn(false);
+        when(second.test(field)).thenReturn(true);
 
         // Then:
-        assertThat(filter.include(field), is(true));
+        assertThat(filter.test(field), is(true));
     }
 
     @Test
     public void shouldIncludeIfBothInclude() throws Exception {
         // Given:
-        when(first.include(field)).thenReturn(true);
-        when(second.include(field)).thenReturn(true);
+        when(first.test(field)).thenReturn(true);
+        when(second.test(field)).thenReturn(true);
 
         // Then:
-        assertThat(filter.include(field), is(true));
+        assertThat(filter.test(field), is(true));
     }
 
     @Test

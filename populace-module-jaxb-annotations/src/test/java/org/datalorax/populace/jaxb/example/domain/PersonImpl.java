@@ -23,9 +23,8 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @SuppressWarnings("UnusedDeclaration")
 public class PersonImpl implements Person {
-    private String name;
-
-    private Address address;
+    private final String name;
+    private final Address address;
 
     @XmlTransient   // Won't be visited
     private CreditCardDetails cardDetails;

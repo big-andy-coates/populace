@@ -285,7 +285,7 @@ public class TypeResolverTest {
         when(typeTable.resolveTypeVariable(ST)).thenReturn(Integer.class);
 
         // When:
-        final Type resolved = resolver.resolve(genericArrayType);
+        resolver.resolve(genericArrayType);
 
         // Then:
         assertThat(resolver.resolve(genericArrayType), is(equalTo(TypeUtils.genericArrayType(Integer.class))));
@@ -306,7 +306,7 @@ public class TypeResolverTest {
         final ParameterizedType expectedListType = TypeUtils.parameterise(List.class, Integer.class);
 
         // When:
-        final Type resolved = resolver.resolve(genericArrayType);
+        resolver.resolve(genericArrayType);
 
         // Then:
         assertThat(resolver.resolve(genericArrayType), is(equalTo(TypeUtils.genericArrayType(expectedListType))));

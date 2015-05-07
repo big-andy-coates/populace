@@ -19,29 +19,23 @@ package org.datalorax.populace.core.populate;
 import org.datalorax.populace.core.populate.instance.InstanceFactories;
 import org.datalorax.populace.core.populate.mutator.Mutators;
 import org.datalorax.populace.core.walk.GraphWalker;
-import org.datalorax.populace.core.walk.field.filter.ExcludeStaticFieldsFilter;
-import org.datalorax.populace.core.walk.field.filter.ExcludeTransientFieldsFilter;
-import org.datalorax.populace.core.walk.field.filter.FieldFilter;
-import org.datalorax.populace.core.walk.field.filter.FieldFilters;
+import org.datalorax.populace.core.walk.element.ElementInfo;
+import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.function.Predicate;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class GraphPopulatorBuilderTest {
     private GraphPopulatorBuilder builder;
-
-    private static FieldFilter defaultFieldFilter() {
-        return FieldFilters.and(ExcludeStaticFieldsFilter.INSTANCE, ExcludeTransientFieldsFilter.INSTANCE);
-    }
-
-    private static Mutators defaultMutatorConfig() {
-        return Mutators.defaults();
-    }
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -110,14 +104,29 @@ public class GraphPopulatorBuilderTest {
     @Test
     public void shouldGetFieldFilterBackFromBuilder() throws Exception {
         // Given:
-        final FieldFilter filter = mock(FieldFilter.class);
+        final Predicate<FieldInfo> filter = getMockFieldFilter();
+        when(filter.test(null)).thenReturn(true);
         builder.withFieldFilter(filter);
 
         // When:
-        final FieldFilter returned = builder.getFieldFilter();
+        final Predicate<FieldInfo> returned = builder.getFieldFilter();
 
         // Then:
-        assertThat(returned, is(sameInstance(filter)));
+        assertThat(returned.test(null), is(true));
+    }
+
+    @Test
+    public void shouldGetElementFilterBackFromBuilder() throws Exception {
+        // Given:
+        final Predicate<ElementInfo> filter = getMockElementFilter();
+        when(filter.test(null)).thenReturn(true);
+        builder.withElementFilter(filter);
+
+        // When:
+        final Predicate<ElementInfo> returned = builder.getElementFilter();
+
+        // Then:
+        assertThat(returned.test(null), is(true));
     }
 
     @Test
@@ -154,5 +163,23 @@ public class GraphPopulatorBuilderTest {
 
     private PopulatorContext defaultPopulatorContext() {
         return new PopulatorContext(defaultMutatorConfig(), defaultInstanceFactories());
+    }
+
+    private static Predicate<FieldInfo> defaultFieldFilter() {
+        return GraphPopulatorBuilder.DEFAULT_FIELD_FILTER;
+    }
+
+    private static Mutators defaultMutatorConfig() {
+        return Mutators.defaults();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Predicate<ElementInfo> getMockElementFilter() {
+        return mock(Predicate.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Predicate<FieldInfo> getMockFieldFilter() {
+        return mock(Predicate.class);
     }
 }

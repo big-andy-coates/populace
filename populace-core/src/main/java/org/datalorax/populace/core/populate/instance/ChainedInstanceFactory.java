@@ -74,4 +74,5 @@ public final class ChainedInstanceFactory implements InstanceFactory {
     }
 }
 
-// Todo(ac): If factories can return null, to support chaining, then how about specific factory returning null and falling through to super or package, or defautl...?
+// Todo(ac): If factories can return null, to support chaining, then how about specific factory returning null and falling through to super or package, or default...?
+// I don't think we want factory chaining...

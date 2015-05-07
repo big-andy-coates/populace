@@ -23,12 +23,14 @@ If you don't have a OSSRH account, then [sign up for one](https://issues.sonatyp
 
 ### Bump the version number:
 1. `git checkout master`
+1. `git pull`
 1. Change the `version` variable in the root `build.gradle` file. Populace uses [semantic versioning](semver.org).
 1. Search for the old version number and replace with new version. This will normally only be found in documentation.
 1. Check in and push changes.
 
 ### Create release branch:
 1. `git checkout master`
+1. `git pull`
 1. `git checkout -b release/<new version number>` e.g. `git checkout -b release/1.2.3`
 1. `git push origin release/<new version number>`
 

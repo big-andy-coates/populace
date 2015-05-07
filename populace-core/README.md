@@ -12,11 +12,12 @@ You provide [`Visitors`](#visitors) that will be called back as each field/eleme
 
 ### Visitors
 
-Coming soon.
+Documentation coming soon.
+<!--- Todo(ac): and also link to java docs for all these types --->
 
 ### Filters
 
-Coming soon.
+Documentation coming soon.
 <!--- Todo(ac): --->
 
 #### Instance tracking
@@ -42,7 +43,7 @@ GraphWalker walker = builder
 
 ### Inspectors
 
-Coming soon.
+Documentation coming soon.
 <!--- Todo(ac): --->
 
 ## Graph Populating
@@ -55,12 +56,12 @@ You can control this process by installing [`Mutators`](#mutators), which are re
 
 ### Mutators
 
-Coming soon.
+Documentation coming soon.
 <!--- Todo(ac): --->
 
 ### Instance Factories
 
-Coming soon.
+Documentation coming soon.
 <!--- Todo(ac): --->
 
 ## Registering Customisations
@@ -132,16 +133,16 @@ class SomeClass {
 
 ## Null elements
 
-Coming soon.
+Documentation coming soon.
 <!--- Todo(ac): --->
 
 ## Non-null elements
 
-Coming soon.
+Documentation coming soon.
 <!--- Todo(ac): --->
 
 ## Null Object handling
 
-Coming soon.
+Documentation coming soon.
 <!--- Todo(ac): --->
 

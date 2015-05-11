@@ -53,7 +53,7 @@ Aside from the javadocs jar released to maven central, the javadocs for the rele
 available on the projects website i.e. <http://datalorax.github.io/populace>. This is currently a manual process.
 
 1. Switch to the release branch: `git checkout release/<release-number>`
-1. Build the javadocs: `gradlew javadoc`
+1. Build the javadocs: `gradlew clean javadoc`
 1. Copy the contents of `/populace/populace-core/build/docs/javadoc` and
 `/populace/populace-module-jaxb-annotations/build/docs/javadoc` somewhere outside the repository
 1. Switch to the gh-pages branch `git checkout gh-pages`

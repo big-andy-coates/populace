@@ -17,8 +17,8 @@
 package org.datalorax.populace.core.walk.element;
 
 import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.core.util.ObjectUtils;
 import org.datalorax.populace.core.util.TypeResolver;
+import org.datalorax.populace.core.walk.GraphComponent;
 import org.datalorax.populace.core.walk.field.PathProvider;
 
 import java.lang.reflect.Type;
@@ -26,7 +26,7 @@ import java.lang.reflect.Type;
 /**
  * @author Andrew Coates - 04/03/2015.
  */
-public class ElementInfo {
+public class ElementInfo implements GraphComponent {
     private final RawElement element;
     private final TypeResolver typeResolver;
     private final PathProvider path;
@@ -41,6 +41,15 @@ public class ElementInfo {
         this.containerType = containerType;
         this.typeResolver = typeResolver;
         this.path = path;
+    }
+
+    /**
+     * Get the depth of this object into the walk
+     *
+     * @return the number of parent objects between this element and the root of the walk
+     */
+    public int getDepth() {
+        return path.getDepth();
     }
 
     /**
@@ -88,9 +97,8 @@ public class ElementInfo {
     @Override
     public String toString() {
         return "ElementInfo{" +
-            "element=" + ObjectUtils.safeToString(element) +
-            ", typeResolver=" + typeResolver +
-            ", path=" + path +
+            "path=" + path.getPath() +
+            ", type=" + getGenericType() +
             '}';
     }
 }

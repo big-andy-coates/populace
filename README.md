@@ -98,9 +98,10 @@ GraphWalker walker = GraphWalker.newBuilder().build();
 
 FieldVisitor fieldVisitor = FieldVisitors.chain(
     SetAccessibleFieldVisitor.INSTANCE,
-    field -> System.out.println(field.getName() + "=" + field.getValue()));
+    field -> System.out.println(field.toIndentedString() + "=" + field.getValue()));
 
-ElementVisitor elementVisitor = e -> System.out.println("element = " + e.getValue());
+ElementVisitor elementVisitor =
+    element -> System.out.println(element.toIndentedString() + "=" + element.getValue());
 
 walker.walk(contacts, fieldVisitor, elementVisitor);
 ```

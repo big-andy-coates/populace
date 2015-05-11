@@ -1,18 +1,22 @@
 # Populace-core
 
-This page provides information on how to use and customise the core graph walking and populating features of Populace
+This page provides information on how to use and customise the core graph [walking](#graph-walking) and
+[populating](#graph-populating) features of Populace
 
 ## Graph Walking
 
-Put simply, you can use `GraphWalker` to walk the fields and (container) elements of an object graph.
+Put simply, you can use `GraphWalker` to walk the fields and elements of an object graph.
 
-You provide [`Visitors`](#visitors) that will be called back as each field/element that is encountered. You can
+* **Fields** An instance of a class exposes the *fields* declared by the class definition.
+* **Elements** Where a field is a container type e.g. `List`, `Map`, etc, then the field can have child *elements*.
+
+You provide [`Visitors`](#visitors) that will be called for each field/element that is encountered. You can
  optionally control what fields and elements are included / excluded from the walk by installing [`Filters`](#filters),
- and you can control what fields and elements are exposed from custom types by installing [`Inspectors`](#inspectors).
+ and you can control what fields and elements are exposed from a specific type by installing [`Inspectors`](#inspectors).
 
 ### Filters
 
-Filters can be installed to stop specific fields or elements from being walked, (or visiting). Field and Element filters
+Filters can be installed to stop specific fields or elements from being walked, (or visited). Field and Element filters
 are installed when building a walker instance, as shown below:
 
 ```java
@@ -35,9 +39,10 @@ being visited more than once.
 
 The `InstanceTracker` is not installed by default, but can be installed as shown below.
 
-**Note**: The instance tracker is stateful and mutable. Therefore, multiple calls to `walk` that re-use the same
-`InstanceTracker` will carry over the list of visited instances from one walk to the next.  This is generally not
- desired.  If not desired, ensure you call `clear` on the instance tracker between each walk.
+**Note**: The instance tracker is stateful and mutable. It is therefore one of the few parts of Populace that is not
+thread-safe. Also, multiple calls to `walk` on the same walker will carry over the list of visited instances from one
+walk to the next.  This is generally not desired.  If not desired, ensure you call `clear` on the instance tracker
+between each walk.
 
 ```java
 InstanceTracker tracker = new InstanceTracker();
@@ -50,16 +55,17 @@ GraphWalker walker = builder
 
 ### Inspectors
 
-`Inspectors` are similar to [`Filters`](#filters) in some ways. Where as [`Filters`](#filters) control which of the
-types / instances fields and elements are walked, `Inspectors` actual define the set of exposed fields/elements.
+`Inspectors` are similar to [`Filters`](#filters) in some ways. Where as [`Filters`](#filters) , given the list of fields
+and elements a type exposed, controls which fields and elements should be walked, `Inspectors` actual define the set of
+exposed fields/elements.
 
-`Inspectors` should be generic, in that they should expose the fields and elements in a generic, none use-case specific,
-manner, so that they can be reused across many use-cases and applications. On the other hand, Filters can to be specific
-to the use-case.
+`Inspectors` should exposed the fields and elements of a type and should be re-usable by others who use the same type.
+Avoid implementing inspectors to expose only a subset. On the other hand, filters, or combinations of filters, can be
+used to customise a walker to a specific use-case.
 
-Populace defines a whole set of inspectors to cover most common types. (If you feel there is a inspector missing for
-some common type then please raise a ticket, or even better a PR). You may need to write your own inspectors, especially
-if you have custom container types that are not derived from the standard `List`, `Set` or `Map` interfaces.
+Populace defines inspector to cover most common types. (If you feel there is a inspector missing for some common type
+then please raise a ticket, or even better a PR). You may need to write your own inspectors, especially if you have
+custom container types that are not derived from the standard `List`, `Set` or `Map` interfaces.
 
 Inspectors are installed when building a walker. Inspectors can be installed to handle specific types, any subtype of
 some type or any type within a package. See [Registering Customisations](#registering-customisations) for an
@@ -75,10 +81,11 @@ final GraphWalker walker = builder.withInspectors(builder.inspectors()
 
 ### Visitors
 
-The visitors you install will be called back as each non-filtered field and element visited. The visitor can mutate the
-value of the field/mutator if required, using the `setValue` methods on the supplied `FieldInfo`/`ElementInfo` instance.
+The visitors you pass to the `walk` function will be called back as each non-filtered field and element is visited. The
+visitor can mutate the value of the field/mutator if required, using the `setValue` methods on the supplied
+`FieldInfo`/`ElementInfo` instance.
 
-Visitors are passed to the `walk` method itself, like so:
+Visitors are are passed to the `walk` method:
 
 ```java
 walker.walk(typeToWalk, fieldVisitor, elementVisitor);
@@ -94,18 +101,17 @@ You can control this process by installing [`Mutators`](#mutators), which are re
 
 ### Mutators
 
-Mutators allow you to install custom code to control how certain types are mutated, giving you complete control over how
+Mutators allow you to install custom code to control how a type is mutated, giving you complete control over how
 your object graphs are populated.
 
-Populace comes complete with a lot of standard Mutators that can be composed to achieve most tasks, and you are free to
-implement your own as needed. By default, a new populator comes pre-configured with a sensible set of mutators, that
+Populace comes complete with standard Mutators that can be composed to achieve most tasks, and you are free to
+implement your own as needed. By default, a new populator comes pre-configured with a sensible set of mutators that
 will handle most common types, though these can be overridden if needed.
 
-Mutators can be installed to mutate specific types, subtypes of some type, any type belonging to a package, and
-default mutators for array and non-array types can also be configured. See
+Mutators can be installed to mutate specific types, subtypes of some known super-type, and any type belonging to a package,
+plus default mutators for array and non-array types can also be configured. See
 [Registering Customisations](#registering-customisations) for an explanation of the different levels. See below for an
 example:
-
 
 ```java
 GraphPopulator.Builder builder = GraphPopulator.newBuilder();
@@ -118,20 +124,20 @@ GraphPopulator populator = builder
 
 ### Instance Factories
 
-Instance Factories allow you to install custom code to control how certain types are created. Populace needs this to
-allow fields that are currently null, or container types that are currently empty, to be populated.
+Instance Factories allow you to install custom code to control how a type is created. Populace needs this to allow
+fields that are currently null, or container types that are currently empty, to be populated.
 
-Populace comes complete with a lot of factories for standard types and any type that can be constructed using its
-default constructor. For other types you will need to implement custom instance factories.
+Populace comes complete with factories for standard types and any type that can be constructed using its default
+constructor, for any other type you will need to implement and register an instance factory.
 
-Instance factories can be installed for specific types, subtypes of some type, any type belonging to a package, and
+Instance factories can be installed for specific types, subtypes of some super-type, any type belonging to a package, and
 default factories for array and non-array types can also be configured. See
 [Registering Customisations](#registering-customisations) for an explanation of the different levels.
 
 In addition, a special type of instance factory, called a `NullObjectStrategy`, can be installed to handle any null
 `Object` s i.e. fields or elements where no type information is available, i.e. they are either of type `Object` or their
- type information can't be resolved, and the current value is null. In such situations Populace does not have enough
- information to populate the element, but you may chose to do handle this however you like by installing a custom
+ type information can't be resolved, and the current value is `null`. In such situations Populace does not have enough
+ information to populate the element, but you may chose to handle this however you like by installing a custom
  `NullObjectStrategy`.
 
 Instance factories can be installed as shown below:
@@ -154,21 +160,27 @@ Many of the customisations available in Populace, such as `Mutators`, `Inspector
 e.g. `MyType<Integer>`, or a specific array type e.g. `long[]`. Such handlers will be used in preference to any other handler.
 * **super types** i.e. you can register a handler for a super type such as `List` and it will be used to handle any
 derived types that do not have a more specific handler installed.
-* **packages** i.e. you can register a handler to handle any types that belong to specific package e.g. `java.lang.util`.
-The handler will be used for any type that belongs to the package that do not have a more specific handler installed.
-* **default** this is the default handler to use if the type is not an array type and no other, more specific, handler is
-installed.
+* **packages** i.e. you can register a handler to handle any types that belong to a specific package e.g.
+`java.lang.util`. The handler will be used for any type that belongs to the package, including child packages, that do
+not have a more specific handler installed.
+* **default** this is the default handler to be use if the type is not an array type and no other, more specific,
+handler is installed.
 * **array default** arrays are treated slightly differently. The default array handler will be used where no specific
 handler is registered for an array type.
 
-To understand what type will be used at runtime to look up suitable handlers you will first need to understand how Populace
- [determines runtime type information](#runtime-type-resolution).
+To understand what type informamtion will be used at runtime to look up suitable handlers you will first need to
+understand how Populace [determines runtime type information](#runtime-type-resolution).
 
 # Runtime-type resolution
 
-Populace determines the runtime type of a field or element by making use of all compile-time and runtime type information
-available.  Fields and elements with a null value are treated differently to non-null values, as non-null values have
+Populace determines the runtime type of a field or element by making at both the compile-time and runtime type information
+available. Fields and elements with a null value are treated differently to non-null values, as non-null values have
 additional runtime type information.
+
+**Note** to make use of runtime time information the fields Populace is walking need to be accessible. It is strongly
+advised that you install the `SetAccessibleFieldVisitor` to ensure fields are accessible. However, this is optional as
+Populace does support running with a security manager that would not allow the field to be made accessible. In such a
+situation Populace will only use compile-time type information.
 
 ## Null fields
 When the value of the field is null the only information available is the compile type type of the field.
@@ -177,9 +189,9 @@ If the compile time type of the field is a normal class, e.g. `long` or `List`, 
 information when looking up configured customisations.
 
 If the compile time type of the field is a parameterised type, e.g. `Map<String,Integer>`, then Populace will use the
-full parameterised type when looking up customisations. In addition, if any of the type arguments are type variables,
-or have bounds, e.g. consider the field 'example' in the following code snippet below, Populace will use all
-available type information in parent/containing classes to resolve the type variables or bounds to concrete types.
+full parameterised type when looking up customisations. In addition, if any of the type arguments are type variables or
+wildcards, e.g. consider the field 'example' in the following code snippet below, Populace will use all available type
+information in parent/containing classes to resolve the type variables and any bounds to concrete types.
 
 ```java
 class SomeClass<T> {
@@ -197,15 +209,20 @@ class SomeClass<T> {
 ```
 
 ## Non-null fields
-When the value of the field is not null, then Populace has additional type information available to it, and it will use
-this information to resolve the type of the field to a more specific type, if possible.
+When the value of the field is not null, and the field is accessible, then Populace has additional type information
+available to it, and it will use this information to resolve the type of the field to a more specific type, if possible.
+
+Because Populace can only make use of the fields runtime type information if the field is accessible it is strongly
+advised that you install the `SetAccessibleFieldVisitor`, to ensure all fields are accessible, unless there is a good
+reason not to.  Without `SetAccessibleFieldVisitor` installed, Populace will not be able to use runtime type
+information. In which case, the logic for determining type information is the [same as if the field was null](#null-fields).
 
 If the runtime type of the field is a normal class, then the more specific runtime type will be used.
 
 If the runtime type of the field is a type that has type arguments, then Populace will parameterise the runtime type
 using all available type information in the field's compile-time type and parent/container type information, e.g. if a
 field type is `List<String>` and the field value is an instance of `ArrayList`, then Populace will resolve the type to
-`ArrayList<String>`. Populace will also attempt to resolve any type variables and bounds, as needed.
+`ArrayList<String>`. Populace will also attempt to resolve all type variables and bounds.
 
 ## Null elements
 

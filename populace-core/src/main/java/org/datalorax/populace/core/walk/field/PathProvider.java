@@ -21,4 +21,6 @@ package org.datalorax.populace.core.walk.field;
  */
 public interface PathProvider {
     String getPath();
+
+    int getDepth();
 }

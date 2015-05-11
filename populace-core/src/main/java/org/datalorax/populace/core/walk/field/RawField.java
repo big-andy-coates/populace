@@ -130,6 +130,15 @@ public class RawField {
     }
 
     /**
+     * Determine if this field is accessible i.e. that its value can be retrieved and/or set.
+     *
+     * @return true if this field is accessible, false otherwise.
+     */
+    public boolean isAccessible() {
+        return field.isAccessible();
+    }
+
+    /**
      * Ensure the field represented by this {@code RawField} is accessible i.e that calls to {@link #getValue(Object)}
      * and {@link #setValue(Object, Object)} won't through {@link java.lang.IllegalAccessException}
      */

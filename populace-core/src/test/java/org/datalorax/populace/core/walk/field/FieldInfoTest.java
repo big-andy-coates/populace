@@ -26,6 +26,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -227,6 +229,7 @@ public class FieldInfoTest {
     @Test
     public void shouldGetGenericTypeFromFieldIfValueNull() throws Exception {
         // Given:
+        givenFieldIsAccessible();
         givenFieldHasValue(null, Map.class);
         when(field.getGenericType()).thenReturn(genericType);
 
@@ -237,10 +240,24 @@ public class FieldInfoTest {
         verify(typeResolver).resolve(genericType);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void shouldGetGenericTypeFromValueIfNotNull() throws Exception {
+    public void shouldGetGenericTypeFromFieldIfFieldInaccessible() throws Exception {
         // Given:
+        givenFieldIsNotAccessible();
+        givenFieldHasValue("some-value");
+        when(field.getGenericType()).thenReturn(genericType);
+
+        // When:
+        fieldInfo.getGenericType();
+
+        // Then:
+        verify(typeResolver).resolve(genericType);
+    }
+
+    @Test
+    public void shouldGetGenericTypeFromValueIfNotNullAndAccessible() throws Exception {
+        // Given:
+        givenFieldIsAccessible();
         givenFieldHasValue("some-value");
 
         // When:
@@ -332,12 +349,72 @@ public class FieldInfoTest {
     public void shouldIncludePathInToString() throws Exception {
         // Given:
         when(pathProvider.getPath()).thenReturn("some/path");
+        givenFieldHasValue("value");
 
         // When:
         final String string = fieldInfo.toString();
 
         // Then:
         assertThat(string, containsString("some/path"));
+    }
+
+    @Test
+    public void shouldIncludePrimitiveTypeInPath() throws Exception {
+        // Given:
+        givenFieldIsAccessible();
+        givenFieldHasType(long.class);
+
+        // When:
+        final String string = fieldInfo.toString();
+
+        // Then:
+        assertThat(string, containsString("long"));
+    }
+
+    @Test
+    public void shouldIncludeGenericTypeInPathIfAccessible() throws Exception {
+        // Given:
+        givenFieldIsAccessible();
+        givenFieldHasValue(new ArrayList(), List.class);
+        when(typeResolver.resolve(any(Type.class))).thenReturn(genericType);
+
+        // When:
+        final String string = fieldInfo.toString();
+
+        // Then:
+        assertThat(string, containsString("type=java.util.Map<K, V>"));
+    }
+
+    @Test
+    public void shouldIncludeNonGenericTypeOInPathIfInaccessible() throws Exception {
+        // Given:
+        givenFieldIsNotAccessible();
+        givenFieldHasType(Map.class);
+        when(typeResolver.resolve(any(Type.class))).thenReturn(genericType);
+
+        // When:
+        final String string = fieldInfo.toString();
+
+        // Then:
+        assertThat(string, containsString("type=java.util.Map<K, V>"));
+    }
+
+    @Test
+    public void shouldReturnInaccessible() throws Exception {
+        // Given:
+        givenFieldIsNotAccessible();
+
+        // Then:
+        assertThat("should be inaccessible if field is inaccessible", fieldInfo.isAccessible(), is(false));
+    }
+
+    @Test
+    public void shouldReturnAccessible() throws Exception {
+        // Given:
+        givenFieldIsAccessible();
+
+        // Then:
+        assertThat("should be accessible if field is accessible", fieldInfo.isAccessible(), is(true));
     }
 
     @Test
@@ -350,16 +427,61 @@ public class FieldInfoTest {
     }
 
     @Test
+    public void shouldReportDepth() throws Exception {
+        // Given:
+        when(pathProvider.getDepth()).thenReturn(43);
+
+        // Then:
+        assertThat(fieldInfo.getDepth(), is(43));
+    }
+
+    @Test
+    public void shouldNotPropagateOwningInstanceToStringExceptions() throws Exception {
+        // Given:
+        givenFieldHasType(Map.class);
+        when(owningInstance.toString()).thenThrow(new RuntimeException("BANG!"));
+
+        // When:
+        final String string = fieldInfo.toString();
+
+        // Then:
+        // Didn't go pop!
+        assertThat(string, is(not("")));
+    }
+
+    @Test
+    public void shouldNotPropagateRawFieldToStringExceptions() throws Exception {
+        // Given:
+        givenFieldHasType(String.class);
+        when(field.toString()).thenThrow(new RuntimeException("BANG!"));
+
+        // When:
+        final String string = fieldInfo.toString();
+
+        // Then:
+        // Didn't go pop!
+        assertThat(string, is(not("")));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
+        // Given:
+        givenFieldHasValue("value");
+
         final PathProvider otherPathProvider = mock(PathProvider.class, "other");
         when(pathProvider.getPath()).thenReturn("somePath");
         when(otherPathProvider.getPath()).thenReturn("differentPath");
 
+        final RawField otherField = mock(RawField.class, "other");
+        when(otherField.getType()).thenReturn((Class) long.class);
+
+        // Then:
         new EqualsTester()
             .addEqualityGroup(
                 new FieldInfo(field, owningInstance, typeResolver, pathProvider),
                 new FieldInfo(field, owningInstance, typeResolver, pathProvider),
-                new FieldInfo(mock(RawField.class, "other"), owningInstance, typeResolver, pathProvider),
+                new FieldInfo(otherField, owningInstance, typeResolver, pathProvider),
                 new FieldInfo(field, new Object(), typeResolver, pathProvider),
                 new FieldInfo(field, owningInstance, mock(TypeResolver.class, "other"), pathProvider))
             .addEqualityGroup(
@@ -376,39 +498,25 @@ public class FieldInfoTest {
             .testAllPublicConstructors(FieldInfo.class);
     }
 
-    @Test
-    public void shouldNotPropagateOwningInstanceToStringExceptions() throws Exception {
-        // Given:
-        when(owningInstance.toString()).thenThrow(new RuntimeException("BANG!"));
-
-        // When:
-        final String string = fieldInfo.toString();
-
-        // Then:
-        // Didn't go pop!
-        assertThat(string, is(not("")));
-    }
-
-    @Test
-    public void shouldNotPropagateRawFieldToStringExceptions() throws Exception {
-        // Given:
-        when(field.toString()).thenThrow(new RuntimeException("BANG!"));
-
-        // When:
-        final String string = fieldInfo.toString();
-
-        // Then:
-        // Didn't go pop!
-        assertThat(string, is(not("")));
-    }
-
     private void givenFieldHasValue(final Object value) throws IllegalAccessException {
         givenFieldHasValue(value, value.getClass());
     }
 
-    @SuppressWarnings("unchecked")
-    private void givenFieldHasValue(final Object value, Class type) throws IllegalAccessException {
+    private void givenFieldHasValue(final Object value, final Class type) throws IllegalAccessException {
         when(field.getValue(anyObject())).thenReturn(value);
+        givenFieldHasType(type);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void givenFieldHasType(final Class type) {
         when(field.getType()).thenReturn(type);
+    }
+
+    private void givenFieldIsAccessible() {
+        when(field.isAccessible()).thenReturn(true);
+    }
+
+    private void givenFieldIsNotAccessible() {
+        when(field.isAccessible()).thenReturn(false);
     }
 }

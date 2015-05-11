@@ -28,8 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -95,6 +94,19 @@ public class ElementInfoTest {
 
         // Then:
         verify(element).setValue(newValue);
+    }
+
+    @Test
+    public void shouldNotPropagateRawElementToStringExceptions() throws Exception {
+        // Given:
+        when(element.toString()).thenThrow(new RuntimeException("BANG!"));
+
+        // When:
+        final String string = elementInfo.toString();
+
+        // Then:
+        // Didn't go pop!
+        assertThat(string, is(not("")));
     }
 
     @Test

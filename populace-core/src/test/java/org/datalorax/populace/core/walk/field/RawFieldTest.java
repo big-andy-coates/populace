@@ -115,6 +115,24 @@ public class RawFieldTest {
     }
 
     @Test
+    public void shouldReturnInaccessible() throws Exception {
+        // Given:
+        field.setAccessible(false);
+
+        // Then:
+        assertThat("should be inaccessible if field is inaccessible", rawField.isAccessible(), is(false));
+    }
+
+    @Test
+    public void shouldReturnAccessible() throws Exception {
+        // Given:
+        field.setAccessible(true);
+
+        // Then:
+        assertThat("should be accessible if field is accessible", rawField.isAccessible(), is(true));
+    }
+
+    @Test
     public void shouldEnsureAccessible() throws Exception {
         // Given:
         field.setAccessible(false);

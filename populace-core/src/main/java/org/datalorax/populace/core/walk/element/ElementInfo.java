@@ -87,9 +87,8 @@ public class ElementInfo {
     @Override
     public String toString() {
         return "ElementInfo{" +
-            "element=" + element +
-            ", typeResolver=" + typeResolver +
-            ", path=" + path +
+            "path=" + path.getPath() +
+            ", type=" + getGenericType() +
             '}';
     }
 }

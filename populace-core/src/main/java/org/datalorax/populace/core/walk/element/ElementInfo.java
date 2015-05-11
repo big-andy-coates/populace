@@ -17,7 +17,6 @@
 package org.datalorax.populace.core.walk.element;
 
 import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.core.util.ObjectUtils;
 import org.datalorax.populace.core.util.TypeResolver;
 import org.datalorax.populace.core.walk.GraphComponent;
 import org.datalorax.populace.core.walk.field.PathProvider;

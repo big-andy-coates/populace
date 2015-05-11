@@ -17,7 +17,6 @@
 package org.datalorax.populace.core.walk.field;
 
 import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.core.util.ObjectUtils;
 import org.datalorax.populace.core.util.TypeResolver;
 import org.datalorax.populace.core.walk.GraphComponent;
 
@@ -91,7 +90,7 @@ public class FieldInfo implements GraphComponent {
     /**
      * Returns the generic type of the field, resolved using all available type information e.g. type variables are resolved
      * where type information higher up the stack is available.
-     * <p>
+     *
      * <ul>
      * <li>For <b>primitive types</b> this method returns the type of the field.</li>
      * <li>For <b>non-primitive types with a null value</b> this method returns the resolved generic type of the field</li>
@@ -133,6 +132,7 @@ public class FieldInfo implements GraphComponent {
     }
 
     /**
+     * @return true if the field is accessible, false otherwise.
      * @see RawField#isAccessible()
      */
     public boolean isAccessible() {

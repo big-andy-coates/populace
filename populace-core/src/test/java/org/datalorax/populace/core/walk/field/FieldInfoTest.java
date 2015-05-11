@@ -426,6 +426,43 @@ public class FieldInfoTest {
         verify(field).ensureAccessible();
     }
 
+    @Test
+    public void shouldReportDepth() throws Exception {
+        // Given:
+        when(pathProvider.getDepth()).thenReturn(43);
+
+        // Then:
+        assertThat(fieldInfo.getDepth(), is(43));
+    }
+
+    @Test
+    public void shouldNotPropagateOwningInstanceToStringExceptions() throws Exception {
+        // Given:
+        givenFieldHasType(Map.class);
+        when(owningInstance.toString()).thenThrow(new RuntimeException("BANG!"));
+
+        // When:
+        final String string = fieldInfo.toString();
+
+        // Then:
+        // Didn't go pop!
+        assertThat(string, is(not("")));
+    }
+
+    @Test
+    public void shouldNotPropagateRawFieldToStringExceptions() throws Exception {
+        // Given:
+        givenFieldHasType(String.class);
+        when(field.toString()).thenThrow(new RuntimeException("BANG!"));
+
+        // When:
+        final String string = fieldInfo.toString();
+
+        // Then:
+        // Didn't go pop!
+        assertThat(string, is(not("")));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
@@ -459,41 +496,6 @@ public class FieldInfoTest {
             .setDefault(TypeResolver.class, typeResolver)
             .setDefault(PathProvider.class, pathProvider)
             .testAllPublicConstructors(FieldInfo.class);
-    }
-
-    @Test
-    public void shouldReportDepth() throws Exception {
-        // Given:
-        when(pathProvider.getDepth()).thenReturn(43);
-
-        // Then:
-        assertThat(fieldInfo.getDepth(), is(43));
-    }
-
-    @Test
-    public void shouldNotPropagateOwningInstanceToStringExceptions() throws Exception {
-        // Given:
-        when(owningInstance.toString()).thenThrow(new RuntimeException("BANG!"));
-
-        // When:
-        final String string = fieldInfo.toString();
-
-        // Then:
-        // Didn't go pop!
-        assertThat(string, is(not("")));
-    }
-
-    @Test
-    public void shouldNotPropagateRawFieldToStringExceptions() throws Exception {
-        // Given:
-        when(field.toString()).thenThrow(new RuntimeException("BANG!"));
-
-        // When:
-        final String string = fieldInfo.toString();
-
-        // Then:
-        // Didn't go pop!
-        assertThat(string, is(not("")));
     }
 
     private void givenFieldHasValue(final Object value) throws IllegalAccessException {

@@ -29,22 +29,23 @@ import org.testng.annotations.Test;
  * @author Andrew Coates - 20/03/2015.
  */
 public class WalkExample {
-    private static Contacts createPopulatedContacts() {
-        return GraphPopulator.newBuilder().build().populate(Contacts.class);
-    }
-
     @Test
     public void shouldWalkContacts() throws Exception {
-        // Example used in main README.md
+        // Example used in root \README.md
         Contacts contacts = createPopulatedContacts();
         GraphWalker walker = GraphWalker.newBuilder().build();
 
         FieldVisitor fieldVisitor = FieldVisitors.chain(
             SetAccessibleFieldVisitor.INSTANCE,
-            field -> System.out.println(field.getName() + "=" + field.getValue()));
+            field -> System.out.println(field.toIndentedString() + "=" + field.getValue()));
 
-        ElementVisitor elementVisitor = e -> System.out.println("element = " + e.getValue());
+        ElementVisitor elementVisitor =
+            element -> System.out.println(element.toIndentedString() + "=" + element.getValue());
 
         walker.walk(contacts, fieldVisitor, elementVisitor);
+    }
+
+    private static Contacts createPopulatedContacts() {
+        return GraphPopulator.newBuilder().build().populate(Contacts.class);
     }
 }

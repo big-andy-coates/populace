@@ -119,4 +119,13 @@ public class ElementInfoTest {
             .setDefault(PathProvider.class, pathProvider)
             .testAllPublicConstructors(ElementInfo.class);
     }
+
+    @Test
+    public void shouldReportDepth() throws Exception {
+        // Given:
+        when(pathProvider.getDepth()).thenReturn(19);
+
+        // Then:
+        assertThat(elementInfo.getDepth(), is(19));
+    }
 }

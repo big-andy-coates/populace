@@ -18,6 +18,7 @@ package org.datalorax.populace.core.walk.field;
 
 import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.util.TypeResolver;
+import org.datalorax.populace.core.walk.GraphComponent;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -27,11 +28,11 @@ import java.lang.reflect.Type;
  *
  * @author Andrew Coates - 04/03/2015.
  */
-public class FieldInfo {
+public class FieldInfo implements GraphComponent {
     private final RawField field;
     private final Object owningInstance;
     private final TypeResolver typeResolver;
-    private final PathProvider pathProvider;
+    private final PathProvider path;
 
     /**
      * Construct a new FieldInfo object
@@ -39,17 +40,27 @@ public class FieldInfo {
      * @param field          the raw field this instance should augment
      * @param owningInstance the instance from which to get / set the current value of this field
      * @param typeResolver   the resolver to use to resolve generic types
-     * @param pathProvider   the provider of the path to this instance.
+     * @param path           the provider of the path to this instance.
      */
-    public FieldInfo(final RawField field, final Object owningInstance, final TypeResolver typeResolver, final PathProvider pathProvider) {
+    public FieldInfo(final RawField field, final Object owningInstance,
+                     final TypeResolver typeResolver, final PathProvider path) {
         Validate.notNull(field, "field null");
         Validate.notNull(owningInstance, "owningInstance null");
         Validate.notNull(typeResolver, "typeResolver null");
-        Validate.notNull(pathProvider, "pathProvider null");
+        Validate.notNull(path, "path null");
         this.field = field;
         this.owningInstance = owningInstance;
         this.typeResolver = typeResolver;
-        this.pathProvider = pathProvider;
+        this.path = path;
+    }
+
+    /**
+     * Get the depth of this object into the walk
+     *
+     * @return the number of parent objects between this element and the root of the walk
+     */
+    public int getDepth() {
+        return path.getDepth();
     }
 
     /**
@@ -79,12 +90,18 @@ public class FieldInfo {
     /**
      * Returns the generic type of the field, resolved using all available type information e.g. type variables are resolved
      * where type information higher up the stack is available.
-     *
+     * <p>
      * <ul>
      * <li>For <b>primitive types</b> this method returns the type of the field.</li>
      * <li>For <b>non-primitive types with a null value</b> this method returns the resolved generic type of the field</li>
      * <li>For <b>non-primitive types with a non-null value</b> this method returns the resolved generic type of the value</li>
      * </ul>
+     *
+     * <b>Note: This method will make use of the runtime type information available within the fields value if the field
+     * is accessible. It is strongly recommended that you install the
+     * {@link org.datalorax.populace.core.walk.visitor.SetAccessibleFieldVisitor} so that Populace can make use of this
+     * additional type information</b>
+     *
      * @return the generic type of the field
      * @see RawField#getGenericType()
      */
@@ -93,9 +110,11 @@ public class FieldInfo {
             return field.getType();
         }
 
-        final Object value = getValue();
-        if (value != null) {
-            return typeResolver.resolve(value.getClass());
+        if (isAccessible()) {
+            final Object value = getValue();
+            if (value != null) {
+                return typeResolver.resolve(value.getClass());
+            }
         }
 
         return typeResolver.resolve(field.getGenericType());
@@ -110,6 +129,13 @@ public class FieldInfo {
      */
     public Object getOwningInstance() {
         return owningInstance;
+    }
+
+    /**
+     * @see RawField#isAccessible()
+     */
+    public boolean isAccessible() {
+        return field.isAccessible();
     }
 
     /**
@@ -128,7 +154,7 @@ public class FieldInfo {
         try {
             return field.getValue(getOwningInstance());
         } catch (ReflectiveOperationException e) {
-            throw new FieldAccessException(field, pathProvider, e);
+            throw new FieldAccessException(field, path, e);
         }
     }
 
@@ -143,7 +169,7 @@ public class FieldInfo {
         try {
             field.setValue(getOwningInstance(), value);
         } catch (ReflectiveOperationException e) {
-            throw new FieldAccessException(field, pathProvider, e);
+            throw new FieldAccessException(field, path, e);
         }
     }
 
@@ -187,21 +213,20 @@ public class FieldInfo {
         if (o == null || getClass() != o.getClass()) return false;
 
         final FieldInfo that = (FieldInfo) o;
-        return pathProvider.getPath().equals(that.pathProvider.getPath());
+        return path.getPath().equals(that.path.getPath());
     }
 
     @Override
     public int hashCode() {
-        return pathProvider.getPath().hashCode();
+        return path.getPath().hashCode();
     }
 
     @Override
     public String toString() {
+
         return "FieldInfo{" +
-            "field=" + field +
-            ", owningInstance=" + owningInstance +
-            ", typeResolver=" + typeResolver +
-            ", path=" + pathProvider.getPath() +
+            "path=" + path.getPath() +
+            ", type=" + getGenericType() +
             '}';
     }
 }

@@ -149,9 +149,10 @@ public class GraphWalker {
         // Todo(ac): Figure out best return type and standardise...
         final Iterator<RawElement> elements = inspector.getElements(instance, context.getInspectors());
 
+        int i = 0;
         while (elements.hasNext()) {
             final RawElement element = elements.next();
-            final WalkerStack elementStack = stack.push(element);
+            final WalkerStack elementStack = stack.push(element, i++);
             final ElementInfo elementInfo = new ElementInfo(element, containerType, elementStack.getTypeResolver(), elementStack);
 
             if (context.isExcludedElement(elementInfo)) {

@@ -33,13 +33,16 @@ import java.util.function.Consumer;
  */
 public abstract class WalkerStack implements PathProvider, TypeTable {
     private final WalkerStack parent;
+    private final int depth;
 
     private WalkerStack() {
         this.parent = null;
+        this.depth = 0;
     }
 
     private WalkerStack(final WalkerStack parent) {
         this.parent = parent;
+        this.depth = parent.getDepth() + 1;
     }
 
     public static WalkerStack newStack(final Object root) {
@@ -50,14 +53,19 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
         return new FieldFrame(this, field);
     }
 
-    public WalkerStack push(final Object element) {
-        return new ElementFrame(this, element);
+    public WalkerStack push(final Object element, final int index) {
+        return new ElementFrame(this, element, index);
     }
 
     public String getPath() {
         final StringBuilder builder = new StringBuilder();
         getFrames().forEach(frame -> builder.append(frame.getToken()));
         return builder.toString();
+    }
+
+    @Override
+    public int getDepth() {
+        return depth;
     }
 
     public abstract Type resolveTypeVariable(final TypeVariable variable);
@@ -127,11 +135,12 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
     }
 
     private static final class ElementFrame extends WalkerStack {
-        private final Object element;
+        private final int index;
 
-        public ElementFrame(final WalkerStack parent, final Object element) {
+        @SuppressWarnings("UnusedParameters")   // For future use
+        public ElementFrame(final WalkerStack parent, final Object element, final int index) {
             super(parent);
-            this.element = element;
+            this.index = index;
         }
 
         @Override
@@ -141,7 +150,7 @@ public abstract class WalkerStack implements PathProvider, TypeTable {
 
         @Override
         protected String getToken() {
-            return "[" + element.getClass().getSimpleName() + "]";
+            return "[" + index + "]";
         }
     }
 }

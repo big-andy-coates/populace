@@ -17,6 +17,7 @@
 package org.datalorax.populace.core.walk.field;
 
 import org.apache.commons.lang3.Validate;
+import org.datalorax.populace.core.util.ObjectUtils;
 import org.datalorax.populace.core.util.TypeResolver;
 
 import java.lang.annotation.Annotation;
@@ -85,6 +86,7 @@ public class FieldInfo {
      * <li>For <b>non-primitive types with a null value</b> this method returns the resolved generic type of the field</li>
      * <li>For <b>non-primitive types with a non-null value</b> this method returns the resolved generic type of the value</li>
      * </ul>
+     *
      * @return the generic type of the field
      * @see RawField#getGenericType()
      */
@@ -198,8 +200,8 @@ public class FieldInfo {
     @Override
     public String toString() {
         return "FieldInfo{" +
-            "field=" + field +
-            ", owningInstance=" + owningInstance +
+            "field=" + ObjectUtils.safeToString(field) +
+            ", owningInstance=" + ObjectUtils.safeToString(owningInstance) +
             ", typeResolver=" + typeResolver +
             ", path=" + pathProvider.getPath() +
             '}';

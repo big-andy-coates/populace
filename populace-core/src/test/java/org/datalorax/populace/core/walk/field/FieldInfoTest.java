@@ -376,6 +376,32 @@ public class FieldInfoTest {
             .testAllPublicConstructors(FieldInfo.class);
     }
 
+    @Test
+    public void shouldNotPropagateOwningInstanceToStringExceptions() throws Exception {
+        // Given:
+        when(owningInstance.toString()).thenThrow(new RuntimeException("BANG!"));
+
+        // When:
+        final String string = fieldInfo.toString();
+
+        // Then:
+        // Didn't go pop!
+        assertThat(string, is(not("")));
+    }
+
+    @Test
+    public void shouldNotPropagateRawFieldToStringExceptions() throws Exception {
+        // Given:
+        when(field.toString()).thenThrow(new RuntimeException("BANG!"));
+
+        // When:
+        final String string = fieldInfo.toString();
+
+        // Then:
+        // Didn't go pop!
+        assertThat(string, is(not("")));
+    }
+
     private void givenFieldHasValue(final Object value) throws IllegalAccessException {
         givenFieldHasValue(value, value.getClass());
     }

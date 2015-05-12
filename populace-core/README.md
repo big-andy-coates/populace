@@ -55,11 +55,11 @@ GraphWalker walker = builder
 
 ### Inspectors
 
-`Inspectors` are similar to [`Filters`](#filters) in some ways. Where as [`Filters`](#filters) , given the list of fields
+`Inspectors` are similar to [`Filters`](#filters) in some ways. Where as [`Filters`](#filters), given the list of fields
 and elements a type exposed, controls which fields and elements should be walked, `Inspectors` actual define the set of
 exposed fields/elements.
 
-`Inspectors` should exposed the fields and elements of a type and should be re-usable by others who use the same type.
+`Inspectors` should expose the fields and elements of a type and should be re-usable by others who use the same type.
 Avoid implementing inspectors to expose only a subset. On the other hand, filters, or combinations of filters, can be
 used to customise a walker to a specific use-case.
 
@@ -67,9 +67,10 @@ Populace defines inspector to cover most common types. (If you feel there is a i
 then please raise a ticket, or even better a PR). You may need to write your own inspectors, especially if you have
 custom container types that are not derived from the standard `List`, `Set` or `Map` interfaces.
 
-Inspectors are installed when building a walker. Inspectors can be installed to handle specific types, any subtype of
-some type or any type within a package. See [Registering Customisations](#registering-customisations) for an
-explanation of the different levels. See below for an example:
+Inspectors can be installed to handle a specific type, but they can also be installed so that they handle any types
+derived from a particular super-type, or any types that belong to a specific package. Populace also supports default
+inspectors for array and non-array types. See [Registering Customisations](#registering-customisations) for an
+explanation of the different levels. Inspectors are installed when building a walker:
 
 ```java
 final GraphWalker.Builder builder = GraphWalker.newBuilder();
@@ -82,8 +83,7 @@ final GraphWalker walker = builder.withInspectors(builder.inspectors()
 ### Visitors
 
 The visitors you pass to the `walk` function will be called back as each non-filtered field and element is visited. The
-visitor can mutate the value of the field/mutator if required, using the `setValue` methods on the supplied
-`FieldInfo`/`ElementInfo` instance.
+visitor can mutate the value of the field or element if required, using the `setValue` method.
 
 Visitors are are passed to the `walk` method:
 
@@ -139,6 +139,12 @@ In addition, a special type of instance factory, called a `NullObjectStrategy`, 
  type information can't be resolved, and the current value is `null`. In such situations Populace does not have enough
  information to populate the element, but you may chose to handle this however you like by installing a custom
  `NullObjectStrategy`.
+
+In addition, a special type of instance factory, called a `NullObjectStrategy`, can be installed to handle any null
+objects encountered i.e. null fields or elements where no type information is available because either their
+compile-type type is <code>Object</code> or an unresolvable <code>TypeVariable</code>. In such situations Populace does
+not have enough information to populate the element, but you may chose to handle this however you like by installing a
+custom `NullObjectStrategy`. By default, Populace logs a warning.
 
 Instance factories can be installed as shown below:
 

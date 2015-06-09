@@ -16,74 +16,45 @@
 
 package org.datalorax.populace.core.walk;
 
-import org.apache.commons.lang3.Validate;
 import org.datalorax.populace.core.walk.element.ElementInfo;
 import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.inspector.Inspector;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 
 import java.lang.reflect.Type;
-import java.util.function.Predicate;
 
 /**
- * Holds information about the configuration of the walker
- * @author Andrew Coates - 28/02/2015.
+ * @author Andrew Coates - 04/06/2015.
  */
-public class WalkerContext {
-    private final Predicate<FieldInfo> fieldFilter;
-    private final Predicate<ElementInfo> elementFilter;
-    private final Inspectors inspectors;
+public interface WalkerContext {
+    /**
+     * Called to determine if the provided {@code field} is excluded from the walk
+     *
+     * @param field the field to test for exclusion
+     * @return true the field should be excluded from the walk, true otherwise
+     */
+    boolean isExcludedField(FieldInfo field);
 
-    public WalkerContext(final Predicate<FieldInfo> fieldFilter,
-                         final Predicate<ElementInfo> elementFilter,
-                         final Inspectors inspectors) {
-        Validate.notNull(fieldFilter, "fieldFilter null");
-        Validate.notNull(elementFilter, "elementFilter null");
-        Validate.notNull(inspectors, "inspector null");
-        this.fieldFilter = fieldFilter;
-        this.elementFilter = elementFilter;
-        this.inspectors = inspectors;
-    }
+    /**
+     * Called to determine if the provided {@code element} is excluded from the walk
+     *
+     * @param element the element to test for exclusion
+     * @return true the element should be excluded from the walk, true otherwise
+     */
+    boolean isExcludedElement(ElementInfo element);
 
-    public boolean isExcludedField(final FieldInfo field) {
-        return !fieldFilter.test(field);
-    }
+    /**
+     * Called to retrieve the inspector configured in the system to handle the supplied {@code type}
+     *
+     * @param type the type to retrieve the inspector for
+     * @return the inspector configured in the system to handle the supplied {@code type}
+     */
+    Inspector getInspector(Type type);
 
-    public boolean isExcludedElement(final ElementInfo element) {
-        return !elementFilter.test(element);
-    }
-
-    public Inspector getInspector(final Type type) {
-        return inspectors.get(type);
-    }
-
-    public Inspectors getInspectors() {
-        return inspectors;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        final WalkerContext that = (WalkerContext) o;
-        return fieldFilter.equals(that.fieldFilter)
-            && elementFilter.equals(that.elementFilter)
-            && inspectors.equals(that.inspectors);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = fieldFilter.hashCode();
-        result = 31 * result + inspectors.hashCode();
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "WalkerContext{" +
-                "fieldFilter=" + fieldFilter +
-                ", inspectors=" + inspectors +
-                '}';
-    }
+    /**
+     * Get all the {@link org.datalorax.populace.core.walk.inspector.Inspector inspectors} installed in the system
+     *
+     * @return all the configured inspectors.
+     */
+    Inspectors getInspectors();
 }

@@ -35,7 +35,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WalkerContextTest {
+public class StdWalkerContextTest {
     @Mock(name = "main")
     private Predicate<FieldInfo> fieldFilter;
     @Mock(name = "other")
@@ -56,7 +56,7 @@ public class WalkerContextTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        context = new WalkerContext(fieldFilter, elementFilter, inspectors);
+        context = new StdWalkerContext(fieldFilter, elementFilter, inspectors);
     }
 
     @Test
@@ -112,14 +112,14 @@ public class WalkerContextTest {
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                new WalkerContext(fieldFilter, elementFilter, inspectors),
-                new WalkerContext(fieldFilter, elementFilter, inspectors))
+                new StdWalkerContext(fieldFilter, elementFilter, inspectors),
+                new StdWalkerContext(fieldFilter, elementFilter, inspectors))
             .addEqualityGroup(
-                new WalkerContext(fieldFilter2, elementFilter, inspectors))
+                new StdWalkerContext(fieldFilter2, elementFilter, inspectors))
             .addEqualityGroup(
-                new WalkerContext(fieldFilter, elementFilter2, inspectors))
+                new StdWalkerContext(fieldFilter, elementFilter2, inspectors))
             .addEqualityGroup(
-                new WalkerContext(fieldFilter, elementFilter, mock(Inspectors.class)))
+                new StdWalkerContext(fieldFilter, elementFilter, mock(Inspectors.class)))
             .testEquals();
     }
 
@@ -127,6 +127,6 @@ public class WalkerContextTest {
     public void shouldThrowNPEsOnConstructorParams() throws Exception {
         new NullPointerTester()
             .setDefault(Inspectors.class, inspectors)
-            .testAllPublicConstructors(WalkerContext.class);
+            .testAllPublicConstructors(StdWalkerContext.class);
     }
 }

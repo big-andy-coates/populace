@@ -32,6 +32,13 @@ public interface GraphComponent {
     int getDepth();
 
     /**
+     * Get the path to this component
+     *
+     * @return the path to this component
+     */
+    String getPath();
+
+    /**
      * Get the generic type of the component
      *
      * @return the generic type of the component

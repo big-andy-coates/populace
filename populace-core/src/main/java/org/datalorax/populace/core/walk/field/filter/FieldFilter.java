@@ -54,4 +54,5 @@ public interface FieldFilter extends Predicate<FieldInfo> {
     default boolean test(final FieldInfo field) {
         return include(field);
     }
+    // Todo(ac): Should take 'ImmutableFieldInfo'
 }

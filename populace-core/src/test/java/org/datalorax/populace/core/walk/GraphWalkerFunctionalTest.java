@@ -18,7 +18,6 @@ package org.datalorax.populace.core.walk;
 
 import org.datalorax.populace.core.CustomCollection;
 import org.datalorax.populace.core.walk.field.FieldInfo;
-import org.datalorax.populace.core.walk.field.FieldInfoMatcher;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
 import org.datalorax.populace.core.walk.inspector.TerminalInspector;
 import org.datalorax.populace.core.walk.instance.InstanceTracker;
@@ -34,7 +33,9 @@ import org.testng.annotations.Test;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import static org.datalorax.populace.core.walk.GraphComponentMatcher.isComponentMatching;
 import static org.datalorax.populace.core.walk.element.ElementInfoMatcher.elementOfType;
 import static org.datalorax.populace.core.walk.element.ElementInfoMatcher.elementWithValue;
 import static org.datalorax.populace.core.walk.field.FieldInfoMatcher.fieldInfo;
@@ -42,6 +43,7 @@ import static org.datalorax.populace.core.walk.field.FieldInfoMatcher.fieldWithV
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -76,9 +78,62 @@ public class GraphWalkerFunctionalTest {
         walker.walk(instance, accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(fieldVisitor).visit(argThat(FieldInfoMatcher.fieldInfo("_nested", TypeWithNestedObject.class, instance)));
-        verify(fieldVisitor).visit(argThat(FieldInfoMatcher.fieldInfo("_nested", NestedType.class, instance._nested)));
+        verify(fieldVisitor).visit(argThat(fieldInfo("_nested", TypeWithNestedObject.class, instance)));
+        verify(fieldVisitor).visit(argThat(fieldInfo("_nested", NestedType.class, instance._nested)));
         verifyNoMoreInteractions(fieldVisitor, elementVisitor);
+    }
+
+    // Todo(ac): remove once one uses other
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldStreamComponentsInOrder() throws Exception {
+        // Given:
+        final TypeWithNestedObject instance = new TypeWithNestedObject();
+
+        // When:
+        final List<GraphComponent> collected = walker.walk(instance, GraphWalker.Customisations.empty())
+            .peek(component -> {
+                if (component instanceof FieldInfo)
+                    ((FieldInfo) component).ensureAccessible(); // Todo(ac): Consider moving ensureAccessible to GraphComponent
+            })
+            .collect(Collectors.toList());
+
+        // Then:
+        assertThat(collected, contains(
+            isComponentMatching(FieldInfo.class, fieldInfo("_nested", TypeWithNestedObject.class, instance)),
+            isComponentMatching(FieldInfo.class, fieldInfo("_nested", NestedType.class, instance._nested))
+        ));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldIncludeComponentsOfFieldsSetClientCode() throws Exception {
+        // Given:
+        class SomeOtherType {
+            String field = "hello";
+        }
+        class SomeType {
+            SomeOtherType field;
+        }
+        final SomeType instance = new SomeType();
+
+        // When:
+        final List<GraphComponent> collected = walker.walk(instance, GraphWalker.Customisations.empty())
+            .peek(component -> {
+                if (component instanceof FieldInfo) {
+                    ((FieldInfo) component).ensureAccessible();
+                    if (component.getValue() == null) {
+                        component.setValue(new SomeOtherType());    // This child, provided while walking, should be walked
+                    }
+                }
+            })
+            .collect(Collectors.toList());
+
+        // Then:
+        assertThat(collected, contains(
+            isComponentMatching(FieldInfo.class, fieldInfo("field", SomeType.class, instance)),
+            isComponentMatching(FieldInfo.class, fieldInfo("field", SomeOtherType.class, instance.field))
+        ));
     }
 
     @Test

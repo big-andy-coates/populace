@@ -53,6 +53,15 @@ public class ElementInfo implements GraphComponent {
     }
 
     /**
+     * Get the path to this component
+     *
+     * @return the path to this component
+     */
+    public String getPath() {
+        return path.getPath();
+    }
+
+    /**
      * @return the generic type of the element
      * @see org.datalorax.populace.core.walk.element.RawElement#getGenericType(java.lang.reflect.Type)
      */

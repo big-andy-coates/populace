@@ -77,6 +77,6 @@ public class GraphWalkerBuilder implements GraphWalker.Builder {
     }
 
     private WalkerContext buildConfig() {
-        return new WalkerContext(fieldFilter, elementFilter, inspectors);
+        return new StdWalkerContext(fieldFilter, elementFilter, inspectors);
     }
 }

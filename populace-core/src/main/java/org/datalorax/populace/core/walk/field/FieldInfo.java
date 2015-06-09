@@ -64,6 +64,15 @@ public class FieldInfo implements GraphComponent {
     }
 
     /**
+     * Get the path to this component
+     *
+     * @return the path to this component
+     */
+    public String getPath() {
+        return path.getPath();
+    }
+
+    /**
      * @return the name of the field
      * @see RawField#getName()
      */

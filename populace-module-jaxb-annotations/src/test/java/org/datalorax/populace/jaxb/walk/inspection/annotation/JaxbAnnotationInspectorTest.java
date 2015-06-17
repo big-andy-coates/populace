@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -41,7 +42,7 @@ public class JaxbAnnotationInspectorTest {
     }
 
     @Test
-    public void shouldReturnNullForNonXmlAnnotations() throws Exception {
+    public void shouldReturnNullForFieldsIfNonXmlAnnotations() throws Exception {
         // Given:
         class SomeType {
             @Deprecated
@@ -51,6 +52,15 @@ public class JaxbAnnotationInspectorTest {
 
         // Then:
         assertThat(inspector.getAnnotation(field, Deprecated.class), is(nullValue()));
+    }
+
+    @Test
+    public void shouldReturnNullForMethodsIfNonXmlAnnotations() throws Exception {
+        // Given:
+        final Method method = getClass().getDeclaredMethod("shouldReturnNullForMethodsIfNonXmlAnnotations");
+
+        // Then:
+        assertThat(inspector.getAnnotation(Test.class), is(nullValue()));
     }
 
     @Test
@@ -103,7 +113,6 @@ public class JaxbAnnotationInspectorTest {
         final Field field = TypeWithAttributeOnField.class.getDeclaredField("field");
 
         // Then:
-        assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class), is(instanceOf(XmlJavaTypeAdapter.class)));
         assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterOne.class)));
     }
 
@@ -125,7 +134,6 @@ public class JaxbAnnotationInspectorTest {
         final Field field = TypeWithAttributeOnGetter.class.getDeclaredField("field");
 
         // Then:
-        assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class), is(instanceOf(XmlJavaTypeAdapter.class)));
         assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterTwo.class)));
     }
 
@@ -146,7 +154,6 @@ public class JaxbAnnotationInspectorTest {
         final Field field = TypeWithAttributeOnSetter.class.getDeclaredField("field");
 
         // Then:
-        assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class), is(instanceOf(XmlJavaTypeAdapter.class)));
         assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterThree.class)));
     }
 
@@ -188,7 +195,6 @@ public class JaxbAnnotationInspectorTest {
         final Field field = TypeWithOverloadedAccessors.class.getDeclaredField("field");
 
         // Then:
-        assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class), is(instanceOf(XmlJavaTypeAdapter.class)));
         assertThat(inspector.getAnnotation(field, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterTwo.class)));
     }
 
@@ -266,6 +272,45 @@ public class JaxbAnnotationInspectorTest {
         assertThat(inspector.getAnnotation(bigField, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterOne.class)));
         assertThat(inspector.getAnnotation(smallField, XmlJavaTypeAdapter.class), is(notNullValue()));
         assertThat(inspector.getAnnotation(smallField, XmlJavaTypeAdapter.class).value(), is(equalTo(TypeAdapterTwo.class)));
+    }
+
+    @XmlElement
+    @Test
+    public void shouldGetAnnotationOfFirstMethodIfPresent() throws Exception {
+        // Given:
+        final Method method1 = getClass().getDeclaredMethod("shouldGetAnnotationOfFirstMethodIfPresent");
+        final Method method2 = getClass().getDeclaredMethod("setUp");
+        final XmlElement expected = method1.getAnnotation(XmlElement.class);
+
+        // Then:
+        assertThat(inspector.getAnnotation(XmlElement.class, method1, method2), is(expected));
+    }
+
+    @XmlElement
+    @Test
+    public void shouldGetAnnotationOfSecondMethodIfPresentButNotOnFirst() throws Exception {
+        // Given:
+        final Method method1 = getClass().getDeclaredMethod("setUp");
+        final Method method2 = getClass().getDeclaredMethod("shouldGetAnnotationOfSecondMethodIfPresentButNotOnFirst");
+        final XmlElement expected = method2.getAnnotation(XmlElement.class);
+
+        // Then:
+        assertThat(inspector.getAnnotation(XmlElement.class, method1, method2), is(expected));
+    }
+
+    @Test
+    public void shouldReturnNullIfNoMethodsHaveAnnotation() throws Exception {
+        // Given:
+        final Method method1 = getClass().getDeclaredMethod("setUp");
+        final Method method2 = getClass().getDeclaredMethod("setUp");
+
+        // Then:
+        assertThat(inspector.getAnnotation(XmlElement.class, method1, method2), is(nullValue()));
+    }
+
+    @Test
+    public void shouldReturnNullOnEmptyArrayOfAccessors() throws Exception {
+        assertThat(inspector.getAnnotation(XmlElement.class), is(nullValue()));
     }
 
     @Test

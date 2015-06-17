@@ -24,6 +24,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -46,6 +47,18 @@ public class JaxbAnnotationInspector implements AnnotationInspector {
         annotation = annotation != null ? annotation : getFromGetter(field, type);
         annotation = annotation != null ? annotation : getFromSetter(field, type);
         return annotation;
+    }
+
+    @Override
+    public <T extends Annotation> T getAnnotation(final Class<T> type, final Method... accessorMethods) {
+        if (!type.getCanonicalName().startsWith("javax.xml.bind.annotation")) {
+            return null;
+        }
+
+        return Arrays.stream(accessorMethods)
+            .map(accessor -> accessor.getAnnotation(type))
+            .filter(annotation -> annotation != null)
+            .findFirst().orElse(null);
     }
 
     @Override

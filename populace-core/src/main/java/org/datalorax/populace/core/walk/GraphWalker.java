@@ -101,10 +101,11 @@ public class GraphWalker {
      * @param instance       the instance to walk
      * @param fieldVisitor   the visitor to call back on for each discovered field.
      * @param elementVisitor the visitor to call back on for each element of a collection field.
+     * @param customisations customisations to use for this walk, or {@link GraphWalker.Customisations#empty()}.
      */
     public void walk(final Object instance,
                      final FieldVisitor fieldVisitor, final ElementVisitor elementVisitor,
-                     final Customisations customisations) {
+                     final Customisations customisations) { // Todo(aC): use customisations!
         final Visitors visitors = new Visitors(fieldVisitor, elementVisitor);
         final WalkerStack walkerStack = WalkerStack.newStack(instance);
         walk(instance.getClass(), instance, visitors, walkerStack);
@@ -125,8 +126,7 @@ public class GraphWalker {
      * fields and elements of the object graph.
      */
     public Stream<GraphComponent> walk(final Object instance, final Customisations customisations) {
-        final WalkerStack walkerStack = WalkerStack.newStack(instance);
-        return getComponents(instance.getClass(), instance, walkerStack);
+        return new GraphComponentStream(new CustomisedWalkerContext(context, customisations)).stream(instance);
     }
 
     @Override

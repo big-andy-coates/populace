@@ -23,6 +23,7 @@ import org.datalorax.populace.core.walk.element.RawElement;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
@@ -30,15 +31,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 
-public class MapValueInspectorTest {
-    private MapValueInspector inspector;
+public class MapInspectorTest {
+    private MapInspector inspector;
     private Inspectors inspectors;
 
     @BeforeMethod
     public void setUp() throws Exception {
         inspectors = mock(Inspectors.class);
 
-        inspector = MapValueInspector.INSTANCE;
+        inspector = MapInspector.INSTANCE;
     }
 
     @Test
@@ -52,19 +53,22 @@ public class MapValueInspectorTest {
     }
 
     @Test
-    public void shouldExposeAllMapValues() throws Exception {
+    public void shouldExposeAllMapEntries() throws Exception {
         // Given:
         final Map<Integer, String> map = new HashMap<>();
         map.put(1, "a");
         map.put(2, "b");
+        final Iterator<Map.Entry<Integer, String>> it = map.entrySet().iterator();
+        final Object expectOne = it.next();
+        final Object expectTwo = it.next();
 
         // When:
         final List<RawElement> elements = toList(inspector.getElements(map, inspectors));
 
         // Then:
         assertThat(elements, hasSize(2));
-        assertThat(elements.get(0).getValue(), either(is((Object) "a")).or(is("b")));
-        assertThat(elements.get(1).getValue(), either(is((Object) "a")).or(is("b")));
+        assertThat(elements.get(0).getValue(), either(is(expectOne)).or(is(expectTwo)));
+        assertThat(elements.get(1).getValue(), either(is(expectOne)).or(is(expectTwo)));
         assertThat(elements.get(0).getValue(), is(not(elements.get(1).getValue())));
     }
 
@@ -77,18 +81,18 @@ public class MapValueInspectorTest {
         elements.next();
     }
 
-    @Test
-    public void shouldSetValue() throws Exception {
+    @Test(expectedExceptions = UnsupportedOperationException.class)
+    public void shouldThrowOnSetValue() throws Exception {
         // Given:
         final Map<Integer, String> map = new HashMap<>();
-        map.put(1, "old");
-        final RawElement element = inspector.getElements(map, inspectors).next();
+        map.put(1, "a");
+        final List<RawElement> elements = toList(inspector.getElements(map, inspectors));
 
         // When:
-        element.setValue("new");
+        elements.get(0).setValue(map.entrySet().iterator().next());
 
         // Then:
-        assertThat(map.get(1), is("new"));
+        // It throws
     }
 
     @Test
@@ -98,20 +102,25 @@ public class MapValueInspectorTest {
         map.put(1, "v");
 
         final Type containerType = TypeUtils.parameterise(Map.class, Integer.class, String.class);
-
-        // When:
         final RawElement element = inspector.getElements(map, inspectors).next();
 
+        // When:
+        final Type genericType = element.getGenericType(containerType);
+
         // Then:
-        assertThat(element.getGenericType(containerType), is(equalTo(String.class)));
+        assertThat(genericType, is(instanceOf(ParameterizedType.class)));
+        final ParameterizedType pt = (ParameterizedType) genericType;
+        assertThat(pt.getRawType().getTypeName(), is("java.util.HashMap$Node"));
+        assertThat(pt.getActualTypeArguments()[0], is(equalTo(Integer.class)));
+        assertThat(pt.getActualTypeArguments()[1], is(equalTo(String.class)));
     }
 
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                MapValueInspector.INSTANCE,
-                new MapValueInspector())
+                MapInspector.INSTANCE,
+                new MapInspector())
             .addEqualityGroup(
                 mock(Inspector.class))
             .testEquals();

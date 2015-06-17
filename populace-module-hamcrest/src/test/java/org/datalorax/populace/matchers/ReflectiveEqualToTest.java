@@ -18,6 +18,7 @@ package org.datalorax.populace.matchers;
 
 import com.sun.jmx.remote.internal.ArrayQueue;
 import org.hamcrest.Description;
+import org.mockito.InOrder;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -339,7 +340,7 @@ public class ReflectiveEqualToTest {
     }
 
     @Test
-    public void shouldDetectNoDifferenceOnSetsWithEntriesInDifferentOrder() throws Exception {
+    public void shouldDetectDifferenceOnOrderedSetsWithEntriesInDifferentOrder() throws Exception {
         // Given:
         class SomeType {
             Set<String> field = new CopyOnWriteArraySet<>();
@@ -359,7 +360,47 @@ public class ReflectiveEqualToTest {
         assertThat("precondition violated", l1, is(not(l2)));
 
         // Then:
-        assertThat(actual, is(reflectiveEqualTo(expected)));
+        assertThat(actual, is(not(reflectiveEqualTo(expected))));
+    }
+
+    @Test
+    public void shouldDescribeDifferenceOnOrderedMapsWithEntriesInDifferentOrder() throws Exception {
+        // Given:
+        class SomeType {
+            Set<String> field = new CopyOnWriteArraySet<>();
+        }
+
+        final SomeType expected = new SomeType();
+        expected.field.add("v1");
+        expected.field.add("v2");
+        expected.field.add("v3");
+        final SomeType actual = new SomeType();
+        actual.field.add("v3");
+        actual.field.add("v2");
+        actual.field.add("v1");
+
+        final List<String> l1 = asList(expected.field.iterator());
+        final List<String> l2 = asList(actual.field.iterator());
+        assertThat("precondition violated", l1, is(not(l2)));
+
+        // When:
+        reflectiveEqualTo(expected).describeMismatch(actual, mismatch);
+
+        // Then:
+        InOrder inOrder = inOrder(mismatch);
+        inOrder.verify(mismatch).appendText("SomeType.field[0]");
+        inOrder.verify(mismatch).appendText(argThat(containsString("expected")));
+        inOrder.verify(mismatch).appendValue("v1");
+        inOrder.verify(mismatch).appendText(argThat(containsString("actual")));
+        inOrder.verify(mismatch).appendValue("v3");
+
+        inOrder.verify(mismatch).appendText("SomeType.field[2]");
+        inOrder.verify(mismatch).appendText(argThat(containsString("expected")));
+        inOrder.verify(mismatch).appendValue("v3");
+        inOrder.verify(mismatch).appendText(argThat(containsString("actual")));
+        inOrder.verify(mismatch).appendValue("v1");
+
+        inOrder.verify(mismatch, never()).appendValue("v2");
     }
 
     @Test
@@ -387,7 +428,77 @@ public class ReflectiveEqualToTest {
     }
 
     @Test
-    public void shouldWorkWithMapKeysWithBadHashCodeAndEquals() throws Exception {
+    public void shouldDetectDifferenceOnOrderedMapsWithEntriesInDifferentOrder() throws Exception {
+        // Given:
+        class SomeType {
+            Map<Integer, String> field;
+        }
+
+        final SomeType expected = new SomeType();
+        expected.field = new LinkedHashMap<>();
+        expected.field.put(1, "v1");
+        expected.field.put(2, "v2");
+        expected.field.put(3, "v3");
+        final SomeType actual = new SomeType();
+        actual.field = new LinkedHashMap<>();
+        actual.field.put(3, "v3");
+        actual.field.put(2, "v2");
+        actual.field.put(1, "v1");
+
+        final List<String> values1 = asList(expected.field.values().iterator());
+        final List<String> values2 = asList(actual.field.values().iterator());
+        assertThat("precondition violated - on keys", expected.field.keySet(), is(actual.field.keySet()));
+        assertThat("precondition violated - on values", values1, is(not(values2)));
+
+        // Then:
+        assertThat(actual, is(not(reflectiveEqualTo(expected))));
+    }
+
+    @Test
+    public void shouldDescribeDifferenceInOrderedMapsWithEntriesInDifferentOrder() throws Exception {
+        // Given:
+        class SomeType {
+            Map<Integer, String> field;
+        }
+
+        final SomeType expected = new SomeType();
+        expected.field = new LinkedHashMap<>();
+        expected.field.put(1, "v1");
+        expected.field.put(2, "v2");
+        expected.field.put(3, "v3");
+        final SomeType actual = new SomeType();
+        actual.field = new LinkedHashMap<>();
+        actual.field.put(3, "v3");
+        actual.field.put(2, "v2");
+        actual.field.put(1, "v1");
+
+        final List<String> values1 = asList(expected.field.values().iterator());
+        final List<String> values2 = asList(actual.field.values().iterator());
+        assertThat("precondition violated - on keys", expected.field.keySet(), is(actual.field.keySet()));
+        assertThat("precondition violated - on values", values1, is(not(values2)));
+
+        // When:
+        reflectiveEqualTo(expected).describeMismatch(actual, mismatch);
+
+        // Then:
+        InOrder inOrder = inOrder(mismatch);
+        inOrder.verify(mismatch).appendText("SomeType.field[0]");
+        inOrder.verify(mismatch).appendText(argThat(containsString("expected")));
+        inOrder.verify(mismatch).appendValue(expected.field.get(1));
+        inOrder.verify(mismatch).appendText(argThat(containsString("actual")));
+        inOrder.verify(mismatch).appendValue(expected.field.get(3));
+
+        inOrder.verify(mismatch).appendText("SomeType.field[2]");
+        inOrder.verify(mismatch).appendText(argThat(containsString("expected")));
+        inOrder.verify(mismatch).appendValue(expected.field.get(3));
+        inOrder.verify(mismatch).appendText(argThat(containsString("actual")));
+        inOrder.verify(mismatch).appendValue(expected.field.get(1));
+
+        inOrder.verify(mismatch, never()).appendValue(expected.field.get(2));
+    }
+
+    @Test
+    public void shouldWorkWithMapKeysWithHashCodeAndEqualsThatMissFields() throws Exception {
         // Given:
         class KeyType {
             String field;
@@ -407,6 +518,11 @@ public class ReflectiveEqualToTest {
             public boolean equals(Object other) {
                 return true;
             }
+
+            @Override
+            public String toString() {
+                return "KeyType{'" + field + "\'," + otherField + '}';
+            }
         }
         class SomeType {
             Map<KeyType, String> field = new HashMap<>();
@@ -423,6 +539,7 @@ public class ReflectiveEqualToTest {
 
         // Then:
         assertThat(actual, is(not(reflectiveEqualTo(expected))));
+        // Todo(ac): To fix this we need an innspector for maps that exposes the keys as well as the values as children.
     }
 
     @SuppressWarnings("UnusedDeclaration")

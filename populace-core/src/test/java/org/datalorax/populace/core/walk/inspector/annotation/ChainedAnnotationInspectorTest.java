@@ -22,6 +22,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -32,6 +33,7 @@ public class ChainedAnnotationInspectorTest {
     private final Field field;
     private final Test annotation1;
     private final Test annotation2;
+    private final Method[] methods;
     private AnnotationInspector first;
     private AnnotationInspector second;
     private ChainedAnnotationInspector inspector;
@@ -40,8 +42,8 @@ public class ChainedAnnotationInspectorTest {
         this.field = getClass().getDeclaredField("field");
         this.annotation1 = getClass().getDeclaredMethod("dummyTest").getAnnotation(Test.class);
         this.annotation2 = getClass().getDeclaredMethod("shouldTestEqualsAndHashCode").getAnnotation(Test.class);
+        this.methods = new Method[1];
     }
-
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -52,7 +54,7 @@ public class ChainedAnnotationInspectorTest {
     }
 
     @Test
-    public void shouldGetAnnotationFromFirstInspectorIfPresent() throws Exception {
+    public void shouldGetFieldAnnotationFromFirstInspectorIfPresent() throws Exception {
         // Given:
         when(first.getAnnotation(field, Test.class)).thenReturn(annotation1);
         when(second.getAnnotation(field, Test.class)).thenReturn(annotation2);
@@ -65,13 +67,39 @@ public class ChainedAnnotationInspectorTest {
     }
 
     @Test
-    public void shouldGetAnnotationFromSecondInspectorIfFirstReturnsNull() throws Exception {
+    public void shouldGetFieldAnnotationFromSecondInspectorIfFirstReturnsNull() throws Exception {
         // Given:
         when(first.getAnnotation(field, Test.class)).thenReturn(null);
         when(second.getAnnotation(field, Test.class)).thenReturn(annotation2);
 
         // When:
         final Test annotation = inspector.getAnnotation(field, Test.class);
+
+        // Then:
+        assertThat(annotation, is(annotation2));
+    }
+
+    @Test
+    public void shouldGetMethodAnnotationFromFirstInspectorIfPresent() throws Exception {
+        // Given:
+        when(first.getAnnotation(Test.class, methods)).thenReturn(annotation1);
+        when(second.getAnnotation(Test.class, methods)).thenReturn(annotation2);
+
+        // When:
+        final Test annotation = inspector.getAnnotation(Test.class, methods);
+
+        // Then:
+        assertThat(annotation, is(annotation1));
+    }
+
+    @Test
+    public void shouldGetMethodAnnotationFromSecondInspectorIfFirstReturnsNull() throws Exception {
+        // Given:
+        when(first.getAnnotation(Test.class, methods)).thenReturn(null);
+        when(second.getAnnotation(Test.class, methods)).thenReturn(annotation2);
+
+        // When:
+        final Test annotation = inspector.getAnnotation(Test.class, methods);
 
         // Then:
         assertThat(annotation, is(annotation2));

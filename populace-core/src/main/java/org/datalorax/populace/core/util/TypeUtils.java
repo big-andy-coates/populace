@@ -290,6 +290,27 @@ public final class TypeUtils {
         throw new IllegalArgumentException("Unexpected type: " + type.getClass());
     }
 
+    /**
+     * Returns true is the types are equal or one is a subtype of the other.
+     *
+     * @param first  the first type to compare
+     * @param second the second type to compare
+     * @return true if they are related, false otherwise.
+     */
+    public static boolean areRelatedTypes(final Class<?> first, final Class<?> second) {
+        return first.equals(second) || first.isAssignableFrom(second) || second.isAssignableFrom(first);
+    }
+
+    public static Class<?> getMostDerivedClass(final Class<?> a, final Class<?> b) {
+        if (a.isAssignableFrom(b)) {
+            return b;
+        }
+        if (b.isAssignableFrom(a)) {
+            return a;
+        }
+        throw new IllegalArgumentException("Unrelated types: " + a + " & " + b);
+    }
+
     private static Type ensureConsistentParameterisedType(final ParameterizedType type) {
         final Type[] consistentTypeArgs = Arrays.stream(type.getActualTypeArguments())
             .map(TypeUtils::ensureConsistentType)

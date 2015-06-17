@@ -43,6 +43,7 @@ public interface Inspector {
         return ImmutableSet.of();
     }
 
+    /// Todo(ac): Can both fields and elements be combined in v2.x to just be Stream<GraphComponents> ????
     /**
      * If the type the inspector supports is a collection, the this method will return the collection of its child elements.
      *

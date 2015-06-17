@@ -18,6 +18,8 @@ package org.datalorax.populace.core.walk.inspector.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * Default annotation inspector for Populace. The inspector obtains annotations of the supplied {@code field}
@@ -30,5 +32,13 @@ public class SimpleAnnotationInspector implements AnnotationInspector {
     @Override
     public <T extends Annotation> T getAnnotation(final Field field, final Class<T> type) {
         return field.getAnnotation(type);
+    }
+
+    @Override
+    public <T extends Annotation> T getAnnotation(final Class<T> type, final Method... accessorMethods) {
+        return Arrays.stream(accessorMethods)
+            .map(accessor -> accessor.getAnnotation(type))
+            .filter(annotation -> annotation != null)
+            .findFirst().orElse(null);
     }
 }

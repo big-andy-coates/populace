@@ -43,7 +43,7 @@ import static org.datalorax.populace.core.util.TypeUtils.abbreviatedName;
  *
  * @author Andrew Coates - 28/02/2015.
  */
-class GraphComponentStream {
+class GraphComponentStream {    // Todo(aC): break out the tests from GraphWalker.
     private static final Log LOG = LogFactory.getLog(GraphComponentStream.class);
 
     private final WalkerContext context;

@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.util;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -111,6 +113,6 @@ public class Ziperator<TIn1, TIn2, TOut1, TOut2> implements Iterator<Pair<TOut1,
     public Pair<TOut1, TOut2> next() {
         final TOut1 one = adapter1.apply(first);
         final TOut2 two = adapter2.apply(second);
-        return new Pair<>(one, two);
+        return Pair.of(one, two);
     }
 }

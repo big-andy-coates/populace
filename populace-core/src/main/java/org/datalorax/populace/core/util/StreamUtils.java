@@ -16,6 +16,8 @@
 
 package org.datalorax.populace.core.util;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Spliterator;

@@ -16,9 +16,9 @@
 
 package org.datalorax.populace.core.walk;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.datalorax.populace.core.util.Pair;
 import org.datalorax.populace.core.util.StreamUtils;
 import org.datalorax.populace.core.walk.element.ElementInfo;
 import org.datalorax.populace.core.walk.element.RawElement;
@@ -107,27 +107,27 @@ class GraphComponentStream {    // Todo(aC): break out the tests from GraphWalke
         final Function<RawField, Pair<FieldInfo, WalkerStack>> converter = rawField -> {
             final WalkerStack fieldStack = instanceStack.push(rawField);
             final FieldInfo fieldInfo = new FieldInfo(rawField, instance, fieldStack.getTypeResolver(), fieldStack);
-            return new Pair<>(fieldInfo, fieldStack);
+            return Pair.of(fieldInfo, fieldStack);
         };
 
         final Predicate<Pair<FieldInfo, WalkerStack>> fieldFilter = pair -> {
-            final FieldInfo fieldInfo = pair.getFirst();
+            final FieldInfo fieldInfo = pair.getLeft();
             if (context.isExcludedField(fieldInfo)) {
-                logDebug("Skipping excluded field: " + fieldInfo.getName(), pair.getSecond());
+                logDebug("Skipping excluded field: " + fieldInfo.getName(), pair.getRight());
                 return false;
             }
             return true;
         };
 
         final Function<Pair<FieldInfo, WalkerStack>, Stream<GraphComponent>> childFlatMapper = pair -> {
-            final FieldInfo fieldInfo = pair.getFirst();
+            final FieldInfo fieldInfo = pair.getLeft();
             fieldInfo.ensureAccessible();       // Todo(ac): need a better way!
             final Object value = fieldInfo.getValue();
             if (value == null) {
-                logDebug("Skipping null field: " + fieldInfo.getName(), pair.getSecond());
+                logDebug("Skipping null field: " + fieldInfo.getName(), pair.getRight());
                 return Stream.empty();
             }
-            return getComponents(fieldInfo.getGenericType(), value, pair.getSecond());
+            return getComponents(fieldInfo.getGenericType(), value, pair.getRight());
         };
 
         final Function<Pair<FieldInfo, WalkerStack>, Stream<GraphComponent>> flatMapper = pair -> {
@@ -160,18 +160,18 @@ class GraphComponentStream {    // Todo(aC): break out the tests from GraphWalke
 //
 //                    final Object value = field.getValue();
 //                    if (value == null) {
-//                        logDebug("Skipping null field: " + field.getName(), pair.getSecond());
+//                        logDebug("Skipping null field: " + field.getName(), pair.getRight());
 //                        iterator = Collections.emptyIterator();
 //                    } else {
 //                        iterator = getComponents(field.getGenericType(), value, stack).iterator();
 //                    }
 //                }
 //            }
-//            final LazyIterator childIterator = new LazyIterator(fieldInfo, pair.getSecond());
+//            final LazyIterator childIterator = new LazyIterator(fieldInfo, pair.getRight());
 //            final Stream<GraphComponent> childComponents = StreamSupport.stream(
 //                Spliterators.spliteratorUnknownSize(childIterator, Spliterator.NONNULL | Spliterator.ORDERED), false);
 
-            final FieldInfo fieldInfo = pair.getFirst();
+            final FieldInfo fieldInfo = pair.getLeft();
             final Stream<GraphComponent> childComponents = Stream.of(pair).flatMap(childFlatMapper);
             return Stream.concat(Stream.of(fieldInfo), childComponents);
         };
@@ -196,31 +196,31 @@ class GraphComponentStream {    // Todo(aC): break out the tests from GraphWalke
                                                final Inspector inspector, final WalkerStack stack) {
 
         final Function<Pair<RawElement, Integer>, Pair<ElementInfo, WalkerStack>> converter = pair -> {
-            final RawElement rawElement = pair.getFirst();
-            final Integer index = pair.getSecond();
+            final RawElement rawElement = pair.getLeft();
+            final Integer index = pair.getRight();
             final WalkerStack elementStack = stack.push(rawElement, index);
             final ElementInfo elementInfo = new ElementInfo(rawElement, containerType,
                 elementStack.getTypeResolver(), elementStack);
-            return new Pair<>(elementInfo, elementStack);
+            return Pair.of(elementInfo, elementStack);
         };
 
         final Predicate<Pair<ElementInfo, WalkerStack>> elementFilter = pair -> {
-            if (context.isExcludedElement(pair.getFirst())) {
-                logDebug("Skipping excluded element", pair.getSecond());
+            if (context.isExcludedElement(pair.getLeft())) {
+                logDebug("Skipping excluded element", pair.getRight());
                 return false;
             }
             return true;
         };
 
         final Function<Pair<ElementInfo, WalkerStack>, Stream<GraphComponent>> flatMapper = pair -> {
-            final ElementInfo elementInfo = pair.getFirst();
+            final ElementInfo elementInfo = pair.getLeft();
             final Object value = elementInfo.getValue();
             if (value == null) {
-                logDebug("Skipping null child", pair.getSecond());
+                logDebug("Skipping null child", pair.getRight());
                 return Stream.of(elementInfo);
             }
 
-            final Stream<GraphComponent> childComponents = getComponents(value.getClass(), value, pair.getSecond());
+            final Stream<GraphComponent> childComponents = getComponents(value.getClass(), value, pair.getRight());
             return Stream.concat(Stream.of(elementInfo), childComponents);
         };
 

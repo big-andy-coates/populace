@@ -91,7 +91,7 @@ public class ReflectiveEqualTo<T> extends TypeSafeMatcher<T> {
      * @return the new matcher
      */
     public static <T> Matcher<T> reflectiveEqualTo(final T expected, final GraphWalker walker) {
-        return new ReflectiveEqualTo<T>(expected, walker);
+        return new ReflectiveEqualTo<>(expected, walker);
     }
 
     @Override
@@ -123,7 +123,7 @@ public class ReflectiveEqualTo<T> extends TypeSafeMatcher<T> {
         final Stream<GraphComponent> actualComponents = walker.walk(actual, GraphWalker.Customisations.empty());
 
         return !StreamUtils.outerZip(expectedComponents, actualComponents, Spliterator.ORDERED)
-            .filter(pair -> isMismatched(pair.getFirst(), pair.getSecond(), visitor))
+            .filter(pair -> isMismatched(pair.getLeft(), pair.getRight(), visitor))
             .findAny().isPresent();
     }
 
@@ -180,7 +180,7 @@ public class ReflectiveEqualTo<T> extends TypeSafeMatcher<T> {
         final Visitor visitor = new MismatchVisitor();
 
         StreamUtils.outerZip(expectedComponents, actualComponents, Spliterator.ORDERED)
-            .forEach(pair -> isMismatched(pair.getFirst(), pair.getSecond(), visitor));
+            .forEach(pair -> isMismatched(pair.getLeft(), pair.getRight(), visitor));
     }
 
     private static <T extends Visitor> boolean isMismatched(final Optional<GraphComponent> expected,

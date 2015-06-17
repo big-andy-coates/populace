@@ -78,7 +78,6 @@ public class MapValueInspector implements Inspector {
             this.entry = entry;
         }
 
-        // Todo(ac): v2.x Don't take container type here - take it in the constructor of these types i.e. pass it into getElements.
         @Override
         public Type getGenericType(final Type containerType) {
             return TypeUtils.getTypeArgument(containerType, MAP_VALUE_TYPE_VARIABLE);

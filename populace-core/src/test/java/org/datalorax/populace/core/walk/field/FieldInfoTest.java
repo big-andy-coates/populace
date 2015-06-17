@@ -502,7 +502,7 @@ public class FieldInfoTest {
         givenFieldHasValue(value, value.getClass());
     }
 
-    private void givenFieldHasValue(final Object value, final Class type) throws IllegalAccessException {
+    private void givenFieldHasValue(final Object value, final Class type) throws ReflectiveOperationException {
         when(field.getValue(anyObject())).thenReturn(value);
         givenFieldHasType(type);
     }

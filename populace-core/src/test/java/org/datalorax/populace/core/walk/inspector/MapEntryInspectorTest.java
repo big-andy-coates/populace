@@ -150,8 +150,8 @@ public class MapEntryInspectorTest {
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                MapInspector.INSTANCE,
-                new MapInspector())
+                MapEntryInspector.INSTANCE,
+                new MapEntryInspector())
             .addEqualityGroup(
                 mock(Inspector.class))
             .testEquals();

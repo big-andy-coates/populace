@@ -54,7 +54,8 @@ final class InspectorsBuilder implements Inspectors.Builder {
         builder.withSuperInspector(Collection.class, CollectionInspector.INSTANCE);
         builder.withSuperInspector(Set.class, SetInspector.INSTANCE);
         builder.withSuperInspector(List.class, ListInspector.INSTANCE);
-        builder.withSuperInspector(Map.class, MapValueInspector.INSTANCE);
+        builder.withSuperInspector(Map.class, MapInspector.INSTANCE);
+        builder.withSuperInspector(Map.Entry.class, MapEntryInspector.INSTANCE);
 
         builder.withPackageInspector("java", TerminalInspector.INSTANCE);
 

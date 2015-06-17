@@ -150,4 +150,46 @@ public class TypeUtilsTest {
         assertThat(wildcardType.getUpperBounds().length, is(1));
         assertThat(wildcardType.getUpperBounds()[0], is(equalTo(Object.class)));
     }
+
+    @Test
+    public void shouldBeRelatedIfSameType() throws Exception {
+        assertThat(TypeUtils.areRelatedTypes(String.class, String.class), is(true));
+    }
+
+    @Test
+    public void shouldBeRelatedIfOneIsSubTypeOfOther() throws Exception {
+        assertThat(TypeUtils.areRelatedTypes(Number.class, Integer.class), is(true));
+        assertThat(TypeUtils.areRelatedTypes(Integer.class, Number.class), is(true));
+    }
+
+    @Test
+    public void shouldNotBeRelatedIfNotSubTypes() throws Exception {
+        assertThat(TypeUtils.areRelatedTypes(String.class, List.class), is(false));
+    }
+
+    @Test
+    public void shouldReturnMostDerivedType() throws Exception {
+        // Given:
+        class SomeType {
+        }
+        class SomeDerivedType extends SomeType {
+        }
+
+        // Then:
+        assertThat(TypeUtils.getMostDerivedClass(SomeType.class, SomeDerivedType.class), is(equalTo(SomeDerivedType.class)));
+        assertThat(TypeUtils.getMostDerivedClass(SomeDerivedType.class, SomeType.class), is(equalTo(SomeDerivedType.class)));
+        assertThat(TypeUtils.getMostDerivedClass(SomeType.class, SomeType.class), is(equalTo(SomeType.class)));
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void shouldThrowIfTypesAreUnrelated() throws Exception {
+        // Given:
+        class SomeType {
+        }
+        class SomeUnrealtedType {
+        }
+
+        // Then:
+        TypeUtils.getMostDerivedClass(SomeType.class, SomeUnrealtedType.class);
+    }
 }

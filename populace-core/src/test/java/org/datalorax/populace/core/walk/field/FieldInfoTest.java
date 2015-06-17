@@ -498,11 +498,11 @@ public class FieldInfoTest {
             .testAllPublicConstructors(FieldInfo.class);
     }
 
-    private void givenFieldHasValue(final Object value) throws IllegalAccessException {
+    private void givenFieldHasValue(final Object value) throws ReflectiveOperationException {
         givenFieldHasValue(value, value.getClass());
     }
 
-    private void givenFieldHasValue(final Object value, final Class type) throws IllegalAccessException {
+    private void givenFieldHasValue(final Object value, final Class type) throws ReflectiveOperationException {
         when(field.getValue(anyObject())).thenReturn(value);
         givenFieldHasType(type);
     }

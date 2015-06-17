@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package org.datalorax.populace.core.util;
+package org.datalorax.populace.core.walk.inspector;
 
 /**
- * @author Andrew Coates - 11/05/2015.
+ * Thrown by {@link org.datalorax.populace.core.walk.inspector.Inspector inspectors} if there was a problem inspecting
+ *
+ * @author Andrew Coates - 12/06/2015.
  */
-public class ObjectUtils {
-    public static String safeToString(final Object object) {
-        try {
-            return object == null ? "null" : object.toString();
-        } catch (RuntimeException e) {
-            return e.getClass().toString() + " thrown from toString()";
-        }
+public class InspectionException extends RuntimeException {
+    public InspectionException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

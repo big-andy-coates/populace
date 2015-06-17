@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-public class RawFieldTest {
+public class StdRawFieldTest {
     @SuppressWarnings("UnusedDeclaration")
     private static final String STATIC_FIELD = "";
 
@@ -54,7 +54,7 @@ public class RawFieldTest {
         field.setAccessible(true);
         otherField.setAccessible(true);
 
-        rawField = new RawField(field, annotationInspector);
+        rawField = new StdRawField(field, annotationInspector);
     }
 
     @Test
@@ -148,32 +148,32 @@ public class RawFieldTest {
     public void shouldDetectTransientFields() throws Exception {
         final Field transientField = getClass().getDeclaredField("transientField");
         assertThat(rawField.isTransient(), is(false));
-        assertThat(new RawField(transientField, annotationInspector).isTransient(), is(true));
+        assertThat(new StdRawField(transientField, annotationInspector).isTransient(), is(true));
     }
 
     @Test
     public void shouldDetectStaticFields() throws Exception {
         final Field staticField = getClass().getDeclaredField("STATIC_FIELD");
         assertThat(rawField.isStatic(), is(false));
-        assertThat(new RawField(staticField, annotationInspector).isStatic(), is(true));
+        assertThat(new StdRawField(staticField, annotationInspector).isStatic(), is(true));
     }
 
     @Test
     public void shouldDetectFinalFields() throws Exception {
         final Field finalField = getClass().getDeclaredField("finalField");
         assertThat(rawField.isFinal(), is(false));
-        assertThat(new RawField(finalField, annotationInspector).isFinal(), is(true));
+        assertThat(new StdRawField(finalField, annotationInspector).isFinal(), is(true));
     }
 
     @Test
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                new RawField(field, annotationInspector),
-                new RawField(field, annotationInspector),
-                new RawField(field, mock(AnnotationInspector.class, "other")))
+                new StdRawField(field, annotationInspector),
+                new StdRawField(field, annotationInspector),
+                new StdRawField(field, mock(AnnotationInspector.class, "other")))
             .addEqualityGroup(
-                new RawField(otherField, annotationInspector))
+                new StdRawField(otherField, annotationInspector))
             .testEquals();
     }
 
@@ -182,6 +182,6 @@ public class RawFieldTest {
         new NullPointerTester()
             .setDefault(Field.class, field)
             .setDefault(AnnotationInspector.class, annotationInspector)
-            .testAllPublicConstructors(RawField.class);
+            .testAllPublicConstructors(StdRawField.class);
     }
 }

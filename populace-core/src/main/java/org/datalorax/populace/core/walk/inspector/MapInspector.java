@@ -28,17 +28,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * The walker walks each value in the collection, depth first. Keys are not walked.
+ * An inspector that exposes the child entries of the map.
+ * <p>
+ * Often used in conjunction with {@link org.datalorax.populace.core.walk.inspector.MapEntryInspector}
  *
  * @author Andrew Coates - 01/03/2015.
  */
-public class MapValueInspector implements Inspector {
-    public static final MapValueInspector INSTANCE = new MapValueInspector();
+public class MapInspector implements Inspector {
+    public static final MapInspector INSTANCE = new MapInspector();
+    private static final TypeVariable<Class<Map>> MAP_KEY_TYPE_VARIABLE = Map.class.getTypeParameters()[0];
     private static final TypeVariable<Class<Map>> MAP_VALUE_TYPE_VARIABLE = Map.class.getTypeParameters()[1];
 
     @Override
     public Iterator<RawElement> getElements(final Object instance, final Inspectors inspectors) {
-        final Map<?, Object> map = ensureMap(instance);
+        final Map<?, ?> map = ensureMap(instance);
         return toRawElements(map);
     }
 
@@ -57,40 +60,41 @@ public class MapValueInspector implements Inspector {
         return getClass().getSimpleName();
     }
 
-    private Iterator<RawElement> toRawElements(final Map<?, Object> map) {
+    private Iterator<RawElement> toRawElements(final Map<?, ?> map) {
         final List<RawElement> elements = map.entrySet().stream()
-            .map(MapValueElement::new)
+            .map(MapElement::new)
             .collect(Collectors.toList());
         return elements.iterator();
     }
 
-    @SuppressWarnings("unchecked")
-    private static Map<?, Object> ensureMap(final Object instance) {
+    private static Map<?, ?> ensureMap(final Object instance) {
         Validate.isInstanceOf(Map.class, instance);
-        return (Map<?, Object>) instance;
+        return (Map<?, ?>) instance;
     }
 
-    private class MapValueElement implements RawElement {
-        private final Map.Entry<?, Object> entry;
+    private class MapElement implements RawElement {
+        private final Map.Entry<?, ?> entry;
 
-        public MapValueElement(final Map.Entry<?, Object> entry) {
+        public MapElement(final Map.Entry<?, ?> entry) {
             Validate.notNull(entry, "entry null");
             this.entry = entry;
         }
 
         @Override
         public Type getGenericType(final Type containerType) {
-            return TypeUtils.getTypeArgument(containerType, MAP_VALUE_TYPE_VARIABLE);
+            final Type keyTypeArg = TypeUtils.getTypeArgument(containerType, MAP_KEY_TYPE_VARIABLE);
+            final Type valueTypeArg = TypeUtils.getTypeArgument(containerType, MAP_VALUE_TYPE_VARIABLE);
+            return TypeUtils.parameterise(entry.getClass(), keyTypeArg, valueTypeArg);
         }
 
         @Override
         public Object getValue() {
-            return entry.getValue();
+            return entry;
         }
 
         @Override
         public void setValue(final Object value) {
-            entry.setValue(value);
+            throw new UnsupportedOperationException("Map.Entry can not be modified");
         }
     }
 }

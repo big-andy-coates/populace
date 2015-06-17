@@ -18,12 +18,37 @@ package org.datalorax.populace.core.walk.inspector.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
- * A 'pluggable' annotation inspector that allows the logic used to find an annotation, given a field, to be customised.
+ * A 'pluggable' annotation inspector that allows the logic used to find an annotation, given a field or method, to be
+ * customised.
  *
  * @author Andrew Coates - 24/03/2015.
  */
 public interface AnnotationInspector {
+    /**
+     * Search for the requested annotation {@code type} on the supplied {@code field}
+     *
+     * @param field the field to look for the annotation on
+     * @param type  the type of the annotation to find
+     * @param <T>   the type of the annotation to find
+     * @return the annotation, if found, else null
+     */
     <T extends Annotation> T getAnnotation(Field field, Class<T> type);
+
+    // Todo(v2.x): Switch to Optional<T> return value in v2.x
+
+    /**
+     * Search for the requested annotation {@code type} on the supplied {@code accessorMethods}
+     *
+     * @param accessorMethods the methods to look for the annotation on. There will either be 1 or 2 methods.
+     * @param type            the type of the annotation to find
+     * @param <T>             the type of the annotation to find
+     * @return the annotation, if found, else null
+     */
+    default <T extends Annotation> T getAnnotation(Class<T> type, Method... accessorMethods) {
+        // Todo(v2.x): remove default in v2.x - its just here to maintain version compatibility
+        return null;
+    }
 }

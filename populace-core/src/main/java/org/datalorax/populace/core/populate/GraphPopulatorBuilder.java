@@ -26,8 +26,10 @@ import org.datalorax.populace.core.walk.field.FieldInfo;
 import org.datalorax.populace.core.walk.field.filter.FieldFilter;
 import org.datalorax.populace.core.walk.field.filter.FieldFilters;
 import org.datalorax.populace.core.walk.inspector.Inspectors;
+import org.datalorax.populace.core.walk.inspector.MapValueInspector;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /**
@@ -41,6 +43,7 @@ final class GraphPopulatorBuilder implements GraphPopulator.Builder {
     private final GraphWalker.Builder walkerBuilder = GraphWalker.newBuilder()
         .withFieldFilter(DEFAULT_FIELD_FILTER)
         .withInspectors(Inspectors.newBuilder()
+            .withSuperInspector(Map.class, MapValueInspector.INSTANCE)  // Can't mutate keys, so only walk values.
             .withSuperInspector(Collection.class, LoggingCollectionInspector.INSTANCE)  // Log on immutable elements
             .build());
     private Mutators mutators = Mutators.defaults();

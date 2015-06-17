@@ -67,6 +67,16 @@ public class FieldInfoMatcher extends TypeSafeMatcher<FieldInfo> {
     }
 
     public static Matcher<? extends FieldInfo> fieldWithValue(final String fieldName,
+                                                              final Object value) {
+        return fieldWithValue(equalTo(fieldName), equalTo(value));
+    }
+
+    public static Matcher<? extends FieldInfo> fieldWithValue(final Matcher<String> fieldName,
+                                                              final Matcher<Object> value) {
+        return new FieldInfoMatcher(fieldName, value, null, null);
+    }
+
+    public static Matcher<? extends FieldInfo> fieldWithValue(final String fieldName,
                                                               final Object value,
                                                               final Class<?> declaringClass) {
         return fieldWithValue(equalTo(fieldName), equalTo(value), equalTo(declaringClass));
@@ -76,14 +86,6 @@ public class FieldInfoMatcher extends TypeSafeMatcher<FieldInfo> {
                                                               final Matcher<Object> value,
                                                               final Matcher<Class<?>> declaringClass) {
         return new FieldInfoMatcher(fieldName, value, declaringClass, null);
-    }
-
-    @Override
-    protected boolean matchesSafely(final FieldInfo info) {
-        return fieldName.matches(info.getName())
-            && (value == null || value.matches(info.getValue()))
-            && (declaringClass == null || declaringClass.matches(info.getDeclaringClass()))
-            && (instance == null || instance.matches(info.getOwningInstance()));
     }
 
     @Override
@@ -102,6 +104,14 @@ public class FieldInfoMatcher extends TypeSafeMatcher<FieldInfo> {
             description.appendText(" and owningInstance");
             instance.describeTo(description);
         }
+    }
+
+    @Override
+    protected boolean matchesSafely(final FieldInfo info) {
+        return fieldName.matches(info.getName())
+            && (value == null || value.matches(info.getValue()))
+            && (declaringClass == null || declaringClass.matches(info.getDeclaringClass()))
+            && (instance == null || instance.matches(info.getOwningInstance()));
     }
 
     @Override

@@ -18,6 +18,7 @@ package org.datalorax.populace.core.walk.inspector;
 
 import com.google.common.testing.EqualsTester;
 import org.datalorax.populace.core.walk.field.RawField;
+import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -25,6 +26,7 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -41,11 +43,15 @@ public class MapEntryInspectorTest {
     private Inspectors inspectors;
     @Mock
     private Map.Entry<String, Integer> entry;
+    @Mock
+    private AnnotationInspector annotationInspector;
     private MapEntryInspector inspector;
 
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+
+        when(inspectors.getAnnotationInspector()).thenReturn(annotationInspector);
 
         inspector = MapEntryInspector.INSTANCE;
     }
@@ -57,7 +63,7 @@ public class MapEntryInspectorTest {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void shouldThrowIfUnsupportedType() throws Exception {
-        inspector.getFields(HashMap.Entry.class, inspectors);
+        inspector.getFields(HashMap.class, inspectors);
     }
 
     @SuppressWarnings("unchecked")
@@ -79,10 +85,13 @@ public class MapEntryInspectorTest {
     @Test(expectedExceptions = NoSuchElementException.class)
     public void shouldThrowFromNextWhenNoMoreElements() throws Exception {
         // Given:
-        final Iterable<RawField> fields = inspector.getFields(HashMap.Entry.class, inspectors);
+        final Iterable<RawField> fields = inspector.getFields(Map.Entry.class, inspectors);
+        final Iterator<RawField> iterator = fields.iterator();
+        iterator.next();    // key
+        iterator.next();    // value
 
         // When:
-        fields.iterator().next();
+        iterator.next();
     }
 
     @Test(expectedExceptions = UnsupportedOperationException.class)
@@ -107,7 +116,7 @@ public class MapEntryInspectorTest {
         final Map<String, RawField> fields = toFieldMap(inspector.getFields(Map.Entry.class, inspectors));
 
         // When:
-        fields.get("value").setValue(map, "newValue");
+        fields.get("value").setValue(map.entrySet().iterator().next(), "newValue");
 
         // Then:
         assertThat(map.get(1), is("newValue"));
@@ -141,8 +150,8 @@ public class MapEntryInspectorTest {
     public void shouldTestEqualsAndHashCode() throws Exception {
         new EqualsTester()
             .addEqualityGroup(
-                MapInspector.INSTANCE,
-                new MapInspector())
+                MapEntryInspector.INSTANCE,
+                new MapEntryInspector())
             .addEqualityGroup(
                 mock(Inspector.class))
             .testEquals();

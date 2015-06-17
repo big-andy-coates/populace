@@ -37,7 +37,7 @@ public interface AnnotationInspector {
      */
     <T extends Annotation> T getAnnotation(Field field, Class<T> type);
 
-    // Todo(ac): Switch to Optional<T> return value in v2.x
+    // Todo(v2.x): Switch to Optional<T> return value in v2.x
 
     /**
      * Search for the requested annotation {@code type} on the supplied {@code accessorMethods}
@@ -48,7 +48,7 @@ public interface AnnotationInspector {
      * @return the annotation, if found, else null
      */
     default <T extends Annotation> T getAnnotation(Class<T> type, Method... accessorMethods) {
-        // Todo(ac): remove default in v2.x - its just here to maintain version compatibility
+        // Todo(v2.x): remove default in v2.x - its just here to maintain version compatibility
         return null;
-    };
+    }
 }

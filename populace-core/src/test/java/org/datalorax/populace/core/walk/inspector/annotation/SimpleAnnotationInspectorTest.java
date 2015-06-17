@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.nullValue;
 public class SimpleAnnotationInspectorTest {
     private SimpleAnnotationInspector inspector;
 
+    @SuppressWarnings("UnusedDeclaration")
     @Deprecated
     private List<?> deprecatedField;
 

@@ -45,6 +45,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 import static org.testng.Assert.fail;
@@ -554,14 +555,23 @@ public class GraphWalkerFunctionalTest {
                 put("that", new SomeType("2"));
             }};
         }
+        final WithMaps instance = new WithMaps();
+        final Iterator<Map.Entry<String, SomeType>> entries = instance._map.entrySet().iterator();
+        final Map.Entry<String, SomeType> entry1 = entries.next();
+        final Map.Entry<String, SomeType> entry2 = entries.next();
 
         // When:
-        walker.walk(new WithMaps(), accessibleFieldVisitor, elementVisitor);
+        walker.walk(instance, accessibleFieldVisitor, elementVisitor);
 
         // Then:
         verify(fieldVisitor).visit(argThat(fieldInfo("_map", WithMaps.class)));
-        verify(elementVisitor, times(2)).visit(argThat(elementOfType(SomeType.class)));
+        verify(elementVisitor).visit(argThat(elementWithValue(entry1)));
+        verify(elementVisitor).visit(argThat(elementWithValue(entry2)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("key", entry1.getKey())));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("value", entry1.getValue())));
         verify(fieldVisitor).visit(argThat(fieldWithValue("field", "1", SomeType.class)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("key", entry2.getKey())));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("value", entry2.getValue())));
         verify(fieldVisitor).visit(argThat(fieldWithValue("field", "2", SomeType.class)));
         verifyNoMoreInteractions(fieldVisitor, elementVisitor);
     }
@@ -571,18 +581,20 @@ public class GraphWalkerFunctionalTest {
         // Given:
         @SuppressWarnings("UnusedDeclaration")
         class WithMaps {
-            public Map<String, String> _mapTerminalType = new HashMap<String, String>() {{
-                put("this", "1");
-                put("that", "2");
+            public Map<Integer, String> _mapTerminalType = new HashMap<Integer, String>() {{
+                put(1, "1");
             }};
         }
+        final WithMaps instance = new WithMaps();
 
         // When:
-        walker.walk(new WithMaps(), accessibleFieldVisitor, elementVisitor);
+        walker.walk(instance, accessibleFieldVisitor, elementVisitor);
 
         // Then:
         verify(fieldVisitor).visit(argThat(fieldInfo("_mapTerminalType", WithMaps.class)));
-        verify(elementVisitor, times(2)).visit(argThat(elementOfType(String.class)));
+        verify(elementVisitor).visit(argThat(elementWithValue(instance._mapTerminalType.entrySet().iterator().next())));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("key", (Integer) 1)));
+        verify(fieldVisitor).visit(argThat(fieldWithValue("value", "1")));
         verifyNoMoreInteractions(fieldVisitor, elementVisitor);
     }
 
@@ -611,12 +623,13 @@ public class GraphWalkerFunctionalTest {
                 put("this", null);
             }};
         }
+        final TypeWithMapField instance = new TypeWithMapField();
 
         // When:
-        walker.walk(new TypeWithMapField(), accessibleFieldVisitor, elementVisitor);
+        walker.walk(instance, accessibleFieldVisitor, elementVisitor);
 
         // Then:
-        verify(elementVisitor).visit(argThat(elementWithValue(nullValue())));
+        verify(fieldVisitor).visit(argThat(fieldWithValue(is("value"), nullValue())));
     }
 
     @Test
@@ -722,6 +735,7 @@ public class GraphWalkerFunctionalTest {
         // Given:
         class InnerClassType {
             // Synthetic field to parent instance
+            @SuppressWarnings("UnusedDeclaration")
             Object child;
         }
 

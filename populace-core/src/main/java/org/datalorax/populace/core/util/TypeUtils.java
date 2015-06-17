@@ -122,7 +122,8 @@ public final class TypeUtils {
      * @throws java.lang.IllegalArgumentException if {@code type} is not assignable to {@code toClass}.
      * @deprecated use {@link #getTypeArgument(java.lang.reflect.Type, java.lang.reflect.TypeVariable)}
      */
-    @Deprecated     // Todo(ac): remove in v2.x
+    @SuppressWarnings("UnusedParameters")
+    @Deprecated     // Todo(v2.x): remove deprecated
     public static <T> Type getTypeArgument(final Type type, final Class<T> toClass, final TypeVariable<Class<T>> typeVariable) {
         return getTypeArgument(type, typeVariable);
     }

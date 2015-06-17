@@ -22,6 +22,7 @@ import org.datalorax.populace.core.walk.field.GetterSetterRawField;
 import org.datalorax.populace.core.walk.field.ImmutableGetterRawField;
 import org.datalorax.populace.core.walk.field.RawField;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +36,6 @@ import java.util.Map;
  * may invalidate the owning map and lead to undesirable and undefined behaviour.
  *
  * @author Andrew Coates - 01/03/2015.
- *         <p>
- *         Todo(ac): Should be installed in walker by default. Populator should override.
  */
 public class MapEntryInspector implements Inspector {
     public static final MapEntryInspector INSTANCE = new MapEntryInspector();
@@ -65,16 +64,6 @@ public class MapEntryInspector implements Inspector {
         return getClass().getSimpleName();
     }
 
-    private RawField createValueField(final Class<? extends Map.Entry<?, ?>> type, final Inspectors inspectors) {
-        try {
-            return new GetterSetterRawField("value",
-                type.getDeclaredMethod("getValue"), type.getDeclaredMethod("setValue"),
-                inspectors.getAnnotationInspector());
-        } catch (NoSuchMethodException e) {
-            throw new InspectionException("Expected method 'getKey()' not found on type: " + type, e);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private static Class<? extends Map.Entry<?, ?>> ensureMapEntry(final Class<?> type) {
         Validate.isAssignableFrom(Map.Entry.class, type);
@@ -83,9 +72,18 @@ public class MapEntryInspector implements Inspector {
 
     private static RawField createKeyField(final Class<? extends Map.Entry<?, ?>> type, final Inspectors inspectors) {
         try {
-            return new ImmutableGetterRawField("key",
-                type.getDeclaredMethod("getKey"),
-                inspectors.getAnnotationInspector());
+            final Method getter = type.getDeclaredMethod("getKey");
+            return new ImmutableGetterRawField("key", getter, inspectors.getAnnotationInspector());
+        } catch (NoSuchMethodException e) {
+            throw new InspectionException("Expected method 'getKey()' not found on type: " + type, e);
+        }
+    }
+
+    private static RawField createValueField(final Class<? extends Map.Entry<?, ?>> type, final Inspectors inspectors) {
+        try {
+            final Method getter = type.getDeclaredMethod("getValue");
+            final Method setter = type.getDeclaredMethod("setValue", getter.getReturnType());
+            return new GetterSetterRawField("value", getter, setter, inspectors.getAnnotationInspector());
         } catch (NoSuchMethodException e) {
             throw new InspectionException("Expected method 'getKey()' not found on type: " + type, e);
         }

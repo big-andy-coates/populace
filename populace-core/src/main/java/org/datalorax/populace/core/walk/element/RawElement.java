@@ -37,7 +37,7 @@ public interface RawElement {
      * @return the generic type of the container's element
      */
     Type getGenericType(final Type containerType);
-
+    // Todo(v2.x):  Don't take container type here - take it in the constructor of these types i.e. pass it into getElements.
 
     /**
      * Returns the value of the element represented by this {@code RawElement}. The value is automatically wrapped in

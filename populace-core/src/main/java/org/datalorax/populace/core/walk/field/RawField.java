@@ -16,42 +16,23 @@
 
 package org.datalorax.populace.core.walk.field;
 
-import org.apache.commons.lang3.Validate;
-import org.datalorax.populace.core.walk.inspector.annotation.AnnotationInspector;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
- * @author Andrew Coates - 04/03/2015.
+ * @author Andrew Coates - 12/06/2015.
  */
-public class RawField {
-    private final Field field;
-    private final transient AnnotationInspector annotationInspector;
-
-    public RawField(final Field field, final AnnotationInspector annotationInspector) {
-        Validate.notNull(field, "field null");
-        Validate.notNull(annotationInspector, "annotationInspector null");
-        this.field = field;
-        this.annotationInspector = annotationInspector;
-    }
-
+public interface RawField {
     /**
      * @return the name of the field represented by this {@code RawField} object
      */
-    public String getName() {
-        return field.getName();
-    }
+    String getName();
 
     /**
      * @return the {@code Class} object representing the class or interface that declares the field represented by this
      * {@code Field} object.
      */
-    public Class<?> getDeclaringClass() {
-        return field.getDeclaringClass();
-    }
+    Class<?> getDeclaringClass();
 
     /**
      * Returns a {@code Class} object that represents the declared type for the field represented by this {@code
@@ -59,9 +40,7 @@ public class RawField {
      *
      * @return the type of the field.
      */
-    public Class<?> getType() {
-        return field.getType();
-    }
+    Class<?> getType();
 
     /**
      * Returns a {@code Type} object that represents the declared type for the field represented by this {@code RawField}
@@ -78,9 +57,7 @@ public class RawField {
      * @return the generic type of the field
      * @see java.lang.reflect.Field#getGenericType()
      */
-    public Type getGenericType() {
-        return field.getGenericType();
-    }
+    Type getGenericType();
 
     /**
      * Returns the value of the field represented by this {@code RawField}, on the specified {@code owningInstance}. The
@@ -92,13 +69,11 @@ public class RawField {
      *                       to be extracted
      * @return the value of the represented field in {@code owningInstance}. primitive values are wrapped in an appropriate
      * object before being returned
-     * @throws java.lang.IllegalAccessException if this {@code RawField} object is enforcing Java language access
+     * @throws IllegalAccessException if this {@code RawField} object is enforcing Java language access
      *                                          control and the underlying field is inaccessible.
      * @see java.lang.reflect.Field#get(Object)
      */
-    public Object getValue(final Object owningInstance) throws IllegalAccessException {
-        return field.get(owningInstance);
-    }
+    Object getValue(Object owningInstance) throws ReflectiveOperationException;
 
     /**
      * Sets the field represented by this {@code RawField} object on the specified object argument to the specified new
@@ -109,13 +84,11 @@ public class RawField {
      * @param owningInstance the object whose field should be modified
      * @param value          the new value for the field of {@code owningInstance}
      *                       being modified
-     * @throws java.lang.IllegalAccessException if this {@code RawField} object is enforcing Java language access
+     * @throws IllegalAccessException if this {@code RawField} object is enforcing Java language access
      *                                          control and the underlying field is inaccessible.
      * @see java.lang.reflect.Field#set(Object, Object)
      */
-    public void setValue(final Object owningInstance, final Object value) throws IllegalAccessException {
-        field.set(owningInstance, value);
-    }
+    void setValue(Object owningInstance, Object value) throws ReflectiveOperationException;
 
     /**
      * return the instance of the annotation if it is present on the field represented by this {@code RawField} object,
@@ -125,64 +98,33 @@ public class RawField {
      * @param <T>  the type of the {@link java.lang.annotation.Annotation Annotation} to retrieve.
      * @return the {@link java.lang.annotation.Annotation Annotation} if found, else {@code null}
      */
-    public <T extends Annotation> T getAnnotation(final Class<T> type) {
-        return annotationInspector.getAnnotation(field, type);
-    }
+    <T extends Annotation> T getAnnotation(Class<T> type);
 
     /**
      * Determine if this field is accessible i.e. that its value can be retrieved and/or set.
      *
      * @return true if this field is accessible, false otherwise.
      */
-    public boolean isAccessible() {
-        return field.isAccessible();
-    }
+    boolean isAccessible();
 
     /**
      * Ensure the field represented by this {@code RawField} is accessible i.e that calls to {@link #getValue(Object)}
-     * and {@link #setValue(Object, Object)} won't through {@link java.lang.IllegalAccessException}
+     * and {@link #setValue(Object, Object)} won't through {@link IllegalAccessException}
      */
-    public void ensureAccessible() {
-        field.setAccessible(true);
-    }
+    void ensureAccessible();
 
     /**
      * @return true if the field represented by this {@code RawField} is transient, false otherwise
      */
-    public boolean isTransient() {
-        return Modifier.isTransient(field.getModifiers());
-    }
+    boolean isTransient();
 
     /**
      * @return true if the field represented by this {@code RawField} is static, false otherwise
      */
-    public boolean isStatic() {
-        return Modifier.isStatic(field.getModifiers());
-    }
+    boolean isStatic();
 
     /**
      * @return true if the field represented by this {@code RawField} is final, false otherwise
      */
-    public boolean isFinal() {
-        return Modifier.isFinal(field.getModifiers());
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        final RawField that = (RawField) o;
-        return field.equals(that.field);
-    }
-
-    @Override
-    public int hashCode() {
-        return field.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return field.toString();
-    }
+    boolean isFinal();
 }

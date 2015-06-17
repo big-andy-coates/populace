@@ -122,7 +122,8 @@ public final class TypeUtils {
      * @throws java.lang.IllegalArgumentException if {@code type} is not assignable to {@code toClass}.
      * @deprecated use {@link #getTypeArgument(java.lang.reflect.Type, java.lang.reflect.TypeVariable)}
      */
-    @Deprecated     // Todo(ac): remove in v2.x
+    @SuppressWarnings("UnusedParameters")
+    @Deprecated     // Todo(v2.x): remove deprecated
     public static <T> Type getTypeArgument(final Type type, final Class<T> toClass, final TypeVariable<Class<T>> typeVariable) {
         return getTypeArgument(type, typeVariable);
     }
@@ -288,6 +289,27 @@ public final class TypeUtils {
         }
 
         throw new IllegalArgumentException("Unexpected type: " + type.getClass());
+    }
+
+    /**
+     * Returns true is the types are equal or one is a subtype of the other.
+     *
+     * @param first  the first type to compare
+     * @param second the second type to compare
+     * @return true if they are related, false otherwise.
+     */
+    public static boolean areRelatedTypes(final Class<?> first, final Class<?> second) {
+        return first.equals(second) || first.isAssignableFrom(second) || second.isAssignableFrom(first);
+    }
+
+    public static Class<?> getMostDerivedClass(final Class<?> a, final Class<?> b) {
+        if (a.isAssignableFrom(b)) {
+            return b;
+        }
+        if (b.isAssignableFrom(a)) {
+            return a;
+        }
+        throw new IllegalArgumentException("Unrelated types: " + a + " & " + b);
     }
 
     private static Type ensureConsistentParameterisedType(final ParameterizedType type) {

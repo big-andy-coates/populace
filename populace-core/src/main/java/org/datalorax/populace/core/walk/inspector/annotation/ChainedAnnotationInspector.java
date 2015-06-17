@@ -20,6 +20,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * Chains two annotation inspectors. The {@code second} inspector is only called should the {@code first} not find
@@ -42,6 +43,12 @@ public class ChainedAnnotationInspector implements AnnotationInspector {
     public <T extends Annotation> T getAnnotation(final Field field, final Class<T> type) {
         final T annotation = first.getAnnotation(field, type);
         return annotation != null ? annotation : second.getAnnotation(field, type);
+    }
+
+    @Override
+    public <T extends Annotation> T getAnnotation(final Class<T> type, final Method... accessorMethods) {
+        final T annotation = first.getAnnotation(type, accessorMethods);
+        return annotation != null ? annotation : second.getAnnotation(type, accessorMethods);
     }
 
     @Override
